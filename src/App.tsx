@@ -11,6 +11,7 @@ import MainPage from "./pages/MainPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import SignupCompletePage from "./pages/SignupCompletePage";
+import PlaceRegistrationPage from "./pages/PlaceRegistrationPage";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/signup/complete" element={<SignupCompletePage />} />
+            <Route path="/register" element={<PlaceRegistrationPage />} />
           </Routes>
         </div>
       </BrowserRouter>
