@@ -2,18 +2,33 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { ReactComponent as SignupComplete } from "../assets/login/SignupComplete.svg";
+interface SignupCompletePageProps {
+  onSignupComplete?: (nickname: string) => void;
+}
 
-const SignupCompletePage: React.FC = () => {
+const SignupCompletePage: React.FC<SignupCompletePageProps> = ({
+  onSignupComplete,
+}) => {
   const navigate = useNavigate();
+  const nickname = localStorage.getItem("nickname") || "OOO";
+
+  React.useEffect(() => {
+    if (onSignupComplete) onSignupComplete(nickname);
+  }, [nickname, onSignupComplete]);
 
   return (
     <Container>
       <Card>
         <SignupComplete />
         <Label>회원가입 완료</Label>
-        <Title>OOO님, 환영해요!</Title>
+        <Title>{nickname}님, 환영해요!</Title>
 
-        <HomeButton onClick={() => navigate("/")}>
+        <HomeButton
+          onClick={() => {
+            if (onSignupComplete) onSignupComplete(nickname);
+            navigate("/");
+          }}
+        >
           서비스 이용하러 가기
         </HomeButton>
       </Card>

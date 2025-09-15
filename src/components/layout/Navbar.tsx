@@ -1,14 +1,29 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { ReactComponent as NavLogo } from "../../assets/Logo.svg";
+import { ReactComponent as UserIcon } from "../../assets/UserIcon.svg";
+import { ReactComponent as UserIconBig } from "../../assets/UserIconBig.svg";
+interface NavbarProps {
+  isLoggedIn?: boolean;
+  userName?: string;
+  profileImgUrl?: string;
+  onLogout?: () => void;
+}
 
-const Navbar: React.FC = () => {
+const Navbar: React.FC<NavbarProps> = ({
+  isLoggedIn = false,
+  userName = "사용자",
+  profileImgUrl,
+  onLogout,
+}) => {
+  const [showDropdown, setShowDropdown] = useState(false);
+
   return (
     <Nav>
       <Logo to="/">
         <NavLogo />
-        <span>국내에서 떠나는 세계여행</span>
+        <span>숨은나라찾기</span>
       </Logo>
 
       <Menu>
@@ -19,7 +34,24 @@ const Navbar: React.FC = () => {
         <MenuLink to="/register">장소 등록 문의</MenuLink>
       </Menu>
 
-      <AuthButton to="/login">로그인 / 회원가입</AuthButton>
+      {isLoggedIn ? (
+        <ProfileWrapper onClick={() => setShowDropdown(!showDropdown)}>
+          <ProfileName>{userName} 님</ProfileName>
+          {/*<ProfileImage src={profileImgUrl || undefined} />*/}
+          <UserIcon id="userIcon" />
+          {showDropdown && (
+            <Dropdown>
+              <UserIconBig /> <ProfileName>{userName} 님</ProfileName>
+              <DropdownItem to="/mypage">마이페이지</DropdownItem>
+              <DropdownItem to="/" onClick={onLogout}>
+                로그아웃
+              </DropdownItem>
+            </Dropdown>
+          )}
+        </ProfileWrapper>
+      ) : (
+        <AuthButton to="/login">로그인 / 회원가입</AuthButton>
+      )}
     </Nav>
   );
 };
@@ -36,6 +68,7 @@ const Nav = styled.nav`
   box-sizing: border-box;
   background-color: ${({ theme }) => theme.color.white};
   border-bottom: 1px solid ${({ theme }) => theme.color.gray200};
+  position: relative;
 `;
 
 const Logo = styled(Link)`
@@ -43,7 +76,7 @@ const Logo = styled(Link)`
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  margin-left: 30px;
+  margin-left: 40px;
 
   span {
     ${({ theme }) => theme.font.xxl.bold};
@@ -83,5 +116,64 @@ const AuthButton = styled(Link)`
 
   &:hover {
     background-color: ${({ theme }) => theme.color.primary100};
+  }
+`;
+
+const ProfileWrapper = styled.div`
+  display: flex;
+  gap: 15px;
+  margin-right: 40px;
+  flex-direction: row;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  #userIcon {
+    width: 50px;
+  }
+`;
+
+const ProfileImage = styled.div<{ src?: string }>`
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: ${({ src, theme }) =>
+    src ? `url(${src}) center/cover` : theme.color.gray300};
+  margin-bottom: 4px;
+`;
+
+const ProfileName = styled.div`
+  ${({ theme }) => theme.font.md.medium};
+  color: ${({ theme }) => theme.color.gray700};
+`;
+
+const Dropdown = styled.div`
+  width: 170px;
+  position: absolute;
+  top: 90px;
+  left: -42px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 100;
+  align-items: center;
+
+  svg {
+    width: 80px;
+    margin-top: 20px;
+    margin-bottom: 8px;
+  }
+`;
+
+const DropdownItem = styled(Link)`
+  padding: 12px 16px;
+  text-decoration: none;
+  color: ${({ theme }) => theme.color.gray700};
+  ${({ theme }) => theme.font.md.medium};
+
+  &:hover {
+    background-color: ${({ theme }) => theme.color.gray100};
   }
 `;
