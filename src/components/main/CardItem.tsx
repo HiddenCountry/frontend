@@ -1,11 +1,14 @@
 import React from "react";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 import { ReactComponent as Boomark } from "../../assets/main/Bookmark.svg";
 import { ReactComponent as Airplane } from "../../assets/main/Airplane.svg";
 
 const CardItem: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
-    <Card>
+    <Card onClick={() => navigate("place")}>
       <BookmarkButton>
         <Boomark />
       </BookmarkButton>
@@ -30,11 +33,11 @@ const CardItem: React.FC = () => {
 export default CardItem;
 
 const Card = styled.div`
-  width: 240px;
+  width: 230px;
   background: ${({ theme }) => theme.color.white};
   border-radius: 24px;
   margin-bottom: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: relative;
 `;
 
@@ -49,12 +52,14 @@ const ImageBox = styled.div`
   background: #f1f3f6;
   height: 150px;
   border-radius: 24px 24px 0px 0px;
-  margin-bottom: 12px;
 `;
 
 const Content = styled.div`
+  background: ${({ theme }) => theme.color.white};
   font-size: 13px;
-  margin: 12px 16px;
+  padding: 12px 16px;
+  border-radius: 0px 0px 24px 24px;
+
   text-align: left;
 `;
 
@@ -63,7 +68,7 @@ const Title = styled.div`
   margin-bottom: 6px;
 `;
 const Meta = styled.div`
-  ${({ theme }) => theme.font.md.medium};
+  ${({ theme }) => theme.font.sm.medium};
   color: #666;
   margin-bottom: 8px;
 
