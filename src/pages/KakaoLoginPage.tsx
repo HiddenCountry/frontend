@@ -5,8 +5,14 @@ import { ReactComponent as Callout } from "../assets/login/Callout.svg";
 import { ReactComponent as KakaoLogo } from "../assets/login/KakaoLogo.svg";
 import { ReactComponent as LoginIcon } from "../assets/login/LoginIcon.svg";
 
-const LoginPage: React.FC = () => {
+const KakaoLoginPage: React.FC = () => {
   const navigate = useNavigate();
+
+  // 카카오 로그인
+  const KAKAO_CLIENT_ID = process.env.REACT_APP_KAKAO_CLIENT_ID;
+  const KAKAO_REDIRECT_URI = process.env.REACT_APP_KAKAO_REDIRECT_URI;
+
+  const kakaoLogin = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${KAKAO_CLIENT_ID}&redirect_uri=${KAKAO_REDIRECT_URI}`;
 
   return (
     <Container>
@@ -17,7 +23,7 @@ const LoginPage: React.FC = () => {
         </Title>
         <StyledLoginIcon />
 
-        <KakaoButton onClick={() => navigate("/signup")}>
+        <KakaoButton onClick={() => (window.location.href = kakaoLogin)}>
           <Callout id="callout" />
           <span>
             <KakaoLogo /> 카카오로 시작하기
@@ -28,7 +34,7 @@ const LoginPage: React.FC = () => {
   );
 };
 
-export default LoginPage;
+export default KakaoLoginPage;
 
 const Container = styled.div`
   background: ${({ theme }) => theme.color.gray100};

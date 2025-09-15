@@ -1,4 +1,4 @@
-const baseURL = "http://3.36.94.121:8080";
+const baseURL = process.env.REACT_APP_BASE_URL;
 
 const baseHeaders = {
   "Content-Type": "application/json",
