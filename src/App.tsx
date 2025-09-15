@@ -16,6 +16,7 @@ import NearPlaceDetail from "./pages/NearPlaceDetail";
 import KakaoRedirectPage from "./pages/KakaoRedirectPage";
 import PlaceRegistrationPage from "./pages/PlaceRegistrationPage";
 import MyPage from "./pages/MyPage";
+import MapPage from "./pages/MapPage";
 
 
 function App() {
@@ -91,7 +92,7 @@ function App() {
             <Route path="/main/place/near" element={<NearPlaceDetail />} />
             <Route path="/register" element={<PlaceRegistrationPage />} />
             <Route path="/mypage" element={<MyPage />} />
-
+            <Route path="/map" element={<MapPage />} />
           </Routes>
         </div>
       </BrowserRouter>
