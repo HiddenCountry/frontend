@@ -16,12 +16,24 @@ const HomePage: React.FC = () => {
   const [hoveredContinent, setHoveredContinent] = useState<string | null>(null);
 
   const continents = [
-    { name: "북아메리카", icon: NorthAmerica, top: 150, left: 200 },
-    { name: "남아메리카", icon: SouthAmerica, top: 345, left: 252 },
+    {
+      name: "북아메리카",
+      icon: NorthAmerica,
+      top: 150,
+      left: 200,
+      link: "/main",
+    },
+    {
+      name: "남아메리카",
+      icon: SouthAmerica,
+      top: 345,
+      left: 252,
+      link: "/main",
+    },
     { name: "아시아", icon: Asia, top: 149, left: 693, link: "/asia" },
-    { name: "유럽", icon: Europe, top: 126, left: 470 },
-    { name: "아프리카", icon: Africa, top: 307, left: 470 },
-    { name: "오세아니아", icon: Oceania, top: 350, left: 800 },
+    { name: "유럽", icon: Europe, top: 126, left: 470, link: "/main" },
+    { name: "아프리카", icon: Africa, top: 307, left: 470, link: "/main" },
+    { name: "오세아니아", icon: Oceania, top: 350, left: 800, link: "/main" },
   ];
 
   // 조사 붙여주는 함수

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { patchNickname } from "../api/Kakao";
 
 const SignupPage: React.FC = () => {
   const [nickname, setNickname] = useState("");
@@ -20,13 +21,24 @@ const SignupPage: React.FC = () => {
     setError(valid ? "" : "특수문자 제외 최대 6자까지 가능해요");
   };
 
-  const handleConfirm = () => {
-    if (!isValid) {
-      return;
-    }
-    navigate("/signup/complete");
-  };
+  const handleConfirm = async () => {
+    if (!isValid) return;
 
+    try {
+      const res = await patchNickname({ nickname });
+
+      if (res.isSuccess) {
+        console.log("닉네임 변경 성공:", res.data);
+        localStorage.setItem("nickname", nickname);
+        navigate("/signup/complete");
+      } else {
+        alert(res.message || "닉네임 변경에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("닉네임 변경 오류:", error);
+      alert("닉네임 변경에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
   return (
     <Container>
       <Card>

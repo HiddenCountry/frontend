@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled, { useTheme } from "styled-components";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ReactComponent as Japan } from "../assets/home/asia/Japan.svg";
 import { ReactComponent as China } from "../assets/home/asia/China.svg";
@@ -13,17 +13,18 @@ import { ReactComponent as Caution } from "../assets/home/Caution.svg";
 
 const AsiaHomePage: React.FC = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
 
   const [hovered, setHovered] = useState<string | null>(null);
 
   const countries = [
-    { name: "터키", key: "turkey" },
-    { name: "몽골", key: "mongolia" },
-    { name: "중화/중국", key: "china" },
-    { name: "일본", key: "japan" },
-    { name: "아랍", key: "arab" },
-    { name: "인도", key: "india" },
-    { name: "동남아시아", key: "southeastAsia" },
+    { name: "터키", key: "turkey", link: "/main" },
+    { name: "몽골", key: "mongolia", link: "/main" },
+    { name: "중화/중국", key: "china", link: "/main" },
+    { name: "일본", key: "japan", link: "/main" },
+    { name: "아랍", key: "arab", link: "/main" },
+    { name: "인도", key: "india", link: "/main" },
+    { name: "동남아시아", key: "southeastAsia", link: "/main" },
   ];
 
   // 조사 붙여주는 함수
@@ -79,6 +80,9 @@ const AsiaHomePage: React.FC = () => {
               $highlight={hovered === "터키"}
               onMouseEnter={() => setHovered("터키")}
               onMouseLeave={() => setHovered(null)}
+              onClick={() =>
+                navigate(countries.find((c) => c.name === "터키")?.link || "/")
+              }
               style={{
                 position: "relative",
                 borderTopLeftRadius: "32px",
@@ -91,6 +95,11 @@ const AsiaHomePage: React.FC = () => {
               $highlight={hovered === "중화/중국"}
               onMouseEnter={() => setHovered("중화/중국")}
               onMouseLeave={() => setHovered(null)}
+              onClick={() =>
+                navigate(
+                  countries.find((c) => c.name === "중화/중국")?.link || "/"
+                )
+              }
               style={{
                 gridColumn: "span 2",
                 width: "460px",
@@ -104,6 +113,9 @@ const AsiaHomePage: React.FC = () => {
               $highlight={hovered === "일본"}
               onMouseEnter={() => setHovered("일본")}
               onMouseLeave={() => setHovered(null)}
+              onClick={() =>
+                navigate(countries.find((c) => c.name === "일본")?.link || "/")
+              }
               style={{
                 gridRow: "span 2",
                 width: "225px",
@@ -121,6 +133,9 @@ const AsiaHomePage: React.FC = () => {
               onMouseEnter={() => setHovered("아랍")}
               onMouseLeave={() => setHovered(null)}
               style={{ borderBottomLeftRadius: "32px" }}
+              onClick={() =>
+                navigate(countries.find((c) => c.name === "아랍")?.link || "/")
+              }
             >
               <Arab />
             </GridItem>
@@ -128,6 +143,9 @@ const AsiaHomePage: React.FC = () => {
               $highlight={hovered === "인도"}
               onMouseEnter={() => setHovered("인도")}
               onMouseLeave={() => setHovered(null)}
+              onClick={() =>
+                navigate(countries.find((c) => c.name === "인도")?.link || "/")
+              }
             >
               <India />
             </GridItem>
@@ -135,6 +153,11 @@ const AsiaHomePage: React.FC = () => {
               $highlight={hovered === "동남아시아"}
               onMouseEnter={() => setHovered("동남아시아")}
               onMouseLeave={() => setHovered(null)}
+              onClick={() =>
+                navigate(
+                  countries.find((c) => c.name === "동남아시아")?.link || "/"
+                )
+              }
             >
               <SoutheastAsia />
             </GridItem>
@@ -144,6 +167,9 @@ const AsiaHomePage: React.FC = () => {
             $highlight={hovered === "몽골"}
             onMouseEnter={() => setHovered("몽골")}
             onMouseLeave={() => setHovered(null)}
+            onClick={() =>
+              navigate(countries.find((c) => c.name === "몽골")?.link || "/")
+            }
           >
             <Mongolia />
           </MongoliaGrid>
