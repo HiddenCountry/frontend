@@ -16,7 +16,7 @@ export const fetchNearbyPlaces = async (
         numOfRows: 20,
         pageNo: 1,
         MobileOS: "ETC",
-        MobileApp: "AppTest",
+        MobileApp: "hiddencountry",
         _type: "json",
         mapX,
         mapY,
