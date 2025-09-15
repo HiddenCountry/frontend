@@ -14,6 +14,9 @@ import SignupCompletePage from "./pages/SignupCompletePage";
 import PlaceDetail from "./pages/PlaceDetail";
 import NearPlaceDetail from "./pages/NearPlaceDetail";
 import KakaoRedirectPage from "./pages/KakaoRedirectPage";
+import PlaceRegistrationPage from "./pages/PlaceRegistrationPage";
+import MyPage from "./pages/MyPage";
+
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -86,6 +89,9 @@ function App() {
             />
             <Route path="/main/place" element={<PlaceDetail />} />
             <Route path="/main/place/near" element={<NearPlaceDetail />} />
+            <Route path="/register" element={<PlaceRegistrationPage />} />
+            <Route path="/mypage" element={<MyPage />} />
+
           </Routes>
         </div>
       </BrowserRouter>
