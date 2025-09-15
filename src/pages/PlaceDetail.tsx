@@ -1,10 +1,18 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import styled from "styled-components";
 import { ReactComponent as AirPlane } from "../assets/main/Airplane.svg";
 import { ReactComponent as AirPlaneReivew } from "../assets/main/AirplaneReview.svg";
 import { ReactComponent as BookmarkWhite } from "../assets/main/BookmarkWhite.svg";
 import NearCard from "../components/place/NearCard";
 import ReviewCard from "../components/place/ReviewCard";
+import { fetchNearbyPlaces } from "../api/TourApi";
+
+interface Place {
+  title: string;
+  addr1: string;
+  firstimage: string;
+  dist: string;
+}
 
 const PlaceDetail: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
@@ -16,6 +24,10 @@ const PlaceDetail: React.FC = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const nearbyRef = useRef<HTMLDivElement>(null);
   const reviewRef = useRef<HTMLDivElement>(null);
+
+  // 이미지
+  const [images, setImages] = useState<string[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   // 탭 클릭 시 해당 섹션으로 스크롤
   const handleTabClick = (tab: typeof activeTab) => {
@@ -29,16 +41,88 @@ const PlaceDetail: React.FC = () => {
     target?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  // API 호출
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const res = await fetch(
+          "https://apis.data.go.kr/B551011/KorService2/detailImage2?serviceKey=c9hiuEIQHvK%2FVddDwn5RZKMwJ96BDrFFkG%2Ft0kV0%2FsmxGS%2BqaImJtp1YtlsLD0sF0L3DgME71frj8EQXt6lkqw%3D%3D&MobileApp=AppTest&MobileOS=ETC&pageNo=1&numOfRows=30&contentId=126128&imageYN=Y&_type=json"
+        );
+        const data = await res.json();
+        const items = data.response.body.items.item;
+        const urls = items.map((img: any) => img.originimgurl);
+        setImages(urls);
+      } catch (error) {
+        console.error("이미지 불러오기 실패:", error);
+      }
+    };
+
+    fetchImages();
+  }, []);
+
+  // 이미지 이동
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  // 인근관광지 api 연동
+  const [places, setPlaces] = useState<Place[]>([]);
+
+  useEffect(() => {
+    const fetchPlaces = async () => {
+      try {
+        const res = await fetch(
+          "https://apis.data.go.kr/B551011/KorService2/locationBasedList2?serviceKey=c9hiuEIQHvK%2FVddDwn5RZKMwJ96BDrFFkG%2Ft0kV0%2FsmxGS%2BqaImJtp1YtlsLD0sF0L3DgME71frj8EQXt6lkqw%3D%3D&numOfRows=30&pageNo=1&MobileOS=ETC&MobileApp=AppTest&_type=json&mapX=127.09206&mapY=37.87925&arrange=C&radius=20000&contentTypeId=39"
+        );
+        const data = await res.json();
+
+        // Optional chaining + 기본값
+        const items = data?.response?.body?.items?.item ?? [];
+
+        // Place 타입 맞게 매핑
+        const mappedPlaces: Place[] = items.map((item: any) => ({
+          title: item.title || "제목 없음",
+          addr1: item.addr1 || "주소 없음",
+          firstimage: item.firstimage || "",
+          dist: item.dist || "",
+        }));
+
+        setPlaces(mappedPlaces);
+      } catch (error) {
+        console.error("인근 관광지 불러오기 실패:", error);
+        setPlaces([]);
+      }
+    };
+
+    fetchPlaces();
+  }, []);
+
   return (
     <Container>
       <Content>
         <TopSection>
           <ImageWrapper>
-            <MainImage
-              src="https://placehold.co/800x400"
-              alt="니지모리 스튜디오"
-            />
-            <ImageIndex>1 / 26</ImageIndex>
+            {images.length > 0 && (
+              <>
+                <MainImage
+                  src={images[currentIndex]}
+                  alt={`관광지 이미지 ${currentIndex + 1}`}
+                />
+                <ArrowButton left onClick={handlePrev}>
+                  ◀
+                </ArrowButton>
+                <ArrowButton right onClick={handleNext}>
+                  ▶
+                </ArrowButton>
+                <ImageIndex>
+                  {currentIndex + 1} / {images.length}
+                </ImageIndex>
+              </>
+            )}
           </ImageWrapper>
           <InfoCard>
             <Chip>chip</Chip>
@@ -110,13 +194,16 @@ const PlaceDetail: React.FC = () => {
                 <NearTab>숙소</NearTab>
                 <NearTab>기타</NearTab>
               </NearTabs>
-              <NearCardRow>
-                <NearCard
-                  title="인근관광지"
-                  subtitle="서울특별시 어쩍구 저꺼주"
-                  imageUrl=""
-                />
-              </NearCardRow>
+              <NearCardBox>
+                {places.map((place, idx) => (
+                  <NearCard
+                    key={idx}
+                    title={place.title}
+                    subtitle={place.addr1}
+                    imageUrl={place.firstimage || "https://placehold.co/150"}
+                  />
+                ))}
+              </NearCardBox>
             </Section>
 
             {/* 리뷰 */}
@@ -204,7 +291,6 @@ const MainImage = styled.img`
   width: 100%;
   height: 400px;
   border-radius: 24px;
-  border: 1px solid #555;
 `;
 
 const ImageIndex = styled.div`
@@ -216,6 +302,28 @@ const ImageIndex = styled.div`
   padding: 4px 8px;
   border-radius: 8px;
   font-size: 12px;
+`;
+const ArrowButton = styled.button<{ left?: boolean; right?: boolean }>`
+  position: absolute;
+  top: 50%;
+  ${({ left }) => left && `left: 12px;`}
+  ${({ right }) => right && `right: 12px;`}
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border: none;
+  font-size: 20px;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.7);
+  }
 `;
 
 const InfoCard = styled.div`
@@ -370,9 +478,25 @@ const NearTab = styled.div<{ active?: boolean }>`
   color: ${({ active }) => (active ? "#fff" : "#333")};
   cursor: pointer;
 `;
-const NearCardRow = styled.div`
+const NearCardBox = styled.div`
+  max-width: 600px;
   display: flex;
   gap: 20px;
+  width: 100%;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 10px;
+
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f5f5f5;
+  }
 `;
 
 const Rating = styled.div`

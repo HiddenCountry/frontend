@@ -3,27 +3,49 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { ReactComponent as Boomark } from "../../assets/main/Bookmark.svg";
 import { ReactComponent as Airplane } from "../../assets/main/Airplane.svg";
+interface CardItemProps {
+  title: string;
+  addr1: string;
+  reviewScore: number;
+  reviewCount: number;
+  hashtags: string[];
+  isBookmarked: boolean;
+  firstImage?: string;
+}
 
-const CardItem: React.FC = () => {
+const CardItem: React.FC<CardItemProps> = ({
+  title,
+  addr1,
+  reviewScore,
+  reviewCount,
+  hashtags,
+  isBookmarked,
+  firstImage,
+}) => {
   const navigate = useNavigate();
 
   return (
     <Card onClick={() => navigate("place")}>
-      <BookmarkButton>
-        <Boomark />
-      </BookmarkButton>
-      <ImageBox />
+      <BookmarkButton>{isBookmarked && <Boomark />}</BookmarkButton>
+      <ImageBox
+        style={{
+          backgroundImage: `url(${firstImage})`,
+          backgroundSize: "cover",
+        }}
+      />
       <Content>
-        <Title>니지모리 스튜디오</Title>
+        <Title>{title}</Title>
         <Meta>
           <Airplane />
-          <span>4.9 리뷰 342</span>
+          <span>
+            {reviewScore} 리뷰 {reviewCount}
+          </span>
         </Meta>
-        <Meta>경기 동두천시 천보산로 567-12</Meta>
+        <Meta>{addr1}</Meta>
         <Tags>
-          <Tag blue>외국 느낌 낭낭</Tag>
-          <Tag>chip</Tag>
-          <Tag>chip</Tag>
+          {hashtags.map((tag, idx) => (
+            <Tag key={idx}>{tag}</Tag>
+          ))}
         </Tags>
       </Content>
     </Card>
