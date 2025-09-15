@@ -1,20 +1,58 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import FilterSidebar from "../components/main/FilterSidebar";
 import SearchBar from "../components/main/SearchBar";
-import CardGrid from "../components/main/CardGrid";
 import { ReactComponent as Japan } from "../assets/main/Japan.svg";
 import { ReactComponent as PageIcon } from "../assets/main/Pagination.svg";
 import { ReactComponent as PageEndIcon } from "../assets/main/PaginationEnd.svg";
+import CardItem from "../components/main/CardItem";
+import { getPlaces } from "../api/Place";
+
+interface Place {
+  id: number;
+  firstImage: string;
+  title: string;
+  addr1: string;
+  reviewScoreAverage: number;
+  reviewCount: number;
+  hashtags: string[];
+  isBookmarked: boolean;
+}
 
 const MainPage: React.FC = () => {
-  const cards = Array.from({ length: 23 }, (_, i) => i); // 예시 카드 23개
+  const [places, setPlaces] = useState<Place[]>([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const cardsPerPage = 8;
+  const cardsPerPage = 9;
 
-  const totalPages = Math.ceil(cards.length / cardsPerPage);
+  const fetchPlaces = async () => {
+    try {
+      const res = await getPlaces(
+        currentPage,
+        cardsPerPage,
+        ["SEOUL"], // areaCode
+        [], // contentType
+        [], // season
+        "EUROPE", // countryRegion
+        "REVIEW_COUNT_DESC", // sortType
+        0, // userLat
+        0, // userLng
+        "" // title
+      );
+      if (res?.data?.content) {
+        setPlaces(res.data.content);
+        setTotalPages(res.data.totalPage);
+      }
+    } catch (error) {
+      console.error("장소 가져오기 실패", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPlaces();
+  }, [currentPage]);
 
   return (
     <Container>
@@ -40,7 +78,29 @@ const MainPage: React.FC = () => {
             <Sequence>
               <span>리뷰 많은 순</span> | 거리순 | 평점순 | 조회순
             </Sequence>
-            <CardGrid />
+            <CardBox>
+              <CardItem
+                title="니지모리"
+                addr1="서울특별시 어쩌구 저꺼구"
+                reviewScore={5.0} // 숫자
+                reviewCount={5} // 숫자
+                hashtags={["외국 느낌 낭낭", "chip"]} // 문자열 배열
+                isBookmarked={true} // boolean
+                firstImage="" // 빈 문자열 가능
+              />
+              {places.map((place) => (
+                <CardItem
+                  key={place.id} // 고유 key
+                  title={place.title} // 장소 이름
+                  addr1={place.addr1} // 주소
+                  reviewScore={place.reviewScoreAverage} // 리뷰 점수
+                  reviewCount={place.reviewCount} // 리뷰 수
+                  hashtags={place.hashtags} // 해시태그 배열
+                  isBookmarked={place.isBookmarked} // 즐겨찾기 여부
+                  firstImage={place.firstImage} // 이미지 URL (없을 수도 있음)
+                />
+              ))}
+            </CardBox>
           </RightSection>
         </Content>
         <Pagination>
@@ -133,7 +193,11 @@ const Sequence = styled.div`
     color: ${({ theme }) => theme.color.gray800};
   }
 `;
-
+const CardBox = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+`;
 const Pagination = styled.div`
   display: flex;
   gap: 15px;
