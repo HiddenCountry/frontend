@@ -13,6 +13,7 @@ import SignupPage from "./pages/SignupPage";
 import SignupCompletePage from "./pages/SignupCompletePage";
 import PlaceRegistrationPage from "./pages/PlaceRegistrationPage";
 import MyPage from "./pages/MyPage";
+import MapPage from "./pages/MapPage";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
             <Route path="/signup/complete" element={<SignupCompletePage />} />
             <Route path="/register" element={<PlaceRegistrationPage />} />
             <Route path="/mypage" element={<MyPage />} />
+            <Route path="/map" element={<MapPage />} />
           </Routes>
         </div>
       </BrowserRouter>
