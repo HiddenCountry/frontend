@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import type { Theme } from "../styles/theme";
 import {
   getPlacesOnMap,
   PlaceMapItem,
@@ -215,7 +216,8 @@ const KakaoMap: React.FC<{
   showList: boolean;
   onUserPosition?: (pos: Coord) => void;
   recenterTo?: Coord | null;
-}> = ({ results, onIdleChange, showList, onUserPosition, recenterTo }) => {
+  onPinClick?: (id: number) => void;
+}> = ({ results, onIdleChange, showList, onUserPosition, recenterTo, onPinClick }) => {
   const loaded = useKakaoLoader(KAKAO_JS_KEY);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const mapRef = React.useRef<any>(null);
@@ -305,6 +307,14 @@ const KakaoMap: React.FC<{
       el.style.flexDirection = "column";
       el.style.alignItems = "center";
       el.style.transform = "translate(-50%, -100%)";
+      el.style.cursor = "pointer";
+
+      el.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (typeof (p as any).id !== "undefined") {
+        onPinClick?.((p as any).id as number);
+      }
+    });
 
       // 핀(둥근 배경) + 국기 이미지
       const pin = document.createElement("div");
@@ -404,6 +414,36 @@ const MapPage: React.FC = () => {
   const [error, setError] = React.useState<string | null>(null);
   // 변경 감지(버튼 노출 트리거)
   const [dirty, setDirty] = React.useState(false);
+  // 현재 강조할 카드 id
+  const [activeId, setActiveId] = React.useState<number | null>(null);
+    // 리스트 아이템 DOM 참조 저장소
+  const itemRefs = React.useRef<Record<number, HTMLDivElement | null>>({});
+
+  // 각 아이템에 ref 바인딩하는 헬퍼
+  const bindItemRef = React.useCallback(
+    (id: number) => (el: HTMLDivElement | null) => {
+      itemRefs.current[id] = el;
+    },
+    []
+  );
+
+  // 핀 클릭 시: 강조 + 스크롤
+  const handlePinClick = React.useCallback((id: number) => {
+    setActiveId(id);
+    // DOM 업데이트 이후 스크롤을 보장하기 위해 microtask 지연
+    setTimeout(() => {
+      const node = itemRefs.current[id];
+      if (node) {
+        node.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 0);
+  }, []);
+
+  React.useEffect(() => {
+    if (activeId == null) return;
+    const exists = results.some(r => (r as any).id === activeId);
+    if (!exists) setActiveId(null);
+  }, [results, activeId]);
 
   const toggleCat = (v: string) =>
     setCatSel((prev) => {
@@ -531,8 +571,14 @@ const MapPage: React.FC = () => {
               {results.map((p) => {
                 const score = p.reviewScoreAverage?.toFixed?.(1) ?? "0.0";
                 const tags = tagsFromPlace(p);
+                const pid = (p as any).id as number;
                 return (
-                  <ListCard key={p.id}>
+                  <ListCard
+                    key={pid}
+                    ref={bindItemRef(pid)}
+                    $active={activeId === pid}
+                    aria-current={activeId === pid ? "true" : undefined}
+                  >
                     <CardTop>
                       <Title>{p.title || "title"}</Title>
 
@@ -617,6 +663,7 @@ const MapPage: React.FC = () => {
           showList={showList}
           onUserPosition={setUserPos}
           recenterTo={recenterTo}
+          onPinClick={handlePinClick}
         />
 
         {/* 현재 위치로 돌아가기 */}
@@ -631,7 +678,6 @@ const MapPage: React.FC = () => {
 };
 
 export default MapPage;
-
 /* ============ 스타일 ============ */
 const Page = styled.div`
   min-height: 100vh;
@@ -644,8 +690,13 @@ const Stage = styled.div`
   height: 720px;
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid #e5e7eb;
-  background: radial-gradient(ellipse at top, #f0f7ff, #eaf1ec 40%, #edf2f7);
+  border: 1px solid ${({ theme }) => theme.color.gray200};
+  background: radial-gradient(
+    ellipse at top,
+    ${({ theme }) => theme.color.primary50},
+    ${({ theme }) => theme.color.gray100} 40%,
+    ${({ theme }) => theme.color.gray100}
+  );
 `;
 const MapLayer = styled.div`
   position: absolute;
@@ -675,18 +726,19 @@ const DropdownBtn = styled.button<{ $active?: boolean; $open?: boolean }>`
   gap: 8px;
   padding: 10px 14px;
   border-radius: 14px;
-  background: #fff;
-  border: 1.5px solid ${({ $active }) => ($active ? "#64B5F6" : "#e5e7eb")};
+  background: ${({ theme }) => theme.color.white};
+  border: 1.5px solid
+    ${({ theme, $active }) => ($active ? theme.color.primary300 : theme.color.gray200)};
   box-shadow: 0 6px 18px rgba(0,0,0,0.06);
   font-weight: 800;
-  color: ${({ $active }) => ($active ? "#1976D2" : "#334155")};
+  color: ${({ theme, $active }) => ($active ? theme.color.primary700 : theme.color.gray800)};
   .label { font-weight: 800; }
 `;
 const Caret = styled.span<{ $open?: boolean }>`
   width: 0; height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 6px solid #334155;
+  border-top: 6px solid ${({ theme }) => theme.color.gray800};
   transform: rotate(${(p) => (p.$open ? "180deg" : "0deg")});
   transition: transform 120ms ease;
 `;
@@ -695,8 +747,8 @@ const Menu = styled.ul<{ $open?: boolean }>`
   top: calc(100% + 8px);
   left: 0;
   width: 110px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: ${({ theme }) => theme.color.white};
+  border: 1px solid ${({ theme }) => theme.color.gray200};
   border-radius: 14px;
   box-shadow: 0 14px 28px rgba(0,0,0,0.08);
   padding: 6px;
@@ -715,9 +767,9 @@ const MenuItem = styled.li<{ $selected?: boolean }>`
   padding: 8px 12px;
   border-radius: 10px;
   font-weight: 700;
-  color: ${(p) => (p.$selected ? "#1976D2" : "#334155")};
-  background: ${(p) => (p.$selected ? "#E3F2FD" : "transparent")};
-  &:hover { background: #F3F5F9; }
+  color: ${({ theme, $selected }) => ($selected ? theme.color.primary700 : theme.color.gray800)};
+  background: ${({ theme, $selected }) => ($selected ? theme.color.primary50 : "transparent")};
+  &:hover { background: ${({ theme }) => theme.color.gray100}; }
 `;
 
 /* 힌트/빈 결과 토스트 */
@@ -729,11 +781,11 @@ const Hint = styled.div`
   width: 280px;
   padding: 16px;
   border-radius: 20px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: ${({ theme }) => theme.color.white};
+  border: 1px solid ${({ theme }) => theme.color.gray200};
   box-shadow: 0 10px 30px rgba(0,0,0,0.08);
   font-weight: 800;
-  color: #0f172a;
+  color: ${({ theme }) => theme.color.gray900};
 `;
 
 /* 좌측 목록 */
@@ -742,7 +794,7 @@ const LeftPanel = styled.aside`
   left: 24px;
   z-index: 20;
   width: 320px;
-  background: #fff;
+  background: ${({ theme }) => theme.color.white};
   border-radius: 24px;
 `;
 const ChipRow = styled.div`
@@ -759,9 +811,9 @@ const Chip = styled.button`
   border-radius: 10px;
   font-size: 12px;
   font-weight: 800;
-  color: #fff;
-  background: #42A5F5;
-  border: 1px solid #90CAF9;
+  color: ${({ theme }) => theme.color.white};
+  background: ${({ theme }) => theme.color.primary400};
+  border: 1px solid ${({ theme }) => theme.color.primary200};
   cursor: pointer;
 `;
 const Badge = styled.span`
@@ -769,8 +821,8 @@ const Badge = styled.span`
   align-items: center;
   padding: 6px 10px;
   border-radius: 10px;
-  background: #F3F5F9;
-  color: #6C727E;
+  background: ${({ theme }) => theme.color.gray100};
+  color: ${({ theme }) => theme.color.gray600};
   font-weight: 700;
   font-size: 12px;
 `;
@@ -784,9 +836,15 @@ const CardList = styled.div`
 `;
 
 /* 각 아이템 */
-const ListCard = styled.div`
+const ListCard = styled.div<{ $active?: boolean }>`
   position: relative;
-  padding: 0 0 16px;
+  padding: 10px 10px 16px;
+  border-radius: 14px;
+
+  /* 활성 카드 하이라이트 */
+  background: ${({ theme, $active }) => ($active ? theme.color.primary50 : "transparent")};
+  box-shadow: ${({ $active }) => ($active ? "0 4px 16px rgba(0,0,0,0.08)" : "none")};
+  transition: background 120ms ease, outline-color 120ms ease, box-shadow 120ms ease;
 `;
 const CardTop = styled.div`
   position: relative;
@@ -798,7 +856,7 @@ const Title = styled.h3`
   font-size: 20px;
   line-height: 1.2;
   font-weight: 800;
-  color: #191F28;
+  color: ${({ theme }) => theme.color.gray900};
 `;
 const MetaRow = styled.div`
   display: flex;
@@ -812,11 +870,11 @@ const MetaPrimary = styled.span`
   align-items: center;
   gap: 6px;
   font-weight: 700;
-  color: #191F28;
+  color: ${({ theme }) => theme.color.gray900};
   svg { width: 14px; height: 14px; transform: translateY(1px); }
 `;
 const MetaMuted = styled.span`
-  color: #B4BBC7;
+  color: ${({ theme }) => theme.color.gray400};
   font-size: 16px;
 `;
 const TagRow = styled.div`
@@ -830,8 +888,8 @@ const TagChip = styled.span`
   height: 24px;
   padding: 0 8px;
   border-radius: 10px;
-  background: #E3F2FD;
-  color: #1E88E5;
+  background: ${({ theme }) => theme.color.primary50};
+  color: ${({ theme }) => theme.color.primary600};
   font-weight: 700;
   font-size: 12px;
 `;
@@ -852,7 +910,7 @@ const MediaRow = styled.div`
 const Media = styled.div`
   height: 96px;
   border-radius: 16px;
-  background: #EBEEF3;
+  background: ${({ theme }) => theme.color.gray200};
 `;
 const MoreBtn = styled.button`
   position: absolute;
@@ -862,9 +920,9 @@ const MoreBtn = styled.button`
   width: 32px;
   height: 32px;
   border-radius: 999px;
-  border: 1px solid #EBEEF3;
-  background: #fff;
-  color: #6C727E;
+  border: 1px solid ${({ theme }) => theme.color.gray200};
+  background: ${({ theme }) => theme.color.white};
+  color: ${({ theme }) => theme.color.gray600};
   font-size: 16px;
   font-weight: 700;
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
@@ -873,7 +931,7 @@ const MoreBtn = styled.button`
 const Divider = styled.hr`
   border: 0;
   height: 1px;
-  background: #EBEEF3;
+  background: ${({ theme }) => theme.color.gray200};
   margin: 16px 0 0;
 `;
 
@@ -885,13 +943,13 @@ const CoordToast = styled.div`
   z-index: 31;
   padding: 10px 12px;
   border-radius: 12px;
-  background: #fff;
-  border: 1px solid #EBEEF3;
+  background: ${({ theme }) => theme.color.white};
+  border: 1px solid ${({ theme }) => theme.color.gray200};
   box-shadow: 0 10px 20px rgba(0,0,0,0.06);
   font-size: 12px;
-  color: #585F69;
+  color: ${({ theme }) => theme.color.gray700};
   line-height: 1.35;
-  b { display: block; margin-bottom: 4px; color: #191F28; }
+  b { display: block; margin-bottom: 4px; color: ${({ theme }) => theme.color.gray900}; }
 `;
 
 /* 현재 위치로 돌아가기 버튼 */
@@ -905,8 +963,8 @@ const RecenterBtn = styled.button`
   gap: 8px;
   padding: 10px 14px;
   border-radius: 14px;
-  background: #0ea5e9;
-  color: #fff;
+  background: ${({ theme }) => theme.color.primary500};
+  color: ${({ theme }) => theme.color.white};
   border: none;
   box-shadow: 0 10px 28px rgba(0,0,0,0.15);
   font-weight: 800;
@@ -923,11 +981,11 @@ const SearchBtn = styled.button`
   z-index: 32;
   padding: 10px 14px;
   border-radius: 14px;
-  border: 1px solid #BBDEFB;
-  background: #fff;
+  border: 1px solid ${({ theme }) => theme.color.primary100};
+  background: ${({ theme }) => theme.color.white};
   box-shadow: 0 10px 24px rgba(0,0,0,0.08);
   font-weight: 800;
-  color: #1565C0;
+  color: ${({ theme }) => theme.color.primary800};
   cursor: pointer;
   &:disabled { opacity: 0.6; cursor: not-allowed; }
 `;
@@ -937,5 +995,5 @@ const StarIcon = styled(AirplaneSvg)`
   height: 14px;
   display: inline-block;
   vertical-align: middle;
-  color: #2196F3;
+  color: ${({ theme }) => theme.color.primary500};
 `;
