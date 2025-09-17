@@ -18,18 +18,13 @@ const AsiaHomePage: React.FC = () => {
   const [hovered, setHovered] = useState<string | null>(null);
 
   const countries = [
-    { name: "터키", key: "turkey", link: "/main", countryRegion: "TURKEY" },
-    { name: "몽골", key: "mongolia", link: "/main", countryRegion: "MONGOLIA" },
-    { name: "중화/중국", key: "china", link: "/main", countryRegion: "CHINA" },
-    { name: "일본", key: "japan", link: "/main", countryRegion: "JAPAN" },
-    { name: "아랍", key: "arab", link: "/main", countryRegion: "ARAB" },
-    { name: "인도", key: "india", link: "/main", countryRegion: "INDIA" },
-    {
-      name: "동남아시아",
-      key: "southeastAsia",
-      link: "/main",
-      countryRegion: "SOUTHEAST_ASIA",
-    },
+    { name: "터키", key: "turkey", link: "/main" },
+    { name: "몽골", key: "mongolia", link: "/main" },
+    { name: "중화/중국", key: "china", link: "/main" },
+    { name: "일본", key: "japan", link: "/main" },
+    { name: "아랍", key: "arab", link: "/main" },
+    { name: "인도", key: "india", link: "/main" },
+    { name: "동남아시아", key: "southeastAsia", link: "/main" },
   ];
 
   // 조사 붙여주는 함수
@@ -86,12 +81,7 @@ const AsiaHomePage: React.FC = () => {
               onMouseEnter={() => setHovered("터키")}
               onMouseLeave={() => setHovered(null)}
               onClick={() =>
-                navigate(
-                  countries.find((c) => c.name === "터키")?.link +
-                    `?countryRegion=${
-                      countries.find((c) => c.name === "터키")?.countryRegion
-                    }`
-                )
+                navigate(countries.find((c) => c.name === "터키")?.link || "/")
               }
               style={{
                 position: "relative",
@@ -107,11 +97,7 @@ const AsiaHomePage: React.FC = () => {
               onMouseLeave={() => setHovered(null)}
               onClick={() =>
                 navigate(
-                  countries.find((c) => c.name === "중화/중국")?.link +
-                    `?countryRegion=${
-                      countries.find((c) => c.name === "중화/중국")
-                        ?.countryRegion
-                    }`
+                  countries.find((c) => c.name === "중화/중국")?.link || "/"
                 )
               }
               style={{
@@ -128,12 +114,7 @@ const AsiaHomePage: React.FC = () => {
               onMouseEnter={() => setHovered("일본")}
               onMouseLeave={() => setHovered(null)}
               onClick={() =>
-                navigate(
-                  countries.find((c) => c.name === "일본")?.link +
-                    `?countryRegion=${
-                      countries.find((c) => c.name === "일본")?.countryRegion
-                    }`
-                )
+                navigate(countries.find((c) => c.name === "일본")?.link || "/")
               }
               style={{
                 gridRow: "span 2",
@@ -153,12 +134,7 @@ const AsiaHomePage: React.FC = () => {
               onMouseLeave={() => setHovered(null)}
               style={{ borderBottomLeftRadius: "32px" }}
               onClick={() =>
-                navigate(
-                  countries.find((c) => c.name === "아랍")?.link +
-                    `?countryRegion=${
-                      countries.find((c) => c.name === "아랍")?.countryRegion
-                    }`
-                )
+                navigate(countries.find((c) => c.name === "아랍")?.link || "/")
               }
             >
               <Arab />
@@ -168,12 +144,7 @@ const AsiaHomePage: React.FC = () => {
               onMouseEnter={() => setHovered("인도")}
               onMouseLeave={() => setHovered(null)}
               onClick={() =>
-                navigate(
-                  countries.find((c) => c.name === "인도")?.link +
-                    `?countryRegion=${
-                      countries.find((c) => c.name === "인도")?.countryRegion
-                    }`
-                )
+                navigate(countries.find((c) => c.name === "인도")?.link || "/")
               }
             >
               <India />
@@ -184,11 +155,7 @@ const AsiaHomePage: React.FC = () => {
               onMouseLeave={() => setHovered(null)}
               onClick={() =>
                 navigate(
-                  countries.find((c) => c.name === "동남아시아")?.link +
-                    `?countryRegion=${
-                      countries.find((c) => c.name === "동남아시아")
-                        ?.countryRegion
-                    }`
+                  countries.find((c) => c.name === "동남아시아")?.link || "/"
                 )
               }
             >
@@ -201,12 +168,7 @@ const AsiaHomePage: React.FC = () => {
             onMouseEnter={() => setHovered("몽골")}
             onMouseLeave={() => setHovered(null)}
             onClick={() =>
-              navigate(
-                countries.find((c) => c.name === "몽골")?.link +
-                  `?countryRegion=${
-                    countries.find((c) => c.name === "몽골")?.countryRegion
-                  }`
-              )
+              navigate(countries.find((c) => c.name === "몽골")?.link || "/")
             }
           >
             <Mongolia />

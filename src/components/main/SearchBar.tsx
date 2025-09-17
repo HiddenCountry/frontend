@@ -2,22 +2,11 @@ import React from "react";
 import styled from "styled-components";
 import { ReactComponent as SearchIcon } from "../../assets/main/SearchIcon.svg";
 
-interface SearchBarProps {
-  value: string; // 검색어
-  onChange: (val: string) => void; // 입력 변경 시
-  onSearch?: () => void; // 검색 버튼 클릭 또는 Enter 시
-}
-
-const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, onSearch }) => {
+const SearchBar: React.FC = () => {
   return (
     <Wrapper>
-      <Input
-        placeholder="검색어를 입력해주세요"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && onSearch?.()} // Enter 누르면 검색
-      />
-      <SearchButton onClick={onSearch}>
+      <Input placeholder="검색어를 입력해주세요" />
+      <SearchButton>
         <SearchIcon />
       </SearchButton>
     </Wrapper>
@@ -53,5 +42,5 @@ const SearchButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 6px;
-  color: #fff;
+  color: #555;
 `;
