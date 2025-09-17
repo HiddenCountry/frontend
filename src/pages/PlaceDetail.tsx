@@ -6,7 +6,7 @@ import { ReactComponent as AirPlaneReivew } from "../assets/main/AirplaneReview.
 import { ReactComponent as BookmarkWhite } from "../assets/main/BookmarkWhite.svg";
 import NearCard from "../components/place/NearCard";
 import ReviewCard from "../components/place/ReviewCard";
-import { fetchNearbyPlaces } from "../api/TourApi";
+import { fetchTourImages } from "../api/TourApi";
 import { getPlace } from "../api/Place";
 
 interface Place {
@@ -89,23 +89,13 @@ const PlaceDetail: React.FC = () => {
 
   // tourAPI 대표이미지들
   useEffect(() => {
-    const fetchImages = async () => {
+    const loadImages = async () => {
       if (!contentId || !serviceKey) return;
-
-      try {
-        const res = await fetch(
-          `https://apis.data.go.kr/B551011/KorService2/detailImage2?serviceKey=${serviceKey}&MobileApp=AppTest&MobileOS=ETC&pageNo=1&numOfRows=30&contentId=${contentId}&imageYN=Y&_type=json`
-        );
-        const data = await res.json();
-        const items = data.response.body.items.item ?? [];
-        const urls = items.map((img: any) => img.originimgurl);
-        setImages(urls);
-      } catch (error) {
-        console.error("이미지 불러오기 실패:", error);
-      }
+      const urls = await fetchTourImages(contentId, serviceKey);
+      setImages(urls);
     };
 
-    fetchImages();
+    loadImages();
   }, [contentId, serviceKey]);
 
   // 이미지 이동
