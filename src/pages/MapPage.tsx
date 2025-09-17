@@ -24,7 +24,7 @@ import flagIN from "../assets/map/india.svg";
 import flagSEA from "../assets/map/southeast_asia.svg";    
 import flagJP from "../assets/map/japan.svg";
 import { fetchTourImages } from "../api/TourApi";
-
+import { postBookmarkPlace, deleteDictionary } from "../api/Bookmark";
 const TOURAPI_KEY = process.env.REACT_APP_TOUR_SERVICE_KEY;
 
 /* ============ kakao 전역 타입 ============ */
@@ -508,6 +508,48 @@ const MapPage: React.FC = () => {
   const [activeId, setActiveId] = React.useState<number | null>(null);
     // 리스트 아이템 DOM 참조 저장소
   const itemRefs = React.useRef<Record<number, HTMLDivElement | null>>({});
+// 북마크 처리중인 카드들(중복 클릭 방지)
+const [bmPending, setBmPending] = React.useState<Set<number>>(new Set());
+
+const toggleBookmark = async (placeId: number) => {
+  // 현재 상태 확인
+  const current = results.find(r => (r as any).id === placeId)?.isBookmarked;
+  if (typeof current !== "boolean") return;
+
+  // 중복 클릭 방지
+  setBmPending(s => {
+    const n = new Set(s);
+    n.add(placeId);
+    return n;
+  });
+
+  // 낙관적 UI 업데이트
+  setResults(rs =>
+    rs.map(p => ((p as any).id === placeId ? { ...p, isBookmarked: !current } : p))
+  );
+
+  try {
+    if (current) {
+      // 이미 북마크였다면 해제
+      await deleteDictionary(placeId);
+    } else {
+      // 아니었다면 추가
+      await postBookmarkPlace(placeId);
+    }
+  } catch (e) {
+    // 실패 시 롤백
+    setResults(rs =>
+      rs.map(p => ((p as any).id === placeId ? { ...p, isBookmarked: current } : p))
+    );
+    console.error("북마크 토글 실패:", e);
+  } finally {
+    setBmPending(s => {
+      const n = new Set(s);
+      n.delete(placeId);
+      return n;
+    });
+  }
+};
 
   // 각 아이템에 ref 바인딩하는 헬퍼
   const bindItemRef = React.useCallback(
@@ -672,9 +714,16 @@ const MapPage: React.FC = () => {
                     <CardTop>
                       <Title>{p.title || "title"}</Title>
 
-                      <BookmarkIcon aria-hidden="true">
-                        {p.isBookmarked ? <BookmarkBlueSvg /> : <BookmarkGraySvg />}
-                      </BookmarkIcon>
+                      <BookmarkBtn
+  type="button"
+  onClick={() => toggleBookmark(pid)}
+  disabled={bmPending.has(pid)}
+  aria-pressed={p.isBookmarked}
+  aria-label={p.isBookmarked ? "북마크 해제" : "북마크 추가"}
+  title={p.isBookmarked ? "북마크 해제" : "북마크 추가"}
+>
+  {p.isBookmarked ? <BookmarkBlueSvg /> : <BookmarkGraySvg />}
+</BookmarkBtn>
 
                       <MetaRow>
                         <MetaPrimary>
@@ -970,25 +1019,24 @@ const TagChip = styled.span`
   font-weight: 700;
   font-size: 12px;
 `;
-const BookmarkIcon = styled.span`
+
+const BookmarkBtn = styled.button`
   position: absolute;
   right: 12px;
   top: 12px;
   line-height: 0;
+  background: transparent;
+  border: 0;
+  padding: 4px;
+  border-radius: 10px;
+  cursor: pointer;
+
   svg { width: 18px; height: 18px; display: block; }
+
+  &:hover { background: ${({ theme }) => theme.color.gray100}; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
-const MediaRow = styled.div`
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-top: 10px;
-`;
-const Media = styled.div`
-  height: 96px;
-  border-radius: 16px;
-  background: ${({ theme }) => theme.color.gray200};
-`;
+
 const MoreBtn = styled.button`
   position: absolute;
   right: 8px;
