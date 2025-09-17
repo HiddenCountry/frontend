@@ -9,6 +9,20 @@ import {
 import { ReactComponent as AirplaneSvg } from "../assets/main/Airplane.svg";
 import { ReactComponent as BookmarkBlueSvg } from "../assets/map/bookmark_blue.svg";
 import { ReactComponent as BookmarkGraySvg } from "../assets/map/bookmark_gray.svg";
+import flagNA from "../assets/map/north_america.svg";
+import flagEU from "../assets/map/europe.svg";
+import flagAS from "../assets/map/china.svg";
+import flagAF from "../assets/map/africa.svg";
+import flagSA from "../assets/map/south_america.svg";
+import flagOC from "../assets/map/oceania.svg";
+import flagTR from "../assets/map/turkey.svg";
+import flagCN from "../assets/map/china.svg";
+import flagMN from "../assets/map/mongolia.svg";
+import flagARAB from "../assets/map/arab.svg";       
+import flagIN from "../assets/map/india.svg";
+import flagSEA from "../assets/map/southeast_asia.svg";    
+import flagJP from "../assets/map/japan.svg";
+
 /* ============ kakao 전역 타입 ============ */
 declare global {
   interface Window {
@@ -106,6 +120,46 @@ const REGION_TO_COUNTRIES: Record<RegionUI, CountryRegionApi[]> = {
   오세아니아: ["OCEANIA"],
 };
 
+/* ============ 공용 유틸 ============ */
+const toStrArray = (v: unknown): string[] => {
+  if (!v) return [];
+  if (Array.isArray(v)) return v.filter(Boolean) as string[];
+  if (typeof v === "string") {
+    return v
+      .split(/[,\u002F\u2215]/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  return [];
+};
+
+/** 한국어 지역/국가명 -> 국기 SVG URL 매핑 (첫 번째 국가/지역을 사용) */
+const FLAG_SVG_BY_KR: Record<string, string> = {
+  // 대륙/권역
+  북아메리카: flagNA,
+  남아메리카: flagSA,
+  유럽: flagEU,
+  아프리카: flagAF,
+  오세아니아: flagOC,
+  아시아: flagAS,
+  // 세부 국가/권역
+  터키: flagTR,
+  중국: flagCN,
+  몽골: flagMN,
+  아랍: flagARAB,
+  인도: flagIN,
+  동남아시아: flagSEA,
+  동남아: flagSEA,
+  일본: flagJP,
+};
+
+function flagUrlFromPlace(p: PlaceMapItem): { url: string | null; label: string | null } {
+  const names = toStrArray((p as any).countryRegionKoreanNames);
+  const first = names[0] ?? null;
+  const url = first ? FLAG_SVG_BY_KR[first] ?? null : null;
+  return { url, label: first };
+}
+
 /* ============ 다중 선택 드롭다운(버튼으로만 열고/닫음) ============ */
 const MultiDropdown: React.FC<{
   label: string;
@@ -136,7 +190,7 @@ const MultiDropdown: React.FC<{
             <MenuItem
               key={it}
               $selected={isSelected}
-              onClick={() => onToggle(it)} // 멀티선택 → 클릭해도 메뉴는 열린 상태 유지
+              onClick={() => onToggle(it)} // 멀티선택: 클릭해도 닫히지 않음
               aria-selected={isSelected}
             >
               {it}
@@ -148,13 +202,11 @@ const MultiDropdown: React.FC<{
   );
 };
 
-
 /* ============ 공용 타입 ============ */
 type BoundsState = {
   sw: { lat: number; lng: number };
   ne: { lat: number; lng: number };
 };
-type Coord = { lat: number; lng: number };
 
 /* ============ KakaoMap ============ */
 const KakaoMap: React.FC<{
@@ -195,14 +247,14 @@ const KakaoMap: React.FC<{
     });
   }, [loaded, onIdleChange]);
 
-  // 외부 리센터 지시 → 부드럽게 이동 (현재 위치로 돌아가기 버튼용)
+  // 외부 리센터 지시 → 부드럽게 이동
   React.useEffect(() => {
     if (!loaded || !mapRef.current || !recenterTo) return;
     const { kakao } = window;
     mapRef.current.panTo(new kakao.maps.LatLng(recenterTo.lat, recenterTo.lng));
   }, [loaded, recenterTo]);
 
-  // 현재 위치 1회 표시(geolocation) — 마커만 표시
+  // 현재 위치 마커 1회 표시
   React.useEffect(() => {
     if (!loaded || !mapRef.current) return;
     if (!("geolocation" in navigator)) return;
@@ -221,7 +273,7 @@ const KakaoMap: React.FC<{
         });
         userMarkerRef.current.setMap(map);
 
-        map.setCenter(coord); // 최초 1번만 내 위치로 이동
+        map.setCenter(coord);
         onUserPosition?.({ lat: latitude, lng: longitude });
       },
       (err) => {
@@ -231,7 +283,7 @@ const KakaoMap: React.FC<{
     );
   }, [loaded, onUserPosition]);
 
-  // 결과 → 커스텀 오버레이 렌더 (★ 자동 리센터/리핏 없음!)
+  // 결과 → 커스텀 오버레이 (국기 SVG 사용)
   React.useEffect(() => {
     if (!loaded || !mapRef.current) return;
 
@@ -241,30 +293,50 @@ const KakaoMap: React.FC<{
 
     const { kakao } = window;
     const map = mapRef.current;
-    const emojiOf = (t: ContentTypeApi) =>
-      t === "RESTAURANT" ? "🍽️" : t === "ACCOMMODATION" ? "🚗" : "🏕️";
 
     results.forEach((p) => {
       const pos = new kakao.maps.LatLng(p.latitude, p.longitude);
 
+      const { url: flagUrl, label: flagLabel } = flagUrlFromPlace(p);
+
+      // 컨테이너
       const el = document.createElement("div");
       el.style.display = "flex";
       el.style.flexDirection = "column";
       el.style.alignItems = "center";
       el.style.transform = "translate(-50%, -100%)";
 
+      // 핀(둥근 배경) + 국기 이미지
       const pin = document.createElement("div");
-      pin.textContent = emojiOf(p.contentTypeName);
-      pin.style.width = "36px";
-      pin.style.height = "36px";
+      pin.style.width = "40px";
+      pin.style.height = "40px";
       pin.style.display = "grid";
       pin.style.placeItems = "center";
       pin.style.borderRadius = "999px";
-      pin.style.background = "#0ea5e9";
-      pin.style.color = "#fff";
+      pin.style.background = "#0ea5e9"; // 배경 컬러
       pin.style.boxShadow = "0 0 0 6px #ffffffb3, 0 8px 18px rgba(0,0,0,.15)";
+
+      if (flagUrl) {
+        const img = document.createElement("img");
+        img.src = flagUrl;
+        img.alt = flagLabel || "flag";
+        img.style.width = "24px";
+        img.style.height = "24px";
+        img.style.objectFit = "cover";
+        img.style.borderRadius = "4px"; // 살짝 둥글게
+        img.draggable = false;
+        pin.appendChild(img);
+      } else {
+        // 폴백 텍스트
+        const span = document.createElement("span");
+        span.textContent = "📍";
+        span.style.fontSize = "18px";
+        span.style.color = "#fff";
+        pin.appendChild(span);
+      }
       el.appendChild(pin);
 
+      // 라벨
       const label = document.createElement("div");
       label.textContent = p.title || "";
       label.style.maxWidth = "160px";
@@ -287,14 +359,13 @@ const KakaoMap: React.FC<{
       overlay.setMap(map);
       overlaysRef.current.push(overlay);
     });
-
-    // ★ 의도적으로 setBounds/setCenter 하지 않음 → 화면 고정
   }, [results, loaded, showList]);
 
   return <MapLayer ref={containerRef} />;
 };
 
 /* ============ 거리 계산 유틸 (미터) ============ */
+type Coord = { lat: number; lng: number };
 function distanceMeters(a: Coord, b: Coord) {
   const R = 6371e3;
   const toRad = (d: number) => (d * Math.PI) / 180;
@@ -310,22 +381,8 @@ function distanceMeters(a: Coord, b: Coord) {
 }
 
 function tagsFromPlace(p: PlaceMapItem): string[] {
-  // contentTypeKoreanName: string | undefined
-  // countryRegionKoreanNames: string[] | string | undefined
-  const toArr = (v: unknown): string[] => {
-    if (!v) return [];
-    if (Array.isArray(v)) return v.filter(Boolean) as string[];
-    if (typeof v === "string") {
-      // 쉼표/슬래시 구분도 유연히 처리
-      return v
-        .split(/[,\u002F\u2215]/)
-        .map((s) => s.trim())
-        .filter(Boolean);
-    }
-    return [];
-  };
-  const t1 = p.contentTypeKoreanName ? [p.contentTypeKoreanName] : [];
-  const t2 = toArr(p.countryRegionKoreanNames);
+  const t1 = (p as any).contentTypeKoreanName ? [(p as any).contentTypeKoreanName] : [];
+  const t2 = toStrArray((p as any).countryRegionKoreanNames);
   return [...t1, ...t2];
 }
 
@@ -366,7 +423,7 @@ const MapPage: React.FC = () => {
       return next;
     });
 
-  // 지도 idle 콜백: 지도 중심/바운즈 갱신 → "다시 검색" 버튼 노출
+  // 지도 idle 콜백
   const handleIdleChange = React.useCallback(
     ({ center, bounds }: { center: Coord; bounds: BoundsState }) => {
       setCenter(center);
@@ -377,7 +434,7 @@ const MapPage: React.FC = () => {
     [recenterTo]
   );
 
-  // 검색 실행 (버튼 클릭 시에만) — 화면 고정
+  // 검색 실행
   const canSearch =
     !!bounds && !!center && catSel.length > 0 && regSel.length > 0;
 
@@ -387,8 +444,8 @@ const MapPage: React.FC = () => {
       new Set(catSel.flatMap((c) => CATEGORY_TO_CONTENT_TYPES[c]))
     );
     const countryRegions = Array.from(
-  new Set(regSel.flatMap((r) => REGION_TO_COUNTRIES[r]))
-);
+      new Set(regSel.flatMap((r) => REGION_TO_COUNTRIES[r]))
+    );
 
     try {
       setLoading(true);
@@ -400,7 +457,7 @@ const MapPage: React.FC = () => {
         swLng: bounds!.sw.lng,
         neLat: bounds!.ne.lat,
         neLng: bounds!.ne.lng,
-        userLat: center!.lat, // 현재 화면 중심 기준으로 검색
+        userLat: center!.lat,
         userLng: center!.lng,
       });
       if (res?.isSuccess) {
@@ -414,17 +471,15 @@ const MapPage: React.FC = () => {
       setError(e?.message ?? "네트워크 오류");
     } finally {
       setLoading(false);
-      setDirty(false); // 검색 완료 → 깨끗한 상태
+      setDirty(false);
     }
   };
 
   const showList = results.length > 0;
 
-  // 지도가 내 위치에서 멀어졌는지 판단 (버튼 표시 기준)
   const movedFarFromUser =
     !!userPos && !!center && distanceMeters(center, userPos) > 120;
 
-  // 여러 번 눌러도 항상 동작: 새 객체로 세팅
   const handleClickRecenter = () => {
     if (!userPos) return;
     setRecenterTo({ lat: userPos.lat, lng: userPos.lng });
@@ -436,22 +491,23 @@ const MapPage: React.FC = () => {
         {/* 힌트/에러/빈 결과 */}
         {!catSel.length || !regSel.length ? (
           <LeftPanel>
-          <Hint>
-            드롭다운에서 조건을 선택해
-            <br />
-            관광지를 찾아보세요!
-          </Hint>
+            <Hint>
+              드롭다운에서 조건을 선택해
+              <br />
+              관광지를 찾아보세요!
+            </Hint>
           </LeftPanel>
         ) : null}
         {error && <Hint>⚠️ {error}</Hint>}
         {catSel.length &&
-        regSel.length &&
-        center &&
-        !loading &&
-        results.length === 0 &&
-        !dirty ? (
+          regSel.length &&
+          center &&
+          !loading &&
+          results.length === 0 &&
+          !dirty ? (
           <LeftPanel>
-          <Hint>이 지도 범위 내 결과가 없습니다.</Hint></LeftPanel>
+            <Hint>이 지도 범위 내 결과가 없습니다.</Hint>
+          </LeftPanel>
         ) : null}
 
         {/* 좌측 목록 */}
@@ -474,23 +530,16 @@ const MapPage: React.FC = () => {
             <CardList>
               {results.map((p) => {
                 const score = p.reviewScoreAverage?.toFixed?.(1) ?? "0.0";
-                const tags = tagsFromPlace(p); // ✨ 해시태그 생성
+                const tags = tagsFromPlace(p);
                 return (
                   <ListCard key={p.id}>
-                    {/* 상단 연회색 박스 */}
                     <CardTop>
                       <Title>{p.title || "title"}</Title>
 
-                      {/* 우상단 북마크 */}
                       <BookmarkIcon aria-hidden="true">
-                        {p.isBookmarked ? (
-                          <BookmarkBlueSvg />
-                        ) : (
-                          <BookmarkGraySvg />
-                        )}
+                        {p.isBookmarked ? <BookmarkBlueSvg /> : <BookmarkGraySvg />}
                       </BookmarkIcon>
 
-                      {/* 메타 라인 */}
                       <MetaRow>
                         <MetaPrimary>
                           <StarIcon /> {score}
@@ -499,7 +548,6 @@ const MapPage: React.FC = () => {
                         <MetaMuted>{p.addr1}</MetaMuted>
                       </MetaRow>
 
-                      {/* 작은 칩들 (#콘텐츠유형, #지역들) */}
                       <TagRow>
                         {tags.map((t) => (
                           <TagChip key={t}>{t}</TagChip>
@@ -507,7 +555,6 @@ const MapPage: React.FC = () => {
                       </TagRow>
                     </CardTop>
 
-                    {/* 썸네일 3칸 */}
                     <MediaRow>
                       <Media
                         style={{
@@ -518,13 +565,11 @@ const MapPage: React.FC = () => {
                       />
                       <Media />
                       <Media />
-                      {/* 우측 동그라미 '>' 버튼 */}
                       <MoreBtn type="button" aria-label="자세히 보기">
                         ›
                       </MoreBtn>
                     </MediaRow>
 
-                    {/* 아이템 구분선 */}
                     <Divider />
                   </ListCard>
                 );
@@ -533,7 +578,7 @@ const MapPage: React.FC = () => {
           </LeftPanel>
         )}
 
-        {/* 상단 툴바 (항상 열림, 다중 선택) */}
+        {/* 상단 툴바 */}
         <Toolbar>
           <MultiDropdown
             label="카테고리"
@@ -549,18 +594,14 @@ const MapPage: React.FC = () => {
           />
         </Toolbar>
 
-        {/* "다시 검색" 버튼: 지도/필터 변경(=dirty) 시 노출 */}
+        {/* 다시 검색 */}
         {dirty && canSearch && (
-          <SearchBtn
-            onClick={runSearch}
-            disabled={loading}
-            aria-label="현재 지도에서 다시 검색"
-          >
+          <SearchBtn onClick={runSearch} disabled={loading} aria-label="현재 지도에서 다시 검색">
             {loading ? "검색중…" : "🔎 다시 검색"}
           </SearchBtn>
         )}
 
-        {/* 현재 화면 중심 좌표 배지 (결과 있을 때 노출) */}
+        {/* 현재 화면 좌표 */}
         {showList && center && (
           <CoordToast>
             <b>현재 화면 좌표</b>
@@ -578,12 +619,9 @@ const MapPage: React.FC = () => {
           recenterTo={recenterTo}
         />
 
-        {/* 현재 위치로 돌아가기 버튼 (지도 이동 시 노출) */}
+        {/* 현재 위치로 돌아가기 */}
         {movedFarFromUser && (
-          <RecenterBtn
-            onClick={handleClickRecenter}
-            aria-label="현재 위치로 이동"
-          >
+          <RecenterBtn onClick={handleClickRecenter} aria-label="현재 위치로 이동">
             📍 현재 위치로
           </RecenterBtn>
         )}
@@ -631,38 +669,34 @@ const Toolbar = styled.div`
 const DropdownWrap = styled.div`
   position: relative;
 `;
-
 const DropdownBtn = styled.button<{ $active?: boolean; $open?: boolean }>`
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
   border-radius: 14px;
-  background: ${({ theme }) => theme.color.white};
-  border: 1.5px solid
-    ${({ $active, theme }) => ($active ? theme.color.primary300 : theme.color.gray200)};
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-  ${({ theme }) => theme.font.sm.bold};
-  color: ${({ $active, theme }) => ($active ? theme.color.primary700 : theme.color.gray800)};
-  .label { ${({ theme }) => theme.font.sm.bold}; }
+  background: #fff;
+  border: 1.5px solid ${({ $active }) => ($active ? "#64B5F6" : "#e5e7eb")};
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  font-weight: 800;
+  color: ${({ $active }) => ($active ? "#1976D2" : "#334155")};
+  .label { font-weight: 800; }
 `;
-
 const Caret = styled.span<{ $open?: boolean }>`
   width: 0; height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 6px solid ${({ theme }) => theme.color.gray700};
+  border-top: 6px solid #334155;
   transform: rotate(${(p) => (p.$open ? "180deg" : "0deg")});
   transition: transform 120ms ease;
 `;
-
 const Menu = styled.ul<{ $open?: boolean }>`
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
   width: 110px;
-  background: ${({ theme }) => theme.color.white};
-  border: 1px solid ${({ theme }) => theme.color.gray200};
+  background: #fff;
+  border: 1px solid #e5e7eb;
   border-radius: 14px;
   box-shadow: 0 14px 28px rgba(0,0,0,0.08);
   padding: 6px;
@@ -670,24 +704,21 @@ const Menu = styled.ul<{ $open?: boolean }>`
   list-style: none;
   z-index: 40;
 
-  /* 버튼으로만 열고/닫히도록: 상태 기반 렌더 */
   opacity: ${(p) => (p.$open ? 1 : 0)};
   transform: translateY(${(p) => (p.$open ? "0" : "-4px")});
   pointer-events: ${(p) => (p.$open ? "auto" : "none")};
   transition: opacity 120ms ease, transform 120ms ease;
 `;
-
 const MenuItem = styled.li<{ $selected?: boolean }>`
   list-style: none;
   cursor: pointer;
   padding: 8px 12px;
   border-radius: 10px;
-  ${({ theme }) => theme.font.sm.bold};
-  color: ${({ $selected, theme }) => ($selected ? theme.color.primary700 : theme.color.gray800)};
-  background: ${({ $selected, theme }) => ($selected ? theme.color.primary50 : "transparent")};
-  &:hover { background: ${({ theme }) => theme.color.gray100}; }
+  font-weight: 700;
+  color: ${(p) => (p.$selected ? "#1976D2" : "#334155")};
+  background: ${(p) => (p.$selected ? "#E3F2FD" : "transparent")};
+  &:hover { background: #F3F5F9; }
 `;
-
 
 /* 힌트/빈 결과 토스트 */
 const Hint = styled.div`
@@ -700,7 +731,7 @@ const Hint = styled.div`
   border-radius: 20px;
   background: #fff;
   border: 1px solid #e5e7eb;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
   font-weight: 800;
   color: #0f172a;
 `;
@@ -711,10 +742,9 @@ const LeftPanel = styled.aside`
   left: 24px;
   z-index: 20;
   width: 320px;
-  background: ${({ theme }) => theme.color.white};
+  background: #fff;
   border-radius: 24px;
 `;
-
 const ChipRow = styled.div`
   display: flex;
   gap: 8px;
@@ -727,10 +757,11 @@ const Chip = styled.button`
   gap: 6px;
   padding: 6px 10px;
   border-radius: 10px;
-  ${({ theme }) => theme.font.xs.bold};
-  color: ${({ theme }) => theme.color.white};
-  background: ${({ theme }) => theme.color.primary400};
-  border: 1px solid ${({ theme }) => theme.color.primary200};
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  background: #42A5F5;
+  border: 1px solid #90CAF9;
   cursor: pointer;
 `;
 const Badge = styled.span`
@@ -738,9 +769,10 @@ const Badge = styled.span`
   align-items: center;
   padding: 6px 10px;
   border-radius: 10px;
-  ${({ theme }) => theme.font.xs.medium};
-  background: ${({ theme }) => theme.color.gray100};
-  color: ${({ theme }) => theme.color.gray600};
+  background: #F3F5F9;
+  color: #6C727E;
+  font-weight: 700;
+  font-size: 12px;
 `;
 
 /* 목록 컨테이너 */
@@ -751,26 +783,23 @@ const CardList = styled.div`
   display: block;
 `;
 
-/* 각 아이템 래핑 */
+/* 각 아이템 */
 const ListCard = styled.div`
   position: relative;
   padding: 0 0 16px;
 `;
-
-/* 상단 연회색 박스 */
 const CardTop = styled.div`
   position: relative;
   border-radius: 14px;
   padding: 14px 16px 12px;
 `;
-
-/* 제목 */
 const Title = styled.h3`
   margin: 0 0 8px 0;
-  ${({ theme }) => theme.font.xxl.bold}; /* 20px Bold */
-  color: ${({ theme }) => theme.color.gray900};
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #191F28;
 `;
-/* 메타 라인 */
 const MetaRow = styled.div`
   display: flex;
   align-items: center;
@@ -782,52 +811,37 @@ const MetaPrimary = styled.span`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  ${({ theme }) => theme.font.md.bold}; /* 16px Bold */
-  color: ${({ theme }) => theme.color.gray900};
-
-  svg {
-    width: 14px;
-    height: 14px;
-    transform: translateY(1px);
-  }
+  font-weight: 700;
+  color: #191F28;
+  svg { width: 14px; height: 14px; transform: translateY(1px); }
 `;
 const MetaMuted = styled.span`
-  ${({ theme }) => theme.font.md.regular}; /* 16px Regular */
-  color: ${({ theme }) => theme.color.gray400};
+  color: #B4BBC7;
+  font-size: 16px;
 `;
-
-/* 해시태그 칩 묶음 */
 const TagRow = styled.div`
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 `;
-
 const TagChip = styled.span`
   display: inline-flex;
   align-items: center;
   height: 24px;
   padding: 0 8px;
   border-radius: 10px;
-  ${({ theme }) => theme.font.xs.bold}; /* 12px Bold */
-  background: ${({ theme }) => theme.color.primary50};
-  color: ${({ theme }) => theme.color.primary600};
+  background: #E3F2FD;
+  color: #1E88E5;
+  font-weight: 700;
+  font-size: 12px;
 `;
-
-/* 우상단 북마크 아이콘 래퍼 */
 const BookmarkIcon = styled.span`
   position: absolute;
   right: 12px;
   top: 12px;
   line-height: 0;
-  svg {
-    width: 18px;
-    height: 18px;
-    display: block;
-  }
+  svg { width: 18px; height: 18px; display: block; }
 `;
-
-/* 썸네일 3칸 */
 const MediaRow = styled.div`
   position: relative;
   display: grid;
@@ -838,10 +852,8 @@ const MediaRow = styled.div`
 const Media = styled.div`
   height: 96px;
   border-radius: 16px;
-  background: ${({ theme }) => theme.color.gray200};
+  background: #EBEEF3;
 `;
-
-/* 우측 동그라미 버튼 */
 const MoreBtn = styled.button`
   position: absolute;
   right: 8px;
@@ -850,23 +862,22 @@ const MoreBtn = styled.button`
   width: 32px;
   height: 32px;
   border-radius: 999px;
-  border: 1px solid ${({ theme }) => theme.color.gray200};
-  background: ${({ theme }) => theme.color.white};
-  color: ${({ theme }) => theme.color.gray600};
-  ${({ theme }) => theme.font.sm.bold};
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  border: 1px solid #EBEEF3;
+  background: #fff;
+  color: #6C727E;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   cursor: pointer;
 `;
-
-/* 아이템 구분선 */
 const Divider = styled.hr`
   border: 0;
   height: 1px;
-  background: ${({ theme }) => theme.color.gray200};
+  background: #EBEEF3;
   margin: 16px 0 0;
 `;
 
-/* 현재 화면 좌표 토스트 */
+/* 좌표 토스트 */
 const CoordToast = styled.div`
   position: absolute;
   right: 24px;
@@ -874,17 +885,13 @@ const CoordToast = styled.div`
   z-index: 31;
   padding: 10px 12px;
   border-radius: 12px;
-  background: ${({ theme }) => theme.color.white};
-  border: 1px solid ${({ theme }) => theme.color.gray200};
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
+  background: #fff;
+  border: 1px solid #EBEEF3;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.06);
   font-size: 12px;
-  color: ${({ theme }) => theme.color.gray700};
+  color: #585F69;
   line-height: 1.35;
-  b {
-    display: block;
-    margin-bottom: 4px;
-    color: ${({ theme }) => theme.color.gray900};
-  }
+  b { display: block; margin-bottom: 4px; color: #191F28; }
 `;
 
 /* 현재 위치로 돌아가기 버튼 */
@@ -901,12 +908,10 @@ const RecenterBtn = styled.button`
   background: #0ea5e9;
   color: #fff;
   border: none;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.15);
   font-weight: 800;
   cursor: pointer;
-  &:hover {
-    filter: brightness(0.95);
-  }
+  &:hover { filter: brightness(0.95); }
 `;
 
 /* "다시 검색" 버튼 */
@@ -918,16 +923,13 @@ const SearchBtn = styled.button`
   z-index: 32;
   padding: 10px 14px;
   border-radius: 14px;
-  border: 1px solid ${({ theme }) => theme.color.primary100};
-  background: ${({ theme }) => theme.color.white};
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  border: 1px solid #BBDEFB;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
   font-weight: 800;
-  color: ${({ theme }) => theme.color.primary800};
+  color: #1565C0;
   cursor: pointer;
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
 `;
 
 const StarIcon = styled(AirplaneSvg)`
@@ -935,5 +937,5 @@ const StarIcon = styled(AirplaneSvg)`
   height: 14px;
   display: inline-block;
   vertical-align: middle;
-  color: ${({ theme }) => theme.color.primary500};
+  color: #2196F3;
 `;
