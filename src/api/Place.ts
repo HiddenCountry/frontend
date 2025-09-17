@@ -1,35 +1,44 @@
 import { request } from "./client";
 export const getPlaces = async (
-  page?: number,
-  size?: number,
-  areaCode?: string[],
-  contentType?: string[],
-  season?: string[],
-  countryRegion?: string,
-  sortType?: string,
-  userLat?: number,
-  userLng?: number,
-  title?: string
+  page: number,
+  size: number,
+  areaCode: string[],
+  contentType: string[],
+  season: string[],
+  countryRegion: string,
+  sortType: string,
+  userLat: number,
+  userLng: number,
+  title: string
 ) => {
   try {
-    const params: Record<string, string> = {};
+    // 배열 파라미터 처리
+    const areaCodeParams = areaCode.map((code) => `areaCode=${code}`).join("&");
+    const contentTypeParams = contentType
+      .map((type) => `contentType=${type}`)
+      .join("&");
+    const seasonParams = season.map((s) => `season=${s}`).join("&");
 
-    if (page != null) params.page = String(page);
-    if (size != null) params.size = String(size);
-    if (areaCode && areaCode.length > 0) params.areaCode = areaCode.join(",");
-    if (contentType && contentType.length > 0)
-      params.contentType = contentType.join(",");
-    if (season && season.length > 0) params.season = season.join(",");
-    if (countryRegion) params.countryRegion = countryRegion;
-    if (sortType) params.sortType = sortType;
-    if (userLat != null) params.userLat = String(userLat);
-    if (userLng != null) params.userLng = String(userLng);
-    if (title) params.title = title;
+    // 전체 query string 조합
+    const queryString = [
+      `page=${page}`,
+      `size=${size}`,
+      areaCodeParams,
+      contentTypeParams,
+      seasonParams,
+      `countryRegion=${countryRegion}`,
+      `sortType=${sortType}`,
+      `userLat=${userLat}`,
+      `userLng=${userLng}`,
+      `title=${title}`,
+    ]
+      .filter(Boolean) // 빈 값 제거
+      .join("&");
 
     const res = await request.get({
-      url: "/places",
-      params,
+      url: `/places?${queryString}`,
     });
+
     console.log("장소 리스트 조회 성공", res);
     return res;
   } catch (error) {
@@ -38,7 +47,7 @@ export const getPlaces = async (
   }
 };
 
-// 이색 관광지(id!=null), 근처 관광지(id==null) 상세 정보 조회
+// 이색 관광지(id!=null) 상세 정보 조회
 export const getPlace = async (
   contentId: number,
   contentTypeId: number,
@@ -48,13 +57,33 @@ export const getPlace = async (
 ) => {
   try {
     const res = await request.get({
-      url: `/places?contentId=${contentId}&contentTypeId=${contentTypeId}&id=${id}&userLat=${userLat}&useLng=${userLng}`,
+      url: `/place?contentId=${contentId}&contentTypeId=${contentTypeId}&id=${id}&userLat=${userLat}&userLng=${userLng}`,
       params: {},
     });
-    console.log("이색/근처 관광지 상세 조회 성공", res);
+    console.log("이색 관광지 상세 조회 성공", res);
     return res;
   } catch (error) {
-    console.error("이색/근처 관광지 상세 조회 성공 :", error);
+    console.error("이색 관광지 상세 조회 성공 :", error);
+    throw error;
+  }
+};
+
+// 인근 관광지(id==null) 상세 정보 조회
+export const getPlaceNear = async (
+  contentId: number,
+  contentTypeId: number,
+  userLat: number,
+  userLng: number
+) => {
+  try {
+    const res = await request.get({
+      url: `/place?contentId=${contentId}&contentTypeId=${contentTypeId}&userLat=${userLat}&userLng=${userLng}`,
+      params: {},
+    });
+    console.log("인근 관광지 상세 조회 성공", res);
+    return res;
+  } catch (error) {
+    console.error("인근 관광지 상세 조회 성공 :", error);
     throw error;
   }
 };
