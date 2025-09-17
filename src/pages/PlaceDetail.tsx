@@ -6,7 +6,7 @@ import { ReactComponent as AirPlaneReivew } from "../assets/main/AirplaneReview.
 import { ReactComponent as BookmarkWhite } from "../assets/main/BookmarkWhite.svg";
 import NearCard from "../components/place/NearCard";
 import ReviewCard from "../components/place/ReviewCard";
-import { fetchTourImages } from "../api/TourApi";
+import { fetchNearbyPlaces, fetchTourImages } from "../api/TourApi";
 import { getPlace } from "../api/Place";
 
 interface Place {
@@ -110,32 +110,21 @@ const PlaceDetail: React.FC = () => {
   // tourAPI 인근관광지 api 연동
   const [places, setPlaces] = useState<Place[]>([]);
   useEffect(() => {
-    const fetchPlaces = async () => {
-      if (!place?.contentTypeId || !serviceKey) return;
+    const loadPlaces = async () => {
+      if (!place?.contentTypeId || !serviceKey || !longitude || !latitude)
+        return;
 
-      try {
-        const res = await fetch(
-          `https://apis.data.go.kr/B551011/KorService2/locationBasedList2?serviceKey=${serviceKey}&numOfRows=30&pageNo=1&MobileOS=ETC&MobileApp=AppTest&_type=json&mapX=${longitude}&mapY=${latitude}&arrange=C&radius=20000&contentTypeId=${place.contentTypeId}`
-        );
-        const data = await res.json();
-        const items = data?.response?.body?.items?.item ?? [];
-
-        const mappedPlaces: Place[] = items.map((item: any) => ({
-          title: item.title || "제목 없음",
-          addr1: item.addr1 || "주소 없음",
-          firstimage: item.firstimage || "",
-          dist: item.dist || "",
-        }));
-
-        setPlaces(mappedPlaces);
-      } catch (error) {
-        console.error("인근 관광지 불러오기 실패:", error);
-        setPlaces([]);
-      }
+      const nearby = await fetchNearbyPlaces(
+        place.contentTypeId,
+        longitude,
+        latitude,
+        serviceKey
+      );
+      setPlaces(nearby);
     };
 
-    fetchPlaces();
-  }, [place?.contentTypeId, serviceKey]);
+    loadPlaces();
+  }, [place?.contentTypeId, longitude, latitude, serviceKey]);
 
   // 이색 상세 조회 api 연동
   const [placeDetail, setPlaceDetail] = useState<PlaceDetailType | null>(null);
