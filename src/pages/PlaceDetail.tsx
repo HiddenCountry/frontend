@@ -2,18 +2,26 @@ import React, { useRef, useState, useEffect } from "react";
 import styled from "styled-components";
 import { useLocation } from "react-router-dom";
 import { ReactComponent as AirPlane } from "../assets/main/Airplane.svg";
-import { ReactComponent as AirPlaneReivew } from "../assets/main/AirplaneReview.svg";
-import { ReactComponent as BookmarkWhite } from "../assets/main/BookmarkWhite.svg";
+import { ReactComponent as AirPlaneReivew } from "../assets/place/AirplaneReview.svg";
+import { ReactComponent as BookmarkWhite } from "../assets/place/BookmarkWhite.svg";
+import { ReactComponent as BookmarkBlue } from "../assets/place/BookmarkBlue.svg";
+import { ReactComponent as ImageLeft } from "../assets/place/ImageLeft.svg";
+import { ReactComponent as ImageRight } from "../assets/place/ImageRight.svg";
 import NearCard from "../components/place/NearCard";
 import ReviewCard from "../components/place/ReviewCard";
 import { fetchNearbyPlaces, fetchTourImages } from "../api/TourApi";
 import { getPlace } from "../api/Place";
+import KakaoMap from "../components/place/KakaoMap";
+import { deleteBookmark, postBookmark } from "../api/Bookmark";
+import ReviewModal from "../components/place/ReviewModal";
 
 interface Place {
   title: string;
   addr1: string;
   firstimage: string;
   dist: string;
+  contenttypeid: string;
+  contentid: string;
 }
 interface CardItemProps {
   id: number;
@@ -36,7 +44,6 @@ interface InfoItem {
   name: string;
   content: string;
 }
-
 interface PlaceDetailType {
   id: number | null;
   title: string;
@@ -65,15 +72,14 @@ const PlaceDetail: React.FC = () => {
   const latitude = place?.latitude;
   const serviceKey = process.env.REACT_APP_TOUR_SERVICE_KEY;
 
+  // 리뷰 모달창
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+
   // 각 섹션 ref
   const introRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const nearbyRef = useRef<HTMLDivElement>(null);
   const reviewRef = useRef<HTMLDivElement>(null);
-
-  // 이미지
-  const [images, setImages] = useState<string[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
 
   // 탭 클릭 시 해당 섹션으로 스크롤
   const handleTabClick = (tab: typeof activeTab) => {
@@ -86,6 +92,10 @@ const PlaceDetail: React.FC = () => {
 
     target?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+
+  // 대표이미지
+  const [images, setImages] = useState<string[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   // tourAPI 대표이미지들
   useEffect(() => {
@@ -109,6 +119,7 @@ const PlaceDetail: React.FC = () => {
 
   // tourAPI 인근관광지 api 연동
   const [places, setPlaces] = useState<Place[]>([]);
+
   useEffect(() => {
     const loadPlaces = async () => {
       if (!place?.contentTypeId || !serviceKey || !longitude || !latitude)
@@ -126,6 +137,40 @@ const PlaceDetail: React.FC = () => {
     loadPlaces();
   }, [place?.contentTypeId, longitude, latitude, serviceKey]);
 
+  // 상태 추가
+  const [activeNearTab, setActiveNearTab] = useState<
+    "전체" | "식음" | "숙소" | "기타"
+  >("전체");
+
+  // 필터링된 장소
+  const filteredPlaces = places.filter((place) => {
+    if (activeNearTab === "전체") return true;
+    if (activeNearTab === "식음") return place.contenttypeid === "39"; // 식음
+    if (activeNearTab === "숙소") return place.contenttypeid === "32"; // 숙소
+    if (activeNearTab === "기타")
+      return ["12", "14", "15", "25", "28", "38"].includes(place.contenttypeid);
+    return true;
+  });
+
+  // 사용자 위치
+  const [userLat, setUserLat] = useState<number | null>(null);
+  const [userLng, setUserLng] = useState<number | null>(null);
+
+  // 사용자 현재 위치 가져오기
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLat(position.coords.latitude);
+          setUserLng(position.coords.longitude);
+        },
+        (error) => {
+          console.error("사용자 위치를 가져오는데 실패했습니다.", error);
+        }
+      );
+    }
+  }, []);
+
   // 이색 상세 조회 api 연동
   const [placeDetail, setPlaceDetail] = useState<PlaceDetailType | null>(null);
 
@@ -138,8 +183,8 @@ const PlaceDetail: React.FC = () => {
           contentId,
           contentTypeId,
           place?.id ?? 0,
-          latitude!,
-          longitude!
+          userLat!,
+          userLng!
         );
         if (res.data) {
           setPlaceDetail(res.data);
@@ -150,7 +195,36 @@ const PlaceDetail: React.FC = () => {
     };
 
     fetchPlaceDetail();
-  }, [contentId, contentTypeId, latitude, longitude, place?.id]);
+  }, [contentId, contentTypeId, userLat, userLng, place?.id]);
+
+  // 북마크 api 연동
+  const [isBookmarked, setIsBookmarked] = useState<boolean>(
+    placeDetail?.isBookmarked ?? false
+  );
+
+  useEffect(() => {
+    // placeDetail이 로드되면 상태 초기화
+    if (placeDetail) {
+      setIsBookmarked(placeDetail.isBookmarked ?? false);
+    }
+  }, [placeDetail]);
+
+  const handleBookmarkClick = async () => {
+    if (!placeDetail?.id) return;
+
+    try {
+      if (isBookmarked) {
+        await deleteBookmark(placeDetail.id);
+        setIsBookmarked(false);
+      } else {
+        await postBookmark(placeDetail.id);
+        setIsBookmarked(true);
+      }
+    } catch (error) {
+      console.error("북마크 처리 실패", error);
+      alert("북마크 처리 중 오류가 발생했습니다.");
+    }
+  };
 
   return (
     <Container>
@@ -164,10 +238,10 @@ const PlaceDetail: React.FC = () => {
                   alt={`관광지 이미지 ${currentIndex + 1}`}
                 />
                 <ArrowButton left onClick={handlePrev}>
-                  ◀
+                  <ImageLeft />
                 </ArrowButton>
                 <ArrowButton right onClick={handleNext}>
-                  ▶
+                  <ImageRight />
                 </ArrowButton>
                 <ImageIndex>
                   {currentIndex + 1} / {images.length}
@@ -199,9 +273,14 @@ const PlaceDetail: React.FC = () => {
             <Distance>
               현재 위치에서 {placeDetail?.distance.toLocaleString()}m
             </Distance>
-            <BookmarkButton>
-              <BookmarkWhite />
-              <span>북마크 저장하기</span>
+            <BookmarkButton
+              bookmarked={isBookmarked}
+              onClick={handleBookmarkClick}
+            >
+              {isBookmarked ? <BookmarkBlue /> : <BookmarkWhite />}
+              <span>
+                {isBookmarked ? "북마크 취소하기" : "북마크 저장하기"}
+              </span>
             </BookmarkButton>
           </InfoCard>
         </TopSection>
@@ -235,26 +314,43 @@ const PlaceDetail: React.FC = () => {
             {/* 지도 */}
             <Section ref={mapRef}>
               <SectionTitle>지도</SectionTitle>
-              <MapImage src="https://placehold.co/600x300" />
-              <Address>경기 동두천시 천보산로 567-12</Address>
+              {placeDetail?.latitude && placeDetail?.longitude ? (
+                <KakaoMap
+                  latitude={placeDetail.latitude}
+                  longitude={placeDetail.longitude}
+                  title={placeDetail.title}
+                  address={placeDetail.address}
+                />
+              ) : (
+                <MapImage src="https://placehold.co/600x300" />
+              )}
+              <Address>{placeDetail?.address}</Address>
             </Section>
 
             {/* 인근 관광지 */}
             <Section ref={nearbyRef}>
               <SectionTitle>인근 관광지</SectionTitle>
               <NearTabs>
-                <NearTab active>전체</NearTab>
-                <NearTab>식음</NearTab>
-                <NearTab>숙소</NearTab>
-                <NearTab>기타</NearTab>
+                {["전체", "식음", "숙소", "기타"].map((tab) => (
+                  <NearTab
+                    key={tab}
+                    active={activeNearTab === tab}
+                    onClick={() => setActiveNearTab(tab as any)}
+                  >
+                    {tab}
+                  </NearTab>
+                ))}
               </NearTabs>
               <NearCardBox>
-                {places.map((place, idx) => (
+                {filteredPlaces.map((place, idx) => (
                   <NearCard
                     key={idx}
                     title={place.title}
-                    subtitle={place.addr1}
-                    imageUrl={place.firstimage || "https://placehold.co/150"}
+                    addr1={place.addr1}
+                    contentid={place.contentid}
+                    contenttypeid={place.contenttypeid}
+                    dist={place.dist}
+                    firstimage={place.firstimage || "https://placehold.co/150"}
                   />
                 ))}
               </NearCardBox>
@@ -265,14 +361,18 @@ const PlaceDetail: React.FC = () => {
               <SectionTitle>
                 다녀간 사람들의 생생한 후기 <span>4</span>
               </SectionTitle>
-              <Rating>
-                <AirPlaneReivew />
-                <AirPlaneReivew />
-                <AirPlaneReivew />
-                <AirPlaneReivew />
-                <AirPlaneReivew /> 5.0
-              </Rating>
-
+              <ReviewHeader>
+                <Rating>
+                  <AirPlaneReivew />
+                  <AirPlaneReivew />
+                  <AirPlaneReivew />
+                  <AirPlaneReivew />
+                  <AirPlaneReivew /> 5.0
+                </Rating>
+                <ReviewButton onClick={() => setIsReviewModalOpen(true)}>
+                  리뷰 작성하기
+                </ReviewButton>
+              </ReviewHeader>
               <ReviewCardBox>
                 <ReviewCard
                   reviewer="숨은나라찾기"
@@ -304,6 +404,9 @@ const PlaceDetail: React.FC = () => {
           <WrapperRight />
         </BottomSection>
       </Content>
+      {isReviewModalOpen && (
+        <ReviewModal onClose={() => setIsReviewModalOpen(false)} />
+      )}
     </Container>
   );
 };
@@ -357,13 +460,14 @@ const ImageIndex = styled.div`
   border-radius: 8px;
   font-size: 12px;
 `;
+
 const ArrowButton = styled.button<{ left?: boolean; right?: boolean }>`
   position: absolute;
   top: 50%;
   ${({ left }) => left && `left: 12px;`}
   ${({ right }) => right && `right: 12px;`}
   transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(255, 255, 255, 0.9);
   color: #fff;
   border: none;
   font-size: 20px;
@@ -376,7 +480,7 @@ const ArrowButton = styled.button<{ left?: boolean; right?: boolean }>`
   justify-content: center;
 
   &:hover {
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(255, 255, 255);
   }
 `;
 
@@ -441,16 +545,13 @@ const Distance = styled.div`
   margin-top: 15px;
   margin-bottom: 2px;
 `;
-
-const BookmarkButton = styled.button`
+const BookmarkButton = styled.button<{ bookmarked?: boolean }>`
   ${({ theme }) => theme.font.xxl.medium};
   width: 100%;
   height: 60px;
   margin-top: 20px;
   padding: 10px;
-  border: none;
-  background: #1e90ff;
-  color: white;
+  border: 2px solid #1e90ff;
   border-radius: 10px;
   cursor: pointer;
 
@@ -459,12 +560,22 @@ const BookmarkButton = styled.button`
   justify-content: center;
   gap: 6px;
 
+  background: ${({ bookmarked }) => (bookmarked ? "#fff" : "#1e90ff")};
+  color: ${({ bookmarked }) => (bookmarked ? "#1e90ff" : "#fff")};
+  transition: background 0.3s, color 0.3s;
+
+  svg {
+    flex-shrink: 0;
+    transition: fill 0.3s;
+    fill: ${({ bookmarked }) => (bookmarked ? "#1e90ff" : "#fff")};
+  }
+
   span {
     margin: 0;
   }
 
-  svg {
-    flex-shrink: 0;
+  &:hover {
+    opacity: 0.8;
   }
 `;
 
@@ -565,6 +676,9 @@ const NearCardBox = styled.div`
     background: #f5f5f5;
   }
 `;
+const ReviewHeader = styled.div`
+  display: flex;
+`;
 
 const Rating = styled.div`
   ${({ theme }) => theme.font.xxxl.semibold};
@@ -582,4 +696,25 @@ const Rating = styled.div`
   }
 `;
 
+const ReviewButton = styled.button`
+  ${({ theme }) => theme.font.md.semibold};
+  color: ${({ theme }) => theme.color.white};
+  background-color: ${({ theme }) => theme.color.primary500};
+  width: 150px;
+  height: 56px;
+  margin-left: auto;
+  margin-top: 20px;
+  padding: 10px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s, color 0.3s;
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
 const ReviewCardBox = styled.div``;

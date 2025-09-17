@@ -36,6 +36,8 @@ export const fetchNearbyPlaces = async (
       addr1: item.addr1 || "주소 없음",
       firstimage: item.firstimage || "",
       dist: item.dist || "",
+      contenttypeid: item.contenttypeid || "",
+      contentid: item.contentid || "",
     }));
     return mappedPlaces;
   } catch (error) {
