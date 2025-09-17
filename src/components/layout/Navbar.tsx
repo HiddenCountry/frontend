@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
-import { ReactComponent as NavLogo } from "../../assets/layout/Logo.svg";
-import { ReactComponent as UserIcon } from "../../assets/layout/UserIcon.svg";
-import { ReactComponent as UserIconBig } from "../../assets/layout/UserIconBig.svg";
+import { ReactComponent as NavLogo } from "../../assets/Logo.svg";
+import { ReactComponent as UserIcon } from "../../assets/UserIcon.svg";
+import { ReactComponent as UserIconBig } from "../../assets/UserIconBig.svg";
 interface NavbarProps {
   isLoggedIn?: boolean;
   userName?: string;

@@ -1,101 +1,45 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import FilterSidebar from "../components/main/FilterSidebar";
 import SearchBar from "../components/main/SearchBar";
-import { ReactComponent as Africa } from "../assets/main/Africa.svg";
-import { ReactComponent as Arab } from "../assets/main/Arab.svg";
-import { ReactComponent as China } from "../assets/main/China.svg";
-import { ReactComponent as Europe } from "../assets/main/Europe.svg";
-import { ReactComponent as India } from "../assets/main/India.svg";
 import { ReactComponent as Japan } from "../assets/main/Japan.svg";
-import { ReactComponent as Mongolia } from "../assets/main/Mongolia.svg";
-import { ReactComponent as NorthAmerica } from "../assets/main/NorthAmerica.svg";
-import { ReactComponent as Oceania } from "../assets/main/Oceania.svg";
-import { ReactComponent as SouthAmerica } from "../assets/main/SouthAmerica.svg";
-import { ReactComponent as SoutheastAsia } from "../assets/main/SoutheastAsia.svg";
-import { ReactComponent as Turkey } from "../assets/main/Turkey.svg";
+import { ReactComponent as PageIcon } from "../assets/main/Pagination.svg";
+import { ReactComponent as PageEndIcon } from "../assets/main/PaginationEnd.svg";
 import CardItem from "../components/main/CardItem";
-import MainPagination from "../components/main/Pagination";
 import { getPlaces } from "../api/Place";
 
 interface Place {
   id: number;
   firstImage: string;
-  contentId: number;
+  title: string;
+  addr1: string;
   reviewScoreAverage: number;
   reviewCount: number;
-  addr1: string;
-  season: string;
   hashtags: string[];
   isBookmarked: boolean;
-  title: string;
-  contentTypeName: string;
-  contentTypeId: number;
-  longitude: number;
-  latitude: number;
-  distance: number;
 }
 
-const countryInfoMap: Record<
-  string,
-  { nameKR: string; Icon: React.FC<React.SVGProps<SVGSVGElement>> }
-> = {
-  AFRICA: { nameKR: "아프리카", Icon: Africa },
-  ARAB: { nameKR: "아랍", Icon: Arab },
-  CHINA: { nameKR: "중화/중국", Icon: China },
-  EUROPE: { nameKR: "유럽", Icon: Europe },
-  INDIA: { nameKR: "인도", Icon: India },
-  JAPAN: { nameKR: "일본", Icon: Japan },
-  MONGOLIA: { nameKR: "몽골", Icon: Mongolia },
-  NORTH_AMERICA: { nameKR: "북아메리카", Icon: NorthAmerica },
-  OCEANINA: { nameKR: "오세아니아", Icon: Oceania },
-  SOUTH_AMERICA: { nameKR: "남아메리카", Icon: SouthAmerica },
-  SOUTHEAST_ASIA: { nameKR: "동남아시아", Icon: SoutheastAsia },
-  TURKEY: { nameKR: "터키", Icon: Turkey },
-};
-
 const MainPage: React.FC = () => {
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const initialCountryRegion = queryParams.get("countryRegion") || "EUROPE";
-
   const [places, setPlaces] = useState<Place[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [searchKeyword, setSearchKeyword] = useState("");
-  const cardsPerPage = 6;
 
-  // 필터 상태
-  const [filters, setFilters] = useState({
-    areaCode: [] as string[],
-    contentType: [] as string[],
-    season: [] as string[],
-    countryRegion: initialCountryRegion,
-    sortType: "REVIEW_COUNT_DESC",
-  });
+  const cardsPerPage = 9;
 
-  //Banner용 나라 및 아이콘
-  const currentCountryInfo = countryInfoMap[filters.countryRegion] || {
-    nameKR: "일본",
-    Icon: Japan,
-  };
-  const { nameKR, Icon } = currentCountryInfo;
-
-  // api 연동
-  const fetchPlaces = async (lat: number, lng: number) => {
+  const fetchPlaces = async () => {
     try {
       const res = await getPlaces(
-        currentPage - 1, // API에 0페이지부터 시작
+        currentPage,
         cardsPerPage,
-        filters.areaCode,
-        filters.contentType,
-        filters.season,
-        filters.countryRegion,
-        filters.sortType,
-        lat,
-        lng,
-        searchKeyword
+        ["SEOUL"], // areaCode
+        [], // contentType
+        [], // season
+        "EUROPE", // countryRegion
+        "REVIEW_COUNT_DESC", // sortType
+        0, // userLat
+        0, // userLng
+        "" // title
       );
       if (res?.data?.content) {
         setPlaces(res.data.content);
@@ -106,84 +50,72 @@ const MainPage: React.FC = () => {
     }
   };
 
-  // 위치 기반으로 호출
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        fetchPlaces(latitude, longitude);
-      },
-      (error) => {
-        console.error("위치 정보를 가져올 수 없습니다:", error);
-        fetchPlaces(37.5665, 126.978);
-      }
-    );
-  }, [currentPage, filters, searchKeyword]);
+    fetchPlaces();
+  }, [currentPage]);
 
   return (
     <Container>
       <Main>
         <Path>
-          <Link to="/">세계지도</Link> &gt; <span>{nameKR}</span>
+          <Link to="/">세계지도</Link> &gt; <Link to="/asia">아시아 지도</Link>{" "}
+          &gt; <span>일본</span>
         </Path>
         <Banner>
           <BannerText>
-            여권 없이, {nameKR} 여행
+            여권 없이, 일본 여행
             <br />
             함께 떠나볼까요?
           </BannerText>
-          <Icon />
+          <Japan />
         </Banner>
         <Content>
           <SidebarWrapper>
-            <FilterSidebar
-              onFilterChange={(newFilters) => {
-                setFilters((prev) => ({
-                  ...prev,
-                  ...newFilters,
-                }));
-                setCurrentPage(0);
-              }}
-            />
+            <FilterSidebar />
           </SidebarWrapper>
           <RightSection>
-            <SearchBar
-              value={searchKeyword}
-              onChange={(val) => setSearchKeyword(val)}
-              onSearch={() => setCurrentPage(0)}
-            />
+            <SearchBar />
             <Sequence>
               <span>리뷰 많은 순</span> | 거리순 | 평점순 | 조회순
             </Sequence>
             <CardBox>
+              <CardItem
+                title="니지모리"
+                addr1="서울특별시 어쩌구 저꺼구"
+                reviewScore={5.0} // 숫자
+                reviewCount={5} // 숫자
+                hashtags={["외국 느낌 낭낭", "chip"]} // 문자열 배열
+                isBookmarked={true} // boolean
+                firstImage="" // 빈 문자열 가능
+              />
               {places.map((place) => (
                 <CardItem
                   key={place.id} // 고유 key
-                  id={place.id}
-                  firstImage={place.firstImage} // 이미지 URL (없을 수도 있음)
-                  contentId={place.contentId}
-                  reviewScoreAverage={place.reviewScoreAverage} // 리뷰 점수
-                  reviewCount={place.reviewCount} // 리뷰 수
+                  title={place.title} // 장소 이름
                   addr1={place.addr1} // 주소
-                  season={place.season} // 계절
+                  reviewScore={place.reviewScoreAverage} // 리뷰 점수
+                  reviewCount={place.reviewCount} // 리뷰 수
                   hashtags={place.hashtags} // 해시태그 배열
                   isBookmarked={place.isBookmarked} // 즐겨찾기 여부
-                  title={place.title} // 장소 이름
-                  contentTypeName={place.contentTypeName}
-                  contentTypeId={place.contentTypeId}
-                  longitude={place.longitude}
-                  latitude={place.latitude}
-                  distance={place.distance}
+                  firstImage={place.firstImage} // 이미지 URL (없을 수도 있음)
                 />
               ))}
             </CardBox>
           </RightSection>
         </Content>
-        <MainPagination
-          page={currentPage}
-          totalPages={totalPages}
-          onPageChange={(n) => setCurrentPage(n)}
-        />
+        <Pagination>
+          <PageEndIcon />
+          {Array.from({ length: totalPages }, (_, idx) => (
+            <PageButton
+              key={idx + 1}
+              active={currentPage === idx + 1}
+              onClick={() => setCurrentPage(idx + 1)}
+            >
+              {idx + 1}
+            </PageButton>
+          ))}
+          <PageIcon />
+        </Pagination>
       </Main>
     </Container>
   );
