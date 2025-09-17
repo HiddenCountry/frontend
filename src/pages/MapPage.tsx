@@ -23,6 +23,9 @@ import flagARAB from "../assets/map/arab.svg";
 import flagIN from "../assets/map/india.svg";
 import flagSEA from "../assets/map/southeast_asia.svg";    
 import flagJP from "../assets/map/japan.svg";
+import { fetchTourImages } from "../api/TourApi";
+
+const TOURAPI_KEY = process.env.REACT_APP_TOUR_SERVICE_KEY;
 
 /* ============ kakao 전역 타입 ============ */
 declare global {
@@ -202,6 +205,93 @@ const MultiDropdown: React.FC<{
     </DropdownWrap>
   );
 };
+
+const MediaStrip: React.FC<{ place: PlaceMapItem }> = ({ place }) => {
+  const [urls, setUrls] = React.useState<string[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  const contentId: number | null = (place as any).contentId;
+  const vpRef = React.useRef<HTMLDivElement>(null);
+  const [atEnd, setAtEnd] = React.useState(false);
+
+  const updateAtEnd = React.useCallback(() => {
+    const el = vpRef.current;
+    if (!el) return;
+    const done = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
+    setAtEnd(done);
+  }, []);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setUrls([]);
+
+    if (!contentId || !TOURAPI_KEY) {
+      setLoading(false);
+      return;
+    }
+
+    (async () => {
+      try {
+        const list = await fetchTourImages(contentId, TOURAPI_KEY); // ← 그대로 호출
+        if (!cancelled) setUrls(Array.isArray(list) ? list : []);
+      } catch {
+        if (!cancelled) setUrls([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [contentId]);
+
+  React.useEffect(() => {
+    // 이미지가 로드되면 끝 여부 갱신
+    updateAtEnd();
+  }, [urls.length, updateAtEnd]);
+
+  const scrollNext = () => {
+    const el = vpRef.current;
+    if (!el) return;
+    el.scrollBy({ left: el.clientWidth, behavior: "smooth" });
+  };
+
+  const hasMore = urls.length > 3;
+
+  return (
+    <CarouselWrap>
+      <CarouselViewport ref={vpRef} onScroll={updateAtEnd}>
+        {(urls.length ? urls : Array.from({ length: 3 }).map(() => ""))?.map((u, i) => (
+          <CarouselItem
+            key={i}
+            style={
+              u
+                ? {
+                    backgroundImage: `url(${u})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }
+                : undefined
+            }
+            aria-label={u ? `image ${i + 1}` : "placeholder"}
+          />
+        ))}
+      </CarouselViewport>
+
+      {hasMore && !atEnd && (
+        <MoreBtn
+          type="button"
+          aria-label="나머지 이미지 더 보기"
+          onClick={scrollNext}
+          title={`이미지 더 보기`}
+        >
+          ›
+        </MoreBtn>
+      )}
+    </CarouselWrap>
+  );
+};
+
 
 /* ============ 공용 타입 ============ */
 type BoundsState = {
@@ -601,20 +691,7 @@ const MapPage: React.FC = () => {
                       </TagRow>
                     </CardTop>
 
-                    <MediaRow>
-                      <Media
-                        style={{
-                          backgroundImage: `url(${p.firstImage ?? ""})`,
-                          backgroundSize: "cover",
-                          backgroundPosition: "center",
-                        }}
-                      />
-                      <Media />
-                      <Media />
-                      <MoreBtn type="button" aria-label="자세히 보기">
-                        ›
-                      </MoreBtn>
-                    </MediaRow>
+                    <MediaStrip place={p} />
 
                     <Divider />
                   </ListCard>
@@ -997,3 +1074,27 @@ const StarIcon = styled(AirplaneSvg)`
   vertical-align: middle;
   color: ${({ theme }) => theme.color.primary500};
 `;
+
+const CarouselWrap = styled.div`
+  position: relative;
+  margin-top: 10px;
+`;
+
+const CarouselViewport = styled.div`
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+`;
+
+const CarouselItem = styled.div`
+  flex: 0 0 calc((100% - 16px) / 3); /* 3칸 보이도록 고정폭 */
+  height: 96px;
+  border-radius: 16px;
+  background: ${({ theme }) => theme.color.gray200};
+  scroll-snap-align: start;
+`;
+
