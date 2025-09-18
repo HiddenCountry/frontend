@@ -1,16 +1,105 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { ReactComponent as Reset } from "../../assets/main/Reset.svg";
 
-const FilterSidebar: React.FC = () => {
+interface FilterSidebarProps {
+  onFilterChange: (filters: {
+    areaCode: string[];
+    contentType: string[];
+    season: string[];
+  }) => void;
+}
+
+// 지역, 종류, 계절 옵션 정의
+const AREA_OPTIONS = [
+  { label: "전체", value: "" },
+  { label: "서울", value: "SEOUL" },
+  { label: "인천", value: "INCHEON" },
+  { label: "대전", value: "DAJEON" },
+  { label: "대구", value: "DAEGU" },
+  { label: "광주", value: "GWANGJU" },
+  { label: "부산", value: "BUSAN" },
+  { label: "울산", value: "ULSAN" },
+  { label: "세종", value: "SEJONG" },
+  { label: "경기", value: "GYEONGGI" },
+  { label: "강원", value: "GANGWON" },
+  { label: "충북", value: "CHUNGBUK" },
+  { label: "충남", value: "CHUNGNAM" },
+  { label: "경북", value: "GYEONGBUK" },
+  { label: "경남", value: "GYEONGNAM" },
+  { label: "전북", value: "JEONBUK" },
+  { label: "전남", value: "JEONNAM" },
+  { label: "제주", value: "JEJU" },
+];
+
+const TYPE_OPTIONS = [
+  { label: "전체", value: "" },
+  { label: "관광지", value: "TOURIST_SPOT" },
+  { label: "문화시설", value: "CULTURAL_FACILTY" },
+  { label: "행사", value: "EVENT" },
+  { label: "여행코스", value: "TRAVEL_COURSE" },
+  { label: "레포츠", value: "LEISURE_SPORTS" },
+  { label: "숙소", value: "ACCOMMODATION" },
+  { label: "쇼핑", value: "SHOPPING" },
+  { label: "음식점", value: "RESTAURANT" },
+];
+
+const SEASON_OPTIONS = [
+  { label: "전체", value: "" },
+  { label: "봄", value: "SPRING" },
+  { label: "여름", value: "SUMMER" },
+  { label: "가을", value: "AUTUMN" },
+  { label: "겨울", value: "WINTER" },
+  { label: "사계절", value: "ALL" },
+];
+
+const FilterSidebar: React.FC<FilterSidebarProps> = ({ onFilterChange }) => {
+  // 상태 관리
+  const [selectedArea, setSelectedArea] = useState("");
+  const [selectedType, setSelectedType] = useState("");
+  const [selectedSeason, setSelectedSeason] = useState("");
+
+  // 선택 처리
+  const handleSelect = (
+    option: string,
+    setState: React.Dispatch<React.SetStateAction<string>>
+  ) => {
+    setState(option);
+  };
+
+  // 필터 적용
+  const handleApply = () => {
+    onFilterChange({
+      areaCode: selectedArea ? [selectedArea] : [],
+      contentType: selectedType ? [selectedType] : [],
+      season: selectedSeason ? [selectedSeason] : [],
+    });
+  };
+
+  // 필터 초기화
+  const handleReset = () => {
+    setSelectedArea("");
+    setSelectedType("");
+    setSelectedSeason("");
+    onFilterChange({
+      areaCode: [],
+      contentType: [],
+      season: [],
+    });
+  };
+
   return (
     <Wrapper>
       <Section>
         <Title>지역</Title>
         <Options>
-          {["전체", "서울", "경기도", "인천", "강원도"].map((opt) => (
-            <Option key={opt} active={opt === "전체"}>
-              {opt}
+          {AREA_OPTIONS.map((opt, idx) => (
+            <Option
+              key={`area-${idx}`}
+              active={opt.value === selectedArea}
+              onClick={() => handleSelect(opt.value, setSelectedArea)}
+            >
+              {opt.label}
             </Option>
           ))}
         </Options>
@@ -19,9 +108,13 @@ const FilterSidebar: React.FC = () => {
       <Section>
         <Title>종류</Title>
         <Options>
-          {["전체", "카페", "음식점", "관광지", "숙소", "쇼핑"].map((opt) => (
-            <Option key={opt} active={opt === "전체"}>
-              {opt}
+          {TYPE_OPTIONS.map((opt, idx) => (
+            <Option
+              key={`type-${idx}`}
+              active={opt.value === selectedType}
+              onClick={() => handleSelect(opt.value, setSelectedType)}
+            >
+              {opt.label}
             </Option>
           ))}
         </Options>
@@ -30,17 +123,21 @@ const FilterSidebar: React.FC = () => {
       <Section>
         <Title>추천 계절</Title>
         <Options>
-          {["전체", "봄", "여름", "가을", "겨울"].map((opt) => (
-            <Option key={opt} active={opt === "전체"}>
-              {opt}
+          {SEASON_OPTIONS.map((opt, idx) => (
+            <Option
+              key={`season-${idx}`} // ✅ key 충돌 방지
+              active={opt.value === selectedSeason}
+              onClick={() => handleSelect(opt.value, setSelectedSeason)}
+            >
+              {opt.label}
             </Option>
           ))}
         </Options>
       </Section>
 
       <ButtonGroup>
-        <ApplyButton>필터 적용</ApplyButton>
-        <ResetButton>
+        <ApplyButton onClick={handleApply}>필터 적용</ApplyButton>
+        <ResetButton onClick={handleReset}>
           <Reset />
         </ResetButton>
       </ButtonGroup>
@@ -75,7 +172,7 @@ const Title = styled.div`
 const Options = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
 `;
 
 const Option = styled.button<{ active?: boolean }>`
@@ -86,7 +183,7 @@ const Option = styled.button<{ active?: boolean }>`
     props.active ? props.theme.color.primary500 : props.theme.color.gray600};
   border: none;
   border-radius: 8px;
-  padding: 6px 10px;
+  padding: 6px 7px;
   cursor: pointer;
 `;
 
@@ -99,7 +196,6 @@ const ApplyButton = styled.button`
   ${({ theme }) => theme.font.md.semibold};
   width: 128px;
   height: 56px;
-  color: ${({ theme }) => theme.color.gray50};
   flex: 1;
   background: ${({ theme }) => theme.color.primary500};
   color: white;
