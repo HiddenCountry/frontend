@@ -5,7 +5,7 @@ export const fetchTourImages = async (
 ): Promise<string[]> => {
   try {
     const res = await fetch(
-      `https://apis.data.go.kr/B551011/KorService2/detailImage2?serviceKey=${serviceKey}&MobileApp=AppTest&MobileOS=ETC&pageNo=1&numOfRows=30&contentId=${contentId}&imageYN=Y&_type=json`
+      `https://apis.data.go.kr/B551011/KorService2/detailImage2?serviceKey=${serviceKey}&MobileApp=숨은나라찾기&MobileOS=ETC&pageNo=1&numOfRows=30&contentId=${contentId}&imageYN=Y&_type=json`
     );
     const data = await res.json();
     const items = data.response.body.items.item ?? [];
@@ -26,7 +26,7 @@ export const fetchNearbyPlaces = async (
 ) => {
   try {
     const res = await fetch(
-      `https://apis.data.go.kr/B551011/KorService2/locationBasedList2?serviceKey=${serviceKey}&numOfRows=30&pageNo=1&MobileOS=ETC&MobileApp=AppTest&_type=json&mapX=${longitude}&mapY=${latitude}&arrange=C&radius=20000&contentTypeId=${contentTypeId}`
+      `https://apis.data.go.kr/B551011/KorService2/locationBasedList2?serviceKey=${serviceKey}&numOfRows=30&pageNo=1&MobileOS=ETC&MobileApp=숨은나라찾기&_type=json&mapX=${longitude}&mapY=${latitude}&arrange=C&radius=20000&contentTypeId=${contentTypeId}`
     );
     const data = await res.json();
     const items = data?.response?.body?.items?.item ?? [];
@@ -36,6 +36,8 @@ export const fetchNearbyPlaces = async (
       addr1: item.addr1 || "주소 없음",
       firstimage: item.firstimage || "",
       dist: item.dist || "",
+      contenttypeid: item.contenttypeid || "",
+      contentid: item.contentid || "",
     }));
     return mappedPlaces;
   } catch (error) {

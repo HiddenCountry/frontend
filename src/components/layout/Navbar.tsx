@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { ReactComponent as NavLogo } from "../../assets/layout/Logo.svg";
 import { ReactComponent as UserIcon } from "../../assets/layout/UserIcon.svg";
 import { ReactComponent as UserIconBig } from "../../assets/layout/UserIconBig.svg";
+
 interface NavbarProps {
   isLoggedIn?: boolean;
   userName?: string;
@@ -18,6 +19,13 @@ const Navbar: React.FC<NavbarProps> = ({
   onLogout,
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [activeMenu, setActiveMenu] = useState("홈"); // 현재 선택된 메뉴 상태
+
+  const menuItems = [
+    { name: "홈", path: "/" },
+    { name: "지도로 보기", path: "/map" },
+    { name: "장소 등록 문의", path: "/register" },
+  ];
 
   return (
     <Nav>
@@ -27,21 +35,26 @@ const Navbar: React.FC<NavbarProps> = ({
       </Logo>
 
       <Menu>
-        <MenuLink to="/" $active>
-          홈
-        </MenuLink>
-        <MenuLink to="/map">지도로 보기</MenuLink>
-        <MenuLink to="/register">장소 등록 문의</MenuLink>
+        {menuItems.map((menu) => (
+          <MenuLink
+            key={menu.name}
+            to={menu.path}
+            $active={activeMenu === menu.name}
+            onClick={() => setActiveMenu(menu.name)}
+          >
+            {menu.name}
+          </MenuLink>
+        ))}
       </Menu>
 
       {isLoggedIn ? (
         <ProfileWrapper onClick={() => setShowDropdown(!showDropdown)}>
           <ProfileName>{userName} 님</ProfileName>
-          {/*<ProfileImage src={profileImgUrl || undefined} />*/}
           <UserIcon id="userIcon" />
           {showDropdown && (
             <Dropdown>
-              <UserIconBig /> <ProfileName>{userName} 님</ProfileName>
+              <UserIconBig />
+              <ProfileName>{userName} 님</ProfileName>
               <DropdownItem to="/mypage">마이페이지</DropdownItem>
               <DropdownItem to="/" onClick={onLogout}>
                 로그아웃

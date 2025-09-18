@@ -1,6 +1,6 @@
 import { request } from "./client";
 
-export const postBookmarkPlace = async (id: number) => {
+export const postBookmark = async (id: number) => {
   try {
     const res = await request.post({
       url: `/bookmark/place?id=${id}`,
@@ -14,7 +14,7 @@ export const postBookmarkPlace = async (id: number) => {
   }
 };
 
-export const deleteDictionary = async (id: number) => {
+export const deleteBookmark = async (id: number) => {
   try {
     const res = await request.delete({
       url: `/bookmark/place?id=${id}`,
