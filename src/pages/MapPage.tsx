@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 import {
   getPlacesOnMap,
   PlaceMapItem,
@@ -24,6 +25,7 @@ import flagSEA from "../assets/map/southeast_asia.svg";
 import flagJP from "../assets/map/japan.svg";
 import { fetchTourImages } from "../api/TourApi";
 import { postBookmark, deleteBookmark } from "../api/Bookmark";
+
 const TOURAPI_KEY = process.env.REACT_APP_TOUR_SERVICE_KEY;
 
 /* ============ kakao 전역 타입 ============ */
@@ -74,7 +76,13 @@ function useKakaoLoader(appkey: string) {
 /* ============ UI용 타입/데이터 ============ */
 type CategoryUI = "식당" | "숙소" | "관광지";
 type RegionUI =
-  | "아시아"
+  | "일본"
+  | "중화/중국"
+  | "몽골"
+  | "터키"
+  | "아랍"
+  | "인도"
+  | "동남아시아"
   | "북아메리카"
   | "남아메리카"
   | "유럽"
@@ -83,7 +91,13 @@ type RegionUI =
 
 const CATEGORIES: CategoryUI[] = ["식당", "숙소", "관광지"];
 const REGIONS: RegionUI[] = [
-  "아시아",
+  "일본",
+  "중화/중국",
+  "몽골",
+  "터키",
+  "아랍",
+  "인도",
+  "동남아시아",
   "북아메리카",
   "남아메리카",
   "유럽",
@@ -106,16 +120,13 @@ const CATEGORY_TO_CONTENT_TYPES: Record<CategoryUI, ContentTypeApi[]> = {
 };
 
 const REGION_TO_COUNTRIES: Record<RegionUI, CountryRegionApi[]> = {
-  아시아: [
-    "ASIA",
-    "TURKEY",
-    "CHINA",
-    "MONGOLIA",
-    "ARAB",
-    "INDIA",
-    "SOUTHEAST_ASIA",
-    "JAPAN",
-  ],
+  일본: ["JAPAN"],
+  "중화/중국": ["CHINA"],
+  몽골: ["MONGOLIA"],
+  터키: ["TURKEY"],
+  아랍: ["ARAB"],
+  인도: ["INDIA"],
+  동남아시아: ["SOUTHEAST_ASIA"],
   북아메리카: ["NORTH_AMERICA"],
   남아메리카: ["SOUTH_AMERICA"],
   유럽: ["EUROPE"],
@@ -524,8 +535,40 @@ const MapPage: React.FC = () => {
   const itemRefs = React.useRef<Record<number, HTMLDivElement | null>>({});
   // 북마크 처리중인 카드들(중복 클릭 방지)
   const [bmPending, setBmPending] = React.useState<Set<number>>(new Set());
+  const navigate = useNavigate();
 
+  const goDetail = (p: PlaceMapItem) => {
+    const anyP = p as any;
+
+    navigate("/main/place", {
+      state: {
+        id: anyP.id as number,
+        contentId: anyP.contentId,
+        title: p.title,
+        firstImage: anyP.firstImage,
+        reviewScoreAverage: p.reviewScoreAverage,
+        reviewCount: p.reviewCount,
+        addr1: p.addr1,
+        season: anyP.season,
+        hashtags: anyP.hashtags,
+        isBookmarked: !!p.isBookmarked,
+        contentTypeName:
+          anyP.contentTypeName ?? anyP.contentTypeKoreanName ?? undefined,
+        contentTypeId: anyP.contentTypeId,
+        longitude: p.longitude,
+        latitude: p.latitude,
+        distance: anyP.distance,
+      },
+    });
+  };
   const toggleBookmark = async (placeId: number) => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("로그인이 필요합니다. 로그인 페이지로 이동해 주세요.");
+      navigate("/login");
+      return;
+    }
+
     // 현재 상태 확인
     const current = results.find(
       (r) => (r as any).id === placeId
@@ -730,6 +773,7 @@ const MapPage: React.FC = () => {
                     ref={bindItemRef(pid)}
                     $active={activeId === pid}
                     aria-current={activeId === pid ? "true" : undefined}
+                    onClick={() => goDetail(p)}
                   >
                     <CardTop>
                       <Title>{p.title || "title"}</Title>
@@ -737,19 +781,29 @@ const MapPage: React.FC = () => {
                       <BookmarkBtn
                         type="button"
                         aria-pressed={p.isBookmarked}
-                        aria-label={p.isBookmarked ? "북마크 해제" : "북마크 추가"}
+                        aria-label={
+                          p.isBookmarked ? "북마크 해제" : "북마크 추가"
+                        }
                         title={p.isBookmarked ? "북마크 해제" : "북마크 추가"}
-                        onClick={() => toggleBookmark?.(pid)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleBookmark?.(pid);
+                        }}
                       >
-                        {p.isBookmarked ? <BookmarkBlueSvg /> : <BookmarkGraySvg />}
+                        {p.isBookmarked ? (
+                          <BookmarkBlueSvg />
+                        ) : (
+                          <BookmarkGraySvg />
+                        )}
                       </BookmarkBtn>
-
+<MetaRow>
+                        <MetaMuted>{p.addr1}</MetaMuted>
+                      </MetaRow>
                       <MetaRow>
                         <MetaPrimary>
                           <StarIcon /> {score}
                         </MetaPrimary>
-                        <MetaMuted>reviews {p.reviewCount}</MetaMuted>
-                        <MetaMuted>{p.addr1}</MetaMuted>
+                        <MetaMuted>리뷰 {p.reviewCount}</MetaMuted>
                       </MetaRow>
 
                       <TagRow>
@@ -859,7 +913,7 @@ const MapLayer = styled.div`
 const Toolbar = styled.div`
   position: absolute;
   top: 14px;
-  left: 30%;
+  left: 35%;
   transform: translateX(-50%);
   display: flex;
   gap: 36px;
@@ -903,7 +957,7 @@ const Menu = styled.ul<{ $open?: boolean }>`
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
-  width: 110px;
+  width: 130px;
   background: ${({ theme }) => theme.color.white};
   border: 1px solid ${({ theme }) => theme.color.gray200};
   border-radius: 14px;
@@ -954,7 +1008,7 @@ const LeftPanel = styled.aside`
   position: absolute;
   left: 24px;
   z-index: 20;
-  width: 320px;
+  width: 350px;
   background: ${({ theme }) => theme.color.white};
   border-radius: 24px;
 `;
@@ -1001,6 +1055,7 @@ const ListCard = styled.div<{ $active?: boolean }>`
   position: relative;
   padding: 10px 10px 16px;
   border-radius: 14px;
+  cursor: pointer;
 
   /* 활성 카드 하이라이트 */
   background: ${({ theme, $active }) =>
@@ -1013,7 +1068,7 @@ const ListCard = styled.div<{ $active?: boolean }>`
 const CardTop = styled.div`
   position: relative;
   border-radius: 14px;
-  padding: 14px 16px 12px;
+  padding: 0px 16px 12px;
 `;
 const Title = styled.h3`
   margin: 0 0 8px 0;
@@ -1021,6 +1076,7 @@ const Title = styled.h3`
   line-height: 1.2;
   font-weight: 800;
   color: ${({ theme }) => theme.color.gray900};
+  text-align: left;
 `;
 const MetaRow = styled.div`
   display: flex;
@@ -1036,14 +1092,14 @@ const MetaPrimary = styled.span`
   font-weight: 700;
   color: ${({ theme }) => theme.color.gray900};
   svg {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     transform: translateY(1px);
   }
 `;
 const MetaMuted = styled.span`
   color: ${({ theme }) => theme.color.gray400};
-  font-size: 16px;
+  font-size: 14px;
 `;
 const TagRow = styled.div`
   display: flex;
@@ -1108,7 +1164,7 @@ const Divider = styled.hr`
   border: 0;
   height: 1px;
   background: ${({ theme }) => theme.color.gray200};
-  margin: 16px 0 0;
+  margin: 25px 0 0;
 `;
 
 /* 좌표 토스트 */
