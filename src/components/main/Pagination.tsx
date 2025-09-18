@@ -2,9 +2,9 @@ import React from "react";
 import styled from "styled-components";
 
 interface PaginationProps {
-  page: number; // 현재 페이지 (1-based)
-  totalPages: number;
-  onPageChange: (n: number) => void;
+  page: number; // 현재 페이지 (0-based)
+  totalPages: number; // 총 페이지 수
+  onPageChange: (n: number) => void; // 0-based 페이지 변경
 }
 
 const Pagination: React.FC<PaginationProps> = ({
@@ -16,13 +16,13 @@ const Pagination: React.FC<PaginationProps> = ({
 
   const maxVisible = 5;
 
-  // 보여줄 페이지 범위 계산
-  let start = Math.max(1, page - Math.floor(maxVisible / 2));
+  // 보여줄 페이지 범위 계산 (UI용은 1-based)
+  let start = Math.max(0, page - Math.floor(maxVisible / 2));
   let end = start + maxVisible - 1;
 
-  if (end > totalPages) {
-    end = totalPages;
-    start = Math.max(1, end - maxVisible + 1);
+  if (end > totalPages - 1) {
+    end = totalPages - 1;
+    start = Math.max(0, end - maxVisible + 1);
   }
 
   const pages = Array.from({ length: end - start + 1 }, (_, i) => start + i);
@@ -30,8 +30,8 @@ const Pagination: React.FC<PaginationProps> = ({
   return (
     <Wrapper>
       <PageArrow
-        disabled={page <= 1}
-        onClick={() => onPageChange(Math.max(1, page - 1))}
+        disabled={page <= 0}
+        onClick={() => onPageChange(Math.max(0, page - 1))}
         aria-label="이전 페이지"
       >
         &lt;
@@ -39,13 +39,13 @@ const Pagination: React.FC<PaginationProps> = ({
 
       {pages.map((n) => (
         <PageBtn key={n} $active={n === page} onClick={() => onPageChange(n)}>
-          {n}
+          {n + 1 /* 사용자에게는 1-based로 표시 */}
         </PageBtn>
       ))}
 
       <PageArrow
-        disabled={page >= totalPages}
-        onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+        disabled={page >= totalPages - 1}
+        onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
         aria-label="다음 페이지"
       >
         &gt;
