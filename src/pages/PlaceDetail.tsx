@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { useLocation } from "react-router-dom";
 import { ReactComponent as AirPlane } from "../assets/main/Airplane.svg";
 import { ReactComponent as AirPlaneReivew } from "../assets/place/AirplaneReview.svg";
+import { ReactComponent as AirPlaneReivewX } from "../assets/place/AirplaneReviewX.svg";
 import { ReactComponent as BookmarkWhite } from "../assets/place/BookmarkWhite.svg";
 import { ReactComponent as BookmarkBlue } from "../assets/place/BookmarkBlue.svg";
 import { ReactComponent as ImageLeft } from "../assets/place/ImageLeft.svg";
@@ -14,6 +15,8 @@ import { getPlace, getPlaceUserNull } from "../api/Place";
 import KakaoMap from "../components/place/KakaoMap";
 import { deleteBookmark, postBookmark } from "../api/Bookmark";
 import ReviewModal from "../components/place/ReviewModal";
+import { getReview } from "../api/Review";
+import { TAGS } from "../constants/Tags";
 
 interface Place {
   title: string;
@@ -238,6 +241,60 @@ const PlaceDetail: React.FC = () => {
     }
   };
 
+  // 리뷰 상태
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsError, setReviewsError] = useState<string | null>(null);
+
+  // 리뷰 불러오기
+  const fetchReviews = async () => {
+    if (!placeDetail?.id) return;
+    setReviewsLoading(true);
+    setReviewsError(null);
+    try {
+      const res = await getReview(placeDetail.id, "LATEST", 100);
+      // 실제 리뷰 배열만 추출
+      setReviews(res.data.reviewResponses || []);
+    } catch (error: any) {
+      setReviewsError(error.message || "리뷰 조회 실패");
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  // placeDetail이 바뀔 때 리뷰 호출
+  useEffect(() => {
+    fetchReviews();
+  }, [placeDetail]);
+
+  const loadReviews = async () => {
+    if (!placeDetail?.id) return;
+    try {
+      const res = await getReview(placeDetail.id, "LATEST", 100);
+      if (res.data?.reviewResponses) {
+        setReviews(res.data.reviewResponses);
+      }
+    } catch (error) {
+      console.error("리뷰 조회 실패", error);
+    }
+  };
+
+  useEffect(() => {
+    loadReviews();
+  }, [placeDetail?.id]);
+
+  const renderStars = (score: number) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      if (i <= Math.floor(score)) {
+        stars.push(<AirPlaneReivew key={i} />);
+      } else {
+        stars.push(<AirPlaneReivewX key={i} />);
+      }
+    }
+    return stars;
+  };
+
   return (
     <Container>
       <Content>
@@ -377,49 +434,58 @@ const PlaceDetail: React.FC = () => {
               </SectionTitle>
               <ReviewHeader>
                 <Rating>
-                  <AirPlaneReivew />
-                  <AirPlaneReivew />
-                  <AirPlaneReivew />
-                  <AirPlaneReivew />
-                  <AirPlaneReivew /> 5.0
+                  {placeDetail?.reviewScoreAverage
+                    ? renderStars(placeDetail.reviewScoreAverage)
+                    : Array(5).fill(<AirPlaneReivewX />)}
+                  <span>{placeDetail?.reviewScoreAverage?.toFixed(1)}</span>
                 </Rating>
                 <ReviewButton onClick={() => setIsReviewModalOpen(true)}>
                   리뷰 작성하기
                 </ReviewButton>
               </ReviewHeader>
               <ReviewCardBox>
-                <ReviewCard
-                  reviewer="숨은나라찾기"
-                  score={5}
-                  tags={["외국느낌 낭낭", "사진찍기좋음"]}
-                  text="리뷰 내용입니다. 리뷰 내용입니다."
-                  images={[
-                    "https://placehold.co/150",
-                    "https://placehold.co/150",
-                  ]}
-                  date="2025.06.15"
-                />
-                <ReviewCard
-                  reviewer="숨은나라찾기"
-                  score={5}
-                  tags={["외국느낌 낭낭", "사진찍기좋음"]}
-                  text="리뷰 내용입니다. 리뷰 내용입니다."
-                  images={[
-                    "https://placehold.co/150",
-                    "https://placehold.co/150",
-                    "https://placehold.co/150",
-                    "https://placehold.co/150",
-                  ]}
-                  date="2025.06.15"
-                />
+                <Sequence>
+                  <span>리뷰 많은 순</span> | 거리순 | 평점순 | 조회순
+                </Sequence>
+                {reviewsLoading && <div>리뷰 로딩중...</div>}
+                {reviewsError && <div>리뷰 불러오기 실패: {reviewsError}</div>}
+                {!reviewsLoading && !reviewsError && reviews.length === 0 && (
+                  <div>리뷰가 없습니다.</div>
+                )}
+                {!reviewsLoading &&
+                  !reviewsError &&
+                  reviews.map((review) => (
+                    <ReviewCard
+                      key={review.id}
+                      reviewer={review.userNickname}
+                      score={review.score}
+                      tags={review.tags.map(
+                        (tagKey: string) =>
+                          TAGS.find((t) => t.key === tagKey)?.label || tagKey
+                      )}
+                      text={review.content}
+                      images={review.imageUrls}
+                      date={
+                        review.createdAt
+                          ? new Date(review.createdAt).toLocaleDateString()
+                          : ""
+                      }
+                    />
+                  ))}
               </ReviewCardBox>
             </Section>
           </WrapperLeft>
           <WrapperRight />
         </BottomSection>
       </Content>
-      {isReviewModalOpen && (
-        <ReviewModal onClose={() => setIsReviewModalOpen(false)} />
+      {isReviewModalOpen && placeDetail?.id && (
+        <ReviewModal
+          onClose={() => {
+            setIsReviewModalOpen(false);
+            loadReviews(); // 모달 닫으면 리뷰 재조회
+          }}
+          placeId={placeDetail.id}
+        />
       )}
     </Container>
   );
@@ -731,4 +797,17 @@ const ReviewButton = styled.button`
     opacity: 0.8;
   }
 `;
+
+const Sequence = styled.div`
+  ${({ theme }) => theme.font.xs.semibold};
+  color: ${({ theme }) => theme.color.gray400};
+  cursor: pointer;
+  margin: 25px 0px;
+  text-align: left;
+
+  span {
+    color: ${({ theme }) => theme.color.gray800};
+  }
+`;
+
 const ReviewCardBox = styled.div``;

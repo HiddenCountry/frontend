@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled, { css, useTheme } from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,11 +9,26 @@ import { ReactComponent as Africa } from "../assets/home/Africa.svg";
 import { ReactComponent as Asia } from "../assets/home/Asia.svg";
 import { ReactComponent as Oceania } from "../assets/home/Oceania.svg";
 import { ReactComponent as Caution } from "../assets/home/Caution.svg";
+import OnboardingModal from "./OnboardingModal";
+import LoginModal from "./LoginModal";
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const [hoveredContinent, setHoveredContinent] = useState<string | null>(null);
+
+  // 로컬스토리지 accessToken 확인 후 모달 노출 여부 결정
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      setShowOnboarding(true);
+    }
+  }, []);
+
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
   const continents = [
     {
       name: "북아메리카",
@@ -76,6 +91,20 @@ const HomePage: React.FC = () => {
   return (
     <Container>
       <Main>
+        {/* 온보딩 모달 */}
+        {showOnboarding && (
+          <OnboardingModal
+            isOpen={showOnboarding}
+            onClose={() => setShowOnboarding(false)}
+          />
+        )}
+        {/* 로그인 모달 */}
+        {showLoginModal && (
+          <LoginModal
+            isOpen={showLoginModal}
+            onClose={() => setShowLoginModal(false)}
+          />
+        )}
         <Title>
           오늘은{" "}
           <AnimatePresence mode="wait">
@@ -123,12 +152,16 @@ const HomePage: React.FC = () => {
                 $highlight={isHovered}
                 onMouseEnter={() => setHoveredContinent(continent.name)}
                 onMouseLeave={() => setHoveredContinent(null)}
-                onClick={() =>
-                  continent.link &&
-                  navigate(
-                    `${continent.link}?countryRegion=${continent.countryRegion}`
-                  )
-                }
+                onClick={() => {
+                  const token = localStorage.getItem("accessToken");
+                  if (!token) {
+                    setShowLoginModal(true); // 로그인 모달 띄우기
+                  } else if (continent.link) {
+                    navigate(
+                      `${continent.link}?countryRegion=${continent.countryRegion}`
+                    );
+                  }
+                }}
               >
                 <Icon />
               </Continent>

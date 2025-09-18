@@ -18,7 +18,6 @@ import PlaceRegistrationPage from "./pages/PlaceRegistrationPage";
 import MyPage from "./pages/MyPage";
 import MapPage from "./pages/MapPage";
 
-
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
