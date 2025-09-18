@@ -5,7 +5,9 @@ import ListItem from "../components/mypage/ListItem";
 import { ReactComponent as ProfileSvg } from "../assets/mypage/profile.svg";
 import { getBookmarkPlaces } from "../api/Bookmark";
 import { useNavigate } from "react-router-dom";
+import { fetchMyReviews } from "../api/Mypage";
 
+/** ====== 북마크 타입 ====== */
 type BookmarkPlace = {
   id: number;
   firstImage: string | null;
@@ -17,11 +19,11 @@ type BookmarkPlace = {
   hashtags: string[];
   isBookmarked: boolean;
   title: string;
-  contentTypeName: string; // e.g. "RESTAURANT"
+  contentTypeName: string;
   contentTypeId: number;
   longitude: number;
   latitude: number;
-  contentTypeKoreanName?: string; // "음식점"
+  contentTypeKoreanName?: string;
   countryRegionKoreanNames?: string[];
   distance?: number | null;
 };
@@ -39,7 +41,19 @@ type BookmarkResponse = {
   };
 };
 
-const PAGE_SIZE = 6;
+/** ====== 리뷰 타입(서버 응답 반영) ====== */
+type MyReviewItem = {
+  id: number;
+  placeId: number;
+  placeTitle: string;
+  placeAddress: string;
+  content: string;
+  score: number;                // 평점
+  placeImageUrl: string | null; 
+};
+
+const PAGE_SIZE_BOOKMARK = 6;
+const PAGE_SIZE_REVIEW = 6;
 
 const MyPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"saved" | "reviews">("saved");
@@ -48,10 +62,88 @@ const MyPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // 서버 데이터
+  // ===== 저장한 장소(북마크) 상태 =====
   const [savedPlaces, setSavedPlaces] = useState<BookmarkPlace[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalElements, setTotalElements] = useState(0);
+  const [bmTotalPages, setBmTotalPages] = useState(1);
+  const [bmTotalElements, setBmTotalElements] = useState(0);
+
+  // ===== 내가 작성한 리뷰 상태 =====
+  const [myReviews, setMyReviews] = useState<MyReviewItem[]>([]);
+  const [rvTotalPages, setRvTotalPages] = useState(1);
+  const [rvTotalElements, setRvTotalElements] = useState(0);
+
+  const isSaved = activeTab === "saved";
+
+  // 탭 바꿀 때 페이지 1로 리셋
+  useEffect(() => {
+    setPage(1);
+    setError(null);
+  }, [activeTab]);
+
+  // ===== 북마크 목록 불러오기 =====
+  useEffect(() => {
+    if (!isSaved) return;
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const res: BookmarkResponse = await getBookmarkPlaces(
+          page - 1,
+          PAGE_SIZE_BOOKMARK
+        );
+
+        if (res?.isSuccess && res.data) {
+          setSavedPlaces(res.data.content ?? []);
+          setBmTotalPages(res.data.totalPage ?? 1);
+          setBmTotalElements(res.data.totalElement ?? 0);
+        } else {
+          setSavedPlaces([]);
+          setBmTotalPages(1);
+          setBmTotalElements(0);
+          setError(res?.message ?? "북마크 조회 실패");
+        }
+      } catch (e: any) {
+        setSavedPlaces([]);
+        setBmTotalPages(1);
+        setBmTotalElements(0);
+        setError(e?.message ?? "네트워크 오류");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [isSaved, page]);
+
+  // ===== 리뷰 목록 불러오기 =====
+  useEffect(() => {
+    if (isSaved) return; // 리뷰 탭일 때만
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // 서버는 0-based page
+        const data = await fetchMyReviews(page - 1, PAGE_SIZE_REVIEW);
+        // fetchMyReviews가 totalCount/totalPages 계산해줌
+        setMyReviews(data.items ?? []);
+        setRvTotalPages(data.totalPages ?? 1);
+        setRvTotalElements(data.totalCount ?? 0);
+      } catch (e: any) {
+        setMyReviews([]);
+        setRvTotalPages(1);
+        setRvTotalElements(0);
+        setError(e?.message ?? "리뷰 조회 실패");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [isSaved, page]);
 
   const goDetail = (p: BookmarkPlace) => {
     navigate("/main/place", {
@@ -75,58 +167,17 @@ const MyPage: React.FC = () => {
     });
   };
 
-  // (예시) 리뷰 탭 더미
-  const reviews = useMemo(
-    () =>
-      Array.from({ length: 7 }).map((_, i) => ({
-        id: i + 1,
-        placeName: "니지모리 스튜디오",
-        rating: 5.0,
-        content:
-          "리뷰 내용입니다. 리뷰 내용입니다. 리뷰 내용입니다. 리뷰 내용입니다. 리뷰 내용입니다...",
-      })),
-    []
-  );
-
-  const isSaved = activeTab === "saved";
-
-  // 페이지네이션으로 북마크 리스트 가져오기
-  useEffect(() => {
-    if (!isSaved) return; // 저장한 장소 탭에서만 호출
-    const token = localStorage.getItem("accessToken");
-    if (!token) return; // 로그인 안 된 경우엔 호출 안 함 (상위에서 가드 가능)
-
-    (async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // 서버는 0-based라서 page - 1
-        const res: BookmarkResponse = await getBookmarkPlaces(
-          page - 1,
-          PAGE_SIZE
-        );
-
-        if (res?.isSuccess && res.data) {
-          setSavedPlaces(res.data.content ?? []);
-          setTotalPages(res.data.totalPage ?? 1);
-          setTotalElements(res.data.totalElement ?? 0);
-        } else {
-          setSavedPlaces([]);
-          setTotalPages(1);
-          setTotalElements(0);
-          setError(res?.message ?? "조회 실패");
-        }
-      } catch (e: any) {
-        setSavedPlaces([]);
-        setTotalPages(1);
-        setTotalElements(0);
-        setError(e?.message ?? "네트워크 오류");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [isSaved, page]);
+  // 평점 → 메시지
+  const ratingMsg = (score: number) =>
+    score >= 5
+      ? "완벽했어요!"
+      : score >= 4
+      ? "좋았어요!"
+      : score >= 3
+      ? "나쁘지 않았어요"
+      : score >= 2
+      ? "그냥 그랬어요"
+      : "기대 이하였어요";
 
   return (
     <Container>
@@ -157,16 +208,13 @@ const MyPage: React.FC = () => {
           </Menu>
         </LeftCard>
 
-        {/* 페이지네이션 기반 섹션 */}
         <ListSection
           title={isSaved ? "저장한 장소 리스트" : "작성한 리뷰"}
-          count={isSaved ? totalElements : reviews.length}
+          count={isSaved ? bmTotalElements : rvTotalElements}
           page={page}
-          totalPages={
-            isSaved ? totalPages : Math.ceil(reviews.length / PAGE_SIZE)
-          }
+          totalPages={isSaved ? bmTotalPages : rvTotalPages}
           onPageChange={setPage}
-          loading={loading} // 로딩 표시만
+          loading={loading}
         >
           {error ? (
             <ErrorBox>⚠ {error}</ErrorBox>
@@ -181,28 +229,20 @@ const MyPage: React.FC = () => {
                       rating={p.reviewScoreAverage}
                       reviews={p.reviewCount}
                       address={p.addr1}
-                      imageUrl={p.firstImage}
+                      imageUrl={p.firstImage ?? undefined}
                       onClick={() => goDetail(p)}
                     />
                   ))
-                : reviews.map((r) => (
+                : myReviews.map((r) => (
                     <ListItem
                       key={r.id}
                       variant="review"
-                      placeName={r.placeName}
-                      rating={r.rating}
-                      message={
-                        r.rating >= 5
-                          ? "완벽했어요!"
-                          : r.rating >= 4
-                          ? "좋았어요!"
-                          : r.rating >= 3
-                          ? "나쁘지 않았어요"
-                          : r.rating >= 2
-                          ? "그냥 그랬어요"
-                          : "기대 이하였어요"
-                      }
+                      placeName={r.placeTitle}
+                      rating={r.score}
+                      message={ratingMsg(r.score)}
                       snippet={r.content}
+                      imageUrl={r.placeImageUrl ?? undefined}
+                      // TODO 상세페이지 연결
                     />
                   ))}
             </CardList>

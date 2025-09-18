@@ -8,7 +8,7 @@ type ListSectionProps = {
   page?: number;
   totalPages?: number;
   onPageChange?: (n: number) => void;
-  loading?: boolean; // ✅ 추가
+  loading?: boolean; 
 };
 
 const ListSection: React.FC<ListSectionProps> = ({

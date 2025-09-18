@@ -18,6 +18,7 @@ type ReviewItemProps = {
   rating: number;
   message: string; // 예: “좋았어요!”
   snippet: string;
+  imageUrl?: string | null;   // ✅ 추가
   onClick?: () => void;
 };
 
@@ -44,10 +45,10 @@ const ListItem: React.FC<Props> = (props) => {
     );
   }
 
-  const { placeName, rating, message, snippet, onClick } = props;
+  const { placeName, rating, message, snippet, imageUrl, onClick } = props; 
   return (
     <Row role="button" onClick={onClick}>
-      <Thumb />
+      <Thumb $src={imageUrl} role="img" aria-label={placeName} />
       <Texts>
         <Title title={placeName}>{placeName}</Title>
         <Meta>
@@ -74,7 +75,7 @@ export const Row = styled.li`
   padding: 14px 0;
   border-bottom: 1px solid ${({ theme }) => theme.color.gray200};
   cursor: pointer;
-  
+
   &:last-child {
     border-bottom: none;
   }
@@ -87,6 +88,7 @@ const Thumb = styled.div<{ $src?: string | null }>`
   background: ${({ theme }) => theme.color.gray200};
   border: 1px solid ${({ theme }) => theme.color.gray200};
   align-self: start;
+  overflow: hidden;
 
   ${({ $src }) =>
     $src &&
