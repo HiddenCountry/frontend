@@ -14,7 +14,6 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const [hoveredContinent, setHoveredContinent] = useState<string | null>(null);
-
   const continents = [
     {
       name: "북아메리카",
@@ -22,6 +21,7 @@ const HomePage: React.FC = () => {
       top: 150,
       left: 200,
       link: "/main",
+      countryRegion: "NORTH_AMERICA",
     },
     {
       name: "남아메리카",
@@ -29,11 +29,40 @@ const HomePage: React.FC = () => {
       top: 345,
       left: 252,
       link: "/main",
+      countryRegion: "SOUTH_AMERICA",
     },
-    { name: "아시아", icon: Asia, top: 149, left: 693, link: "/asia" },
-    { name: "유럽", icon: Europe, top: 126, left: 470, link: "/main" },
-    { name: "아프리카", icon: Africa, top: 307, left: 470, link: "/main" },
-    { name: "오세아니아", icon: Oceania, top: 350, left: 800, link: "/main" },
+    {
+      name: "아시아",
+      icon: Asia,
+      top: 149,
+      left: 693,
+      link: "/asia",
+      countryRegion: "ASIA",
+    },
+    {
+      name: "유럽",
+      icon: Europe,
+      top: 126,
+      left: 470,
+      link: "/main",
+      countryRegion: "EUROPE",
+    },
+    {
+      name: "아프리카",
+      icon: Africa,
+      top: 307,
+      left: 470,
+      link: "/main",
+      countryRegion: "AFRICA",
+    },
+    {
+      name: "오세아니아",
+      icon: Oceania,
+      top: 350,
+      left: 800,
+      link: "/main",
+      countryRegion: "OCEANIA",
+    },
   ];
 
   // 조사 붙여주는 함수
@@ -94,7 +123,12 @@ const HomePage: React.FC = () => {
                 $highlight={isHovered}
                 onMouseEnter={() => setHoveredContinent(continent.name)}
                 onMouseLeave={() => setHoveredContinent(null)}
-                onClick={() => continent.link && navigate(continent.link)}
+                onClick={() =>
+                  continent.link &&
+                  navigate(
+                    `${continent.link}?countryRegion=${continent.countryRegion}`
+                  )
+                }
               >
                 <Icon />
               </Continent>

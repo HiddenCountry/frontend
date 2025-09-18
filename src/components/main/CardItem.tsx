@@ -3,29 +3,68 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { ReactComponent as Boomark } from "../../assets/main/Bookmark.svg";
 import { ReactComponent as Airplane } from "../../assets/main/Airplane.svg";
+
 interface CardItemProps {
-  title: string;
-  addr1: string;
-  reviewScore: number;
+  id: number;
+  firstImage?: string;
+  contentId: number;
+  reviewScoreAverage: number;
   reviewCount: number;
+  addr1: string;
+  season: string;
   hashtags: string[];
   isBookmarked: boolean;
-  firstImage?: string;
+  title: string;
+  contentTypeName: string;
+  contentTypeId: number;
+  longitude: number;
+  latitude: number;
+  distance: number;
 }
 
 const CardItem: React.FC<CardItemProps> = ({
-  title,
-  addr1,
-  reviewScore,
+  id,
+  firstImage,
+  contentId,
+  reviewScoreAverage,
   reviewCount,
+  addr1,
+  season,
   hashtags,
   isBookmarked,
-  firstImage,
+  title,
+  contentTypeName,
+  contentTypeId,
+  longitude,
+  latitude,
+  distance,
 }) => {
   const navigate = useNavigate();
 
   return (
-    <Card onClick={() => navigate("place")}>
+    <Card
+      onClick={() =>
+        navigate("place", {
+          state: {
+            id,
+            contentId,
+            title,
+            firstImage,
+            reviewScoreAverage,
+            reviewCount,
+            addr1,
+            season,
+            hashtags,
+            isBookmarked,
+            contentTypeName,
+            contentTypeId,
+            longitude,
+            latitude,
+            distance,
+          },
+        })
+      }
+    >
       <BookmarkButton>{isBookmarked && <Boomark />}</BookmarkButton>
       <ImageBox
         style={{
@@ -38,7 +77,7 @@ const CardItem: React.FC<CardItemProps> = ({
         <Meta>
           <Airplane />
           <span>
-            {reviewScore} 리뷰 {reviewCount}
+            {reviewScoreAverage} 리뷰 {reviewCount}
           </span>
         </Meta>
         <Meta>{addr1}</Meta>
