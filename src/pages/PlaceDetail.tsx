@@ -10,7 +10,7 @@ import { ReactComponent as ImageRight } from "../assets/place/ImageRight.svg";
 import NearCard from "../components/place/NearCard";
 import ReviewCard from "../components/place/ReviewCard";
 import { fetchNearbyPlaces, fetchTourImages } from "../api/TourApi";
-import { getPlace } from "../api/Place";
+import { getPlace, getPlaceUserNull } from "../api/Place";
 import KakaoMap from "../components/place/KakaoMap";
 import { deleteBookmark, postBookmark } from "../api/Bookmark";
 import ReviewModal from "../components/place/ReviewModal";
@@ -179,13 +179,26 @@ const PlaceDetail: React.FC = () => {
       if (!contentId || !contentTypeId) return;
 
       try {
-        const res = await getPlace(
-          contentId,
-          contentTypeId,
-          place?.id ?? 0,
-          userLat!,
-          userLng!
-        );
+        let res;
+
+        if (userLat != null && userLng != null) {
+          // 위치정보 있는 경우
+          res = await getPlace(
+            contentId,
+            contentTypeId,
+            place?.id ?? 0,
+            userLat,
+            userLng
+          );
+        } else {
+          // 위치정보 없는 경우
+          res = await getPlaceUserNull(
+            contentId,
+            contentTypeId,
+            place?.id ?? 0
+          );
+        }
+
         if (res.data) {
           setPlaceDetail(res.data);
         }
@@ -203,7 +216,6 @@ const PlaceDetail: React.FC = () => {
   );
 
   useEffect(() => {
-    // placeDetail이 로드되면 상태 초기화
     if (placeDetail) {
       setIsBookmarked(placeDetail.isBookmarked ?? false);
     }
@@ -271,7 +283,9 @@ const PlaceDetail: React.FC = () => {
               {placeDetail?.contentTypeKoreanName}
             </Location>
             <Distance>
-              현재 위치에서 {placeDetail?.distance.toLocaleString()}m
+              {placeDetail?.distance != null
+                ? `현재 위치에서 ${placeDetail.distance.toLocaleString()}m`
+                : "위치 정보 없음"}
             </Distance>
             <BookmarkButton
               bookmarked={isBookmarked}

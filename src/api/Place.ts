@@ -67,7 +67,24 @@ export const getPlace = async (
     throw error;
   }
 };
-
+// 이색 관광지(id!=null) 상세 정보 조회 - 유저 위치정보 없애기
+export const getPlaceUserNull = async (
+  contentId: number,
+  contentTypeId: number,
+  id: number
+) => {
+  try {
+    const res = await request.get({
+      url: `/place?contentId=${contentId}&contentTypeId=${contentTypeId}&id=${id}`,
+      params: {},
+    });
+    console.log("이색 관광지 상세 조회 성공-위치X", res);
+    return res;
+  } catch (error) {
+    console.error("이색 관광지 상세 조회 성공-위치X :", error);
+    throw error;
+  }
+};
 // 인근 관광지(id==null) 상세 정보 조회
 export const getPlaceNear = async (
   contentId: number,
