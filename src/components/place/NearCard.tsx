@@ -3,21 +3,39 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 
 interface NearCardProps {
+  addr1: string;
+  contentid: string;
+  contenttypeid: string;
+  dist: string;
+  firstimage?: string;
   title: string;
-  subtitle: string;
-  imageUrl?: string;
 }
 
-const NearCard: React.FC<NearCardProps> = ({ title, subtitle, imageUrl }) => {
+const NearCard: React.FC<NearCardProps> = ({
+  addr1,
+  contentid,
+  contenttypeid,
+  dist,
+  firstimage,
+  title,
+}) => {
   const navigate = useNavigate();
   return (
-    <CardWrapper onClick={() => navigate("near")}>
+    <CardWrapper
+      onClick={() =>
+        navigate("near", {
+          state: { addr1, contentid, contenttypeid, dist, firstimage, title },
+        })
+      }
+    >
       <CardImageBox
-        style={{ backgroundImage: imageUrl ? `url(${imageUrl})` : undefined }}
+        style={{
+          backgroundImage: firstimage ? `url(${firstimage})` : undefined,
+        }}
       />
       <CardContent>
         <CardTitle>{title}</CardTitle>
-        <CardSubTitle>{subtitle}</CardSubTitle>
+        <CardSubTitle>{addr1}</CardSubTitle>
       </CardContent>
     </CardWrapper>
   );
