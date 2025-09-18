@@ -8,6 +8,7 @@ type SavedItemProps = {
   rating: number;
   reviews: number;
   address: string;
+  imageUrl?: string | null;
   onClick?: () => void;
 };
 
@@ -15,8 +16,8 @@ type ReviewItemProps = {
   variant: "review";
   placeName: string;
   rating: number;
-  message: string;     // 예: “좋았어요!”
-  snippet: string;  
+  message: string; // 예: “좋았어요!”
+  snippet: string;
   onClick?: () => void;
 };
 
@@ -24,10 +25,10 @@ type Props = SavedItemProps | ReviewItemProps;
 
 const ListItem: React.FC<Props> = (props) => {
   if (props.variant === "saved") {
-    const { name, rating, reviews, address, onClick } = props;
+    const { name, rating, reviews, address, imageUrl, onClick } = props;
     return (
       <Row role="button" onClick={onClick}>
-        <Thumb />
+        <Thumb $src={imageUrl} role="img" aria-label={name} />
         <Texts>
           <Title title={name}>{name}</Title>
           <Meta>
@@ -72,18 +73,29 @@ export const Row = styled.li`
   gap: 16px;
   padding: 14px 0;
   border-bottom: 1px solid ${({ theme }) => theme.color.gray200};
-
+  cursor: pointer;
+  
   &:last-child {
     border-bottom: none;
   }
 `;
 
-const Thumb = styled.div`
-  width: 80px;          
+const Thumb = styled.div<{ $src?: string | null }>`
+  width: 80px;
   height: 80px;
   border-radius: 12px;
   background: ${({ theme }) => theme.color.gray200};
+  border: 1px solid ${({ theme }) => theme.color.gray200};
   align-self: start;
+
+  ${({ $src }) =>
+    $src &&
+    `
+    background-image: url('${$src}');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  `}
 `;
 
 const Texts = styled.div`
