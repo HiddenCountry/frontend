@@ -1,42 +1,183 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
-import ListSection, {CardList} from './../components/mypage/ListSection';
+import ListSection, { CardList } from "../components/mypage/ListSection";
 import ListItem from "../components/mypage/ListItem";
 import { ReactComponent as ProfileSvg } from "../assets/mypage/profile.svg";
+import { getBookmarkPlaces } from "../api/Bookmark";
+import { useNavigate } from "react-router-dom";
+import { fetchMyReviews } from "../api/Mypage";
 
-type Place = { id: number; name: string; rating: number; reviews: number; address: string; };
-type Review = { id: number; placeName: string; rating: number; content: string; };
+/** ====== 북마크 타입 ====== */
+type BookmarkPlace = {
+  id: number;
+  firstImage: string | null;
+  contentId: number;
+  reviewScoreAverage: number;
+  reviewCount: number;
+  addr1: string;
+  season: string;
+  hashtags: string[];
+  isBookmarked: boolean;
+  title: string;
+  contentTypeName: string;
+  contentTypeId: number;
+  longitude: number;
+  latitude: number;
+  contentTypeKoreanName?: string;
+  countryRegionKoreanNames?: string[];
+  distance?: number | null;
+};
+
+type BookmarkResponse = {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  data: {
+    content: BookmarkPlace[];
+    totalPage: number;
+    totalElement: number;
+    currentPage: number; // 0-based
+    currentSize: number;
+  };
+};
+
+/** ====== 리뷰 타입(서버 응답 반영) ====== */
+type MyReviewItem = {
+  id: number;
+  placeId: number;
+  placeTitle: string;
+  placeAddress: string;
+  content: string;
+  score: number;                // 평점
+  placeImageUrl: string | null; 
+};
+
+const PAGE_SIZE_BOOKMARK = 6;
+const PAGE_SIZE_REVIEW = 6;
 
 const MyPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"saved" | "reviews">("saved");
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  const places: Place[] = useMemo(
-    () => Array.from({ length: 6 }).map((_, i) => ({
-      id: i + 1, name: "니지모리 스튜디오", rating: 4.9, reviews: 342,
-      address: "경기 동두천시 천보산로 567-12",
-    })), []
-  );
+  // ===== 저장한 장소(북마크) 상태 =====
+  const [savedPlaces, setSavedPlaces] = useState<BookmarkPlace[]>([]);
+  const [bmTotalPages, setBmTotalPages] = useState(1);
+  const [bmTotalElements, setBmTotalElements] = useState(0);
 
-  const reviews: Review[] = useMemo(
-    () => Array.from({ length: 7 }).map((_, i) => ({
-      id: i + 1, placeName: "니지모리 스튜디오", rating: 5.0,
-      content: "리뷰 내용입니다. 리뷰 내용입니다. 리뷰 내용입니다. 리뷰 내용입니다. 리뷰 내용입니다...",
-    })), []
-  );
+  // ===== 내가 작성한 리뷰 상태 =====
+  const [myReviews, setMyReviews] = useState<MyReviewItem[]>([]);
+  const [rvTotalPages, setRvTotalPages] = useState(1);
+  const [rvTotalElements, setRvTotalElements] = useState(0);
 
   const isSaved = activeTab === "saved";
-  const totalCount = isSaved ? places.length : reviews.length;
 
-  const RATING_MESSAGES: Record<number, string> = {
-    1: "기대 이하였어요",
-    2: "그냥 그랬어요",
-    3: "나쁘지 않았어요",
-    4: "좋았어요!",
-    5: "완벽했어요!",
+  // 탭 바꿀 때 페이지 1로 리셋
+  useEffect(() => {
+    setPage(1);
+    setError(null);
+  }, [activeTab]);
+
+  // ===== 북마크 목록 불러오기 =====
+  useEffect(() => {
+    if (!isSaved) return;
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const res: BookmarkResponse = await getBookmarkPlaces(
+          page - 1,
+          PAGE_SIZE_BOOKMARK
+        );
+
+        if (res?.isSuccess && res.data) {
+          setSavedPlaces(res.data.content ?? []);
+          setBmTotalPages(res.data.totalPage ?? 1);
+          setBmTotalElements(res.data.totalElement ?? 0);
+        } else {
+          setSavedPlaces([]);
+          setBmTotalPages(1);
+          setBmTotalElements(0);
+          setError(res?.message ?? "북마크 조회 실패");
+        }
+      } catch (e: any) {
+        setSavedPlaces([]);
+        setBmTotalPages(1);
+        setBmTotalElements(0);
+        setError(e?.message ?? "네트워크 오류");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [isSaved, page]);
+
+  // ===== 리뷰 목록 불러오기 =====
+  useEffect(() => {
+    if (isSaved) return; // 리뷰 탭일 때만
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // 서버는 0-based page
+        const data = await fetchMyReviews(page - 1, PAGE_SIZE_REVIEW);
+        // fetchMyReviews가 totalCount/totalPages 계산해줌
+        setMyReviews(data.items ?? []);
+        setRvTotalPages(data.totalPages ?? 1);
+        setRvTotalElements(data.totalCount ?? 0);
+      } catch (e: any) {
+        setMyReviews([]);
+        setRvTotalPages(1);
+        setRvTotalElements(0);
+        setError(e?.message ?? "리뷰 조회 실패");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [isSaved, page]);
+
+  const goDetail = (p: BookmarkPlace) => {
+    navigate("/main/place", {
+      state: {
+        id: p.id,
+        contentId: p.contentId,
+        title: p.title,
+        firstImage: p.firstImage,
+        reviewScoreAverage: p.reviewScoreAverage,
+        reviewCount: p.reviewCount,
+        addr1: p.addr1,
+        season: p.season,
+        hashtags: p.hashtags,
+        isBookmarked: !!p.isBookmarked,
+        contentTypeName: p.contentTypeName ?? p.contentTypeKoreanName,
+        contentTypeId: p.contentTypeId,
+        longitude: p.longitude,
+        latitude: p.latitude,
+        distance: p.distance,
+      },
+    });
   };
-  const getRatingMessage = (score: number) =>
-    RATING_MESSAGES[Math.min(5, Math.max(1, Math.round(score)))];
+
+  // 평점 → 메시지
+  const ratingMsg = (score: number) =>
+    score >= 5
+      ? "완벽했어요!"
+      : score >= 4
+      ? "좋았어요!"
+      : score >= 3
+      ? "나쁘지 않았어요"
+      : score >= 2
+      ? "그냥 그랬어요"
+      : "기대 이하였어요";
 
   return (
     <Container>
@@ -48,10 +189,20 @@ const MyPage: React.FC = () => {
           </Profile>
 
           <Menu>
-            <MenuItem role="tab" aria-selected={isSaved} $active={isSaved} onClick={() => setActiveTab("saved")}>
+            <MenuItem
+              role="tab"
+              aria-selected={isSaved}
+              $active={isSaved}
+              onClick={() => setActiveTab("saved")}
+            >
               저장한 장소 리스트
             </MenuItem>
-            <MenuItem role="tab" aria-selected={!isSaved} $active={!isSaved} onClick={() => setActiveTab("reviews")}>
+            <MenuItem
+              role="tab"
+              aria-selected={!isSaved}
+              $active={!isSaved}
+              onClick={() => setActiveTab("reviews")}
+            >
               작성한 리뷰
             </MenuItem>
           </Menu>
@@ -59,34 +210,43 @@ const MyPage: React.FC = () => {
 
         <ListSection
           title={isSaved ? "저장한 장소 리스트" : "작성한 리뷰"}
-          count={totalCount}
+          count={isSaved ? bmTotalElements : rvTotalElements}
           page={page}
-          totalPages={5}
+          totalPages={isSaved ? bmTotalPages : rvTotalPages}
           onPageChange={setPage}
+          loading={loading}
         >
-          <CardList>
-            {isSaved
-              ? places.map((p) => (
-                  <ListItem
-                    key={p.id}
-                    variant="saved"
-                    name={p.name}
-                    rating={p.rating}
-                    reviews={p.reviews}
-                    address={p.address}
-                  />
-                ))
-              : reviews.map((r) => (
-                  <ListItem
-                    key={r.id}
-                    variant="review"
-                    placeName={r.placeName}
-                    rating={r.rating}
-                    message={getRatingMessage(r.rating)}
-                    snippet={r.content}
-                  />
-                ))}
-          </CardList>
+          {error ? (
+            <ErrorBox>⚠ {error}</ErrorBox>
+          ) : (
+            <CardList>
+              {isSaved
+                ? savedPlaces.map((p) => (
+                    <ListItem
+                      key={p.id}
+                      variant="saved"
+                      name={p.title}
+                      rating={p.reviewScoreAverage}
+                      reviews={p.reviewCount}
+                      address={p.addr1}
+                      imageUrl={p.firstImage ?? undefined}
+                      onClick={() => goDetail(p)}
+                    />
+                  ))
+                : myReviews.map((r) => (
+                    <ListItem
+                      key={r.id}
+                      variant="review"
+                      placeName={r.placeTitle}
+                      rating={r.score}
+                      message={ratingMsg(r.score)}
+                      snippet={r.content}
+                      imageUrl={r.placeImageUrl ?? undefined}
+                      // TODO 상세페이지 연결
+                    />
+                  ))}
+            </CardList>
+          )}
         </ListSection>
       </Main>
     </Container>
@@ -95,6 +255,7 @@ const MyPage: React.FC = () => {
 
 export default MyPage;
 
+/* ===== styles ===== */
 const Container = styled.div`
   min-height: 100vh;
   background: ${({ theme }) => theme.color.gray100};
@@ -147,12 +308,12 @@ const Menu = styled.div`
 
 const MenuItem = styled.button<{ $active?: boolean }>`
   ${({ theme }) => theme.font.md.medium};
-  position: relative;             
+  position: relative;
   z-index: 0;
   text-align: center;
   width: 100%;
   padding: 16px 20px;
-  background: transparent;        
+  background: transparent;
   color: ${({ theme, $active }) =>
     $active ? theme.color.primary600 : theme.color.gray700};
   border: none;
@@ -162,12 +323,12 @@ const MenuItem = styled.button<{ $active?: boolean }>`
   &::after {
     content: "";
     position: absolute;
-    inset: 8px 14px;           
+    inset: 8px 14px;
     border-radius: 16px;
     background: ${({ theme }) => theme.color.gray100};
     opacity: 0;
-    transition: opacity .15s ease;
-    z-index: -1;       
+    transition: opacity 0.15s ease;
+    z-index: -1;
   }
 
   &:hover::after {
@@ -176,4 +337,14 @@ const MenuItem = styled.button<{ $active?: boolean }>`
   &:focus-visible::after {
     opacity: ${({ $active }) => ($active ? 0 : 1)};
   }
+`;
+
+const ErrorBox = styled.div`
+  ${({ theme }) => theme.font.sm.medium};
+  color: ${({ theme }) => theme.color.red800 ?? "#c62828"};
+  background: ${({ theme }) => theme.color.red100 ?? "#ffebee"};
+  border: 1px solid ${({ theme }) => theme.color.red200 ?? "#ffcdd2"};
+  padding: 16px;
+  border-radius: 12px;
+  margin-top: 8px;
 `;

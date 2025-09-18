@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled, { css } from "styled-components";
 
 const TITLE_MAX = 20;
@@ -12,7 +13,14 @@ const PlaceRegistrationPage: React.FC = () => {
   const bodyCount = useMemo(() => `${body.length}/${BODY_MAX}`, [body]);
 
   const isValid = title.trim().length > 0 && body.trim().length > 0;
-
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("로그인이 필요합니다. 로그인 페이지로 이동해 주세요.");
+      navigate("/login", { replace: true });
+    }
+  }, [navigate]);
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValid) return;
