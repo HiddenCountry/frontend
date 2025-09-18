@@ -553,6 +553,13 @@ const MapPage: React.FC = () => {
     });
   };
   const toggleBookmark = async (placeId: number) => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("로그인이 필요합니다. 로그인 페이지로 이동해 주세요.");
+      navigate("/login");
+      return;
+    }
+
     // 현재 상태 확인
     const current = results.find(
       (r) => (r as any).id === placeId
