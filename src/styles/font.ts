@@ -36,6 +36,7 @@ const FONT = {
   md: createFontStyle("16px", "150%"),
   sm: createFontStyle("14px", "150%"),
   xs: createFontStyle("12px", "150%"),
+  xxs: createFontStyle("10px", "150%"),
 };
 
 export default FONT;

@@ -796,13 +796,14 @@ const MapPage: React.FC = () => {
                           <BookmarkGraySvg />
                         )}
                       </BookmarkBtn>
-
+<MetaRow>
+                        <MetaMuted>{p.addr1}</MetaMuted>
+                      </MetaRow>
                       <MetaRow>
                         <MetaPrimary>
                           <StarIcon /> {score}
                         </MetaPrimary>
-                        <MetaMuted>reviews {p.reviewCount}</MetaMuted>
-                        <MetaMuted>{p.addr1}</MetaMuted>
+                        <MetaMuted>리뷰 {p.reviewCount}</MetaMuted>
                       </MetaRow>
 
                       <TagRow>
@@ -912,7 +913,7 @@ const MapLayer = styled.div`
 const Toolbar = styled.div`
   position: absolute;
   top: 14px;
-  left: 30%;
+  left: 35%;
   transform: translateX(-50%);
   display: flex;
   gap: 36px;
@@ -956,7 +957,7 @@ const Menu = styled.ul<{ $open?: boolean }>`
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
-  width: 110px;
+  width: 130px;
   background: ${({ theme }) => theme.color.white};
   border: 1px solid ${({ theme }) => theme.color.gray200};
   border-radius: 14px;
@@ -1007,7 +1008,7 @@ const LeftPanel = styled.aside`
   position: absolute;
   left: 24px;
   z-index: 20;
-  width: 320px;
+  width: 350px;
   background: ${({ theme }) => theme.color.white};
   border-radius: 24px;
 `;
@@ -1067,7 +1068,7 @@ const ListCard = styled.div<{ $active?: boolean }>`
 const CardTop = styled.div`
   position: relative;
   border-radius: 14px;
-  padding: 14px 16px 12px;
+  padding: 0px 16px 12px;
 `;
 const Title = styled.h3`
   margin: 0 0 8px 0;
@@ -1075,6 +1076,7 @@ const Title = styled.h3`
   line-height: 1.2;
   font-weight: 800;
   color: ${({ theme }) => theme.color.gray900};
+  text-align: left;
 `;
 const MetaRow = styled.div`
   display: flex;
@@ -1090,14 +1092,14 @@ const MetaPrimary = styled.span`
   font-weight: 700;
   color: ${({ theme }) => theme.color.gray900};
   svg {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     transform: translateY(1px);
   }
 `;
 const MetaMuted = styled.span`
   color: ${({ theme }) => theme.color.gray400};
-  font-size: 16px;
+  font-size: 14px;
 `;
 const TagRow = styled.div`
   display: flex;
@@ -1162,7 +1164,7 @@ const Divider = styled.hr`
   border: 0;
   height: 1px;
   background: ${({ theme }) => theme.color.gray200};
-  margin: 16px 0 0;
+  margin: 25px 0 0;
 `;
 
 /* 좌표 토스트 */
