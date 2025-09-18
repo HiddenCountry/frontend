@@ -21,10 +21,6 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
 }) => {
   return (
     <CardWrapper>
-      <Sequence>
-        <span>리뷰 많은 순</span> | 거리순 | 평점순 | 조회순
-      </Sequence>
-
       <ReviewHeader>
         <Reviewer>{reviewer}</Reviewer>
         <ReportBtn>신고</ReportBtn>
@@ -61,17 +57,6 @@ const CardWrapper = styled.div`
   border-top: 1px solid #eee;
   padding: 16px 0;
   text-align: left;
-`;
-
-const Sequence = styled.div`
-  ${({ theme }) => theme.font.xs.semibold};
-  color: ${({ theme }) => theme.color.gray400};
-  cursor: pointer;
-  margin: 25px 0px;
-
-  span {
-    color: ${({ theme }) => theme.color.gray800};
-  }
 `;
 
 const ReviewHeader = styled.div`
