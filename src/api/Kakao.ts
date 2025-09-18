@@ -1,4 +1,5 @@
 import { request } from "./client";
+const baseURL = process.env.REACT_APP_BASE_URL;
 
 export const patchNickname = async (data: { nickname: string }) => {
   const accessToken = localStorage.getItem("accessToken");
@@ -8,7 +9,7 @@ export const patchNickname = async (data: { nickname: string }) => {
   }
 
   try {
-    const response = await fetch("http://3.36.94.121:8080/nickname", {
+    const response = await fetch(baseURL + `/nickname`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
