@@ -46,10 +46,11 @@ type MyReviewItem = {
   id: number;
   placeId: number;
   placeTitle: string;
-  placeAddress: string;
+  contentId: number;
+  contentTypeId: number;
   content: string;
-  score: number;                // 평점
-  placeImageUrl: string | null; 
+  score: number;
+  placeImageUrl: string | null;
 };
 
 const PAGE_SIZE_BOOKMARK = 6;
@@ -167,6 +168,18 @@ const MyPage: React.FC = () => {
     });
   };
 
+  const goDetailFromReview = (r: MyReviewItem) => {
+    navigate("/main/place", {
+      state: {
+        id: r.placeId,               
+        contentId: r.contentId,
+        title: r.placeTitle,
+        firstImage: r.placeImageUrl,  
+        contentTypeId: r.contentTypeId,
+      },
+    });
+  };
+
   // 평점 → 메시지
   const ratingMsg = (score: number) =>
     score >= 5
@@ -242,7 +255,7 @@ const MyPage: React.FC = () => {
                       message={ratingMsg(r.score)}
                       snippet={r.content}
                       imageUrl={r.placeImageUrl ?? undefined}
-                      // TODO 상세페이지 연결
+                      onClick={() => goDetailFromReview(r)}
                     />
                   ))}
             </CardList>

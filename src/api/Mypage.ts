@@ -42,7 +42,8 @@ export interface MyReviewItem {
   id: number;
   placeId: number;
   placeTitle: string;
-  placeAddress: string;
+  contentId: number;
+  contentTypeId: number;
   content: string;
   score: number;
   placeImageUrl: string | null;
@@ -97,7 +98,7 @@ export async function fetchBookmarkPlaces(
 
 /** 마이페이지 내가 작성한 리뷰 (GET /review/mypage?page=&size=) */
 export async function fetchMyReviews(
-  page = 0,  // 0-based
+  page = 0,   // 0-based
   size = 5
 ): Promise<MyReviewsPage> {
   const res = await request.get({
@@ -107,13 +108,16 @@ export async function fetchMyReviews(
   const ok = ensureSuccess<RawMyReviewsPayload>(res);
   const data = ok.data;
 
-  const totalPages = Math.max(1, Math.ceil((data.reviewCount || 0) / (data.size || size)));
+  const totalPages = Math.max(
+    1,
+    Math.ceil((data.reviewCount || 0) / (data.size || size))
+  );
 
   return {
     items: data.myPageReviewResponses ?? [],
     totalCount: data.reviewCount ?? 0,
     totalPages,
-    page: (data.page ?? page) + 1, // 1-based로 변환
+    page: (data.page ?? page) + 1,  // 1-based로 변환
     size: data.size ?? size,
     hasNext: !!data.hasNext,
   };
