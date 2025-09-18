@@ -1,13 +1,14 @@
 import React, { ReactNode } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 
 type ListSectionProps = {
   title: string;
   count?: number | ReactNode;
-  children: ReactNode;               
-  page?: number;                  
+  children: ReactNode;
+  page?: number;
   totalPages?: number;
   onPageChange?: (n: number) => void;
+  loading?: boolean; 
 };
 
 const ListSection: React.FC<ListSectionProps> = ({
@@ -17,37 +18,45 @@ const ListSection: React.FC<ListSectionProps> = ({
   page,
   totalPages = 5,
   onPageChange,
+  loading = false, // ✅ 기본값
 }) => {
   const showPagination = typeof page === "number" && !!onPageChange;
 
   return (
-    <Card>
+    <Card aria-busy={loading}>
       <SectionHeader>
         <SectionTitle>{title}</SectionTitle>
         {typeof count !== "undefined" && <CountBadge>{count}</CountBadge>}
       </SectionHeader>
 
-      {children}
+      {loading ? (
+        <LoadingWrap>
+          <Spinner aria-label="로딩 중" />
+          <LoadingText>불러오는 중…</LoadingText>
+        </LoadingWrap>
+      ) : (
+        children
+      )}
 
       {showPagination && (
         <Pagination>
           <PageArrow
-            disabled={page <= 1}
-            onClick={() => onPageChange(Math.max(1, page - 1))}
+            disabled={page! <= 1}
+            onClick={() => onPageChange!(Math.max(1, page! - 1))}
             aria-label="이전 페이지"
           >
             &lt;
           </PageArrow>
 
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-            <PageBtn key={n} $active={n === page} onClick={() => onPageChange(n)}>
+            <PageBtn key={n} $active={n === page} onClick={() => onPageChange!(n)}>
               {n}
             </PageBtn>
           ))}
 
           <PageArrow
-            disabled={page >= totalPages}
-            onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+            disabled={page! >= totalPages}
+            onClick={() => onPageChange!(Math.min(totalPages, page! + 1))}
             aria-label="다음 페이지"
           >
             &gt;
@@ -65,6 +74,7 @@ export const CardList = styled.ul`
   margin-top: 12px;
 `;
 
+/* ===== styles ===== */
 const Card = styled.section`
   background: ${({ theme }) => theme.color.white};
   border-radius: 16px;
@@ -123,4 +133,27 @@ const PageArrow = styled(PageBtn)`
     opacity: 0.4;
     cursor: not-allowed;
   }
+`;
+
+/* 로딩 UI */
+const spin = keyframes`
+  to { transform: rotate(360deg); }
+`;
+const LoadingWrap = styled.div`
+  display: grid;
+  place-items: center;
+  padding: 40px 0;
+`;
+const Spinner = styled.div`
+  width: 28px;
+  height: 28px;
+  border: 3px solid ${({ theme }) => theme.color.gray200};
+  border-top-color: ${({ theme }) => theme.color.primary500};
+  border-radius: 50%;
+  animation: ${spin} 0.8s linear infinite;
+`;
+const LoadingText = styled.div`
+  ${({ theme }) => theme.font.sm.medium};
+  margin-top: 10px;
+  color: ${({ theme }) => theme.color.gray600};
 `;
