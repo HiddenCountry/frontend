@@ -61,7 +61,7 @@ const MainPage: React.FC = () => {
   const initialCountryRegion = queryParams.get("countryRegion") || "EUROPE";
 
   const [places, setPlaces] = useState<Place[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [searchKeyword, setSearchKeyword] = useState("");
   const cardsPerPage = 6;
@@ -72,7 +72,7 @@ const MainPage: React.FC = () => {
     contentType: [] as string[],
     season: [] as string[],
     countryRegion: initialCountryRegion,
-    sortType: "REVIEW_COUNT_DESC",
+    sortType: "VIEW_COUNT_DESC",
   });
 
   //Banner용 나라 및 아이콘
@@ -86,7 +86,7 @@ const MainPage: React.FC = () => {
   const fetchPlaces = async (lat: number, lng: number) => {
     try {
       const res = await getPlaces(
-        currentPage - 1, // API에 0페이지부터 시작
+        currentPage, // API에 0페이지부터 시작
         cardsPerPage,
         filters.areaCode,
         filters.contentType,
@@ -153,7 +153,7 @@ const MainPage: React.FC = () => {
               onSearch={() => setCurrentPage(0)}
             />
             <Sequence>
-              <span>리뷰 많은 순</span> | 거리순 | 평점순 | 조회순
+              <span>조회순</span> | 거리순 | 평점순 | 리뷰 많은 순
             </Sequence>
             <CardBox>
               {places.map((place) => (
