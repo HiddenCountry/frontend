@@ -76,7 +76,13 @@ function useKakaoLoader(appkey: string) {
 /* ============ UI용 타입/데이터 ============ */
 type CategoryUI = "식당" | "숙소" | "관광지";
 type RegionUI =
-  | "아시아"
+  | "일본"
+  | "중화/중국"
+  | "몽골"
+  | "터키"
+  | "아랍"
+  | "인도"
+  | "동남아시아"
   | "북아메리카"
   | "남아메리카"
   | "유럽"
@@ -85,7 +91,13 @@ type RegionUI =
 
 const CATEGORIES: CategoryUI[] = ["식당", "숙소", "관광지"];
 const REGIONS: RegionUI[] = [
-  "아시아",
+  "일본",
+  "중화/중국",
+  "몽골",
+  "터키",
+  "아랍",
+  "인도",
+  "동남아시아",
   "북아메리카",
   "남아메리카",
   "유럽",
@@ -108,16 +120,13 @@ const CATEGORY_TO_CONTENT_TYPES: Record<CategoryUI, ContentTypeApi[]> = {
 };
 
 const REGION_TO_COUNTRIES: Record<RegionUI, CountryRegionApi[]> = {
-  아시아: [
-    "ASIA",
-    "TURKEY",
-    "CHINA",
-    "MONGOLIA",
-    "ARAB",
-    "INDIA",
-    "SOUTHEAST_ASIA",
-    "JAPAN",
-  ],
+  일본: ["JAPAN"],
+  "중화/중국": ["CHINA"],
+  몽골: ["MONGOLIA"],
+  터키: ["TURKEY"],
+  아랍: ["ARAB"],
+  인도: ["INDIA"],
+  동남아시아: ["SOUTHEAST_ASIA"],
   북아메리카: ["NORTH_AMERICA"],
   남아메리카: ["SOUTH_AMERICA"],
   유럽: ["EUROPE"],
