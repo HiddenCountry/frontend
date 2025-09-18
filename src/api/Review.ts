@@ -1,6 +1,8 @@
 import { request } from "./client";
 import axios from "axios";
 
+const baseURL = process.env.REACT_APP_BASE_URL;
+
 export const getReview = async (
   placeId: number,
   sort: string,
@@ -51,16 +53,12 @@ export const postReview = async (placeId: number, data: ReviewRequest) => {
     });
   }
 
-  const response = await axios.post(
-    `http://3.36.94.121:8080/review/${placeId}`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${data.token}`,
-      },
-    }
-  );
+  const response = await axios.post(baseURL + `/review/${placeId}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${data.token}`,
+    },
+  });
 
   return response.data;
 };
