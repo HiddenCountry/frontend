@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 import {
   getPlacesOnMap,
   PlaceMapItem,
@@ -24,6 +25,7 @@ import flagSEA from "../assets/map/southeast_asia.svg";
 import flagJP from "../assets/map/japan.svg";
 import { fetchTourImages } from "../api/TourApi";
 import { postBookmark, deleteBookmark } from "../api/Bookmark";
+
 const TOURAPI_KEY = process.env.REACT_APP_TOUR_SERVICE_KEY;
 
 /* ============ kakao 전역 타입 ============ */
@@ -524,7 +526,32 @@ const MapPage: React.FC = () => {
   const itemRefs = React.useRef<Record<number, HTMLDivElement | null>>({});
   // 북마크 처리중인 카드들(중복 클릭 방지)
   const [bmPending, setBmPending] = React.useState<Set<number>>(new Set());
+  const navigate = useNavigate();
 
+  const goDetail = (p: PlaceMapItem) => {
+    const anyP = p as any;
+
+    navigate("/main/place", {
+      state: {
+        id: anyP.id as number,
+        contentId: anyP.contentId,
+        title: p.title,
+        firstImage: anyP.firstImage,
+        reviewScoreAverage: p.reviewScoreAverage,
+        reviewCount: p.reviewCount,
+        addr1: p.addr1,
+        season: anyP.season,
+        hashtags: anyP.hashtags,
+        isBookmarked: !!p.isBookmarked,
+        contentTypeName:
+          anyP.contentTypeName ?? anyP.contentTypeKoreanName ?? undefined,
+        contentTypeId: anyP.contentTypeId,
+        longitude: p.longitude,
+        latitude: p.latitude,
+        distance: anyP.distance,
+      },
+    });
+  };
   const toggleBookmark = async (placeId: number) => {
     // 현재 상태 확인
     const current = results.find(
@@ -730,6 +757,7 @@ const MapPage: React.FC = () => {
                     ref={bindItemRef(pid)}
                     $active={activeId === pid}
                     aria-current={activeId === pid ? "true" : undefined}
+                    onClick={() => goDetail(p)}
                   >
                     <CardTop>
                       <Title>{p.title || "title"}</Title>
@@ -737,11 +765,20 @@ const MapPage: React.FC = () => {
                       <BookmarkBtn
                         type="button"
                         aria-pressed={p.isBookmarked}
-                        aria-label={p.isBookmarked ? "북마크 해제" : "북마크 추가"}
+                        aria-label={
+                          p.isBookmarked ? "북마크 해제" : "북마크 추가"
+                        }
                         title={p.isBookmarked ? "북마크 해제" : "북마크 추가"}
-                        onClick={() => toggleBookmark?.(pid)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleBookmark?.(pid);
+                        }}
                       >
-                        {p.isBookmarked ? <BookmarkBlueSvg /> : <BookmarkGraySvg />}
+                        {p.isBookmarked ? (
+                          <BookmarkBlueSvg />
+                        ) : (
+                          <BookmarkGraySvg />
+                        )}
                       </BookmarkBtn>
 
                       <MetaRow>
@@ -1001,6 +1038,7 @@ const ListCard = styled.div<{ $active?: boolean }>`
   position: relative;
   padding: 10px 10px 16px;
   border-radius: 14px;
+  cursor: pointer;
 
   /* 활성 카드 하이라이트 */
   background: ${({ theme, $active }) =>
