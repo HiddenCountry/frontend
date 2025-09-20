@@ -640,23 +640,26 @@ const MapPage: React.FC = () => {
     if (!exists) setActiveId(null);
   }, [results, activeId]);
 
-  const toggleCat = (v: string) =>
+  const toggleCat = (v: string) => {
     setCatSel((prev) => {
       const next = prev.includes(v as CategoryUI)
         ? prev.filter((x) => x !== v)
         : [...prev, v as CategoryUI];
-      setDirty(true);
+      // 지도 준비/선택값 유효하면 즉시 검색
+      if (bounds && center) runSearch({ cats: next, regs: regSel });
       return next;
     });
+  };
 
-  const toggleReg = (v: string) =>
+  const toggleReg = (v: string) => {
     setRegSel((prev) => {
       const next = prev.includes(v as RegionUI)
         ? prev.filter((x) => x !== v)
         : [...prev, v as RegionUI];
-      setDirty(true);
+      if (bounds && center) runSearch({ cats: catSel, regs: next });
       return next;
     });
+  };
 
   // 지도 idle 콜백
   const handleIdleChange = React.useCallback(
@@ -673,13 +676,20 @@ const MapPage: React.FC = () => {
   const canSearch =
     !!bounds && !!center && catSel.length > 0 && regSel.length > 0;
 
-  const runSearch = async () => {
-    if (!canSearch) return;
+  const runSearch = async (override?: {
+    cats?: CategoryUI[];
+    regs?: RegionUI[];
+  }) => {
+    const cats = override?.cats ?? catSel;
+    const regs = override?.regs ?? regSel;
+    const isReady = !!bounds && !!center && cats.length > 0 && regs.length > 0;
+    if (!isReady) return;
+
     const contentTypes = Array.from(
-      new Set(catSel.flatMap((c) => CATEGORY_TO_CONTENT_TYPES[c]))
+      new Set(cats.flatMap((c) => CATEGORY_TO_CONTENT_TYPES[c]))
     );
     const countryRegions = Array.from(
-      new Set(regSel.flatMap((r) => REGION_TO_COUNTRIES[r]))
+      new Set(regs.flatMap((r) => REGION_TO_COUNTRIES[r]))
     );
 
     try {
@@ -796,7 +806,7 @@ const MapPage: React.FC = () => {
                           <BookmarkGraySvg />
                         )}
                       </BookmarkBtn>
-<MetaRow>
+                      <MetaRow>
                         <MetaMuted>{p.addr1}</MetaMuted>
                       </MetaRow>
                       <MetaRow>
@@ -842,7 +852,7 @@ const MapPage: React.FC = () => {
         {/* 다시 검색 */}
         {dirty && canSearch && (
           <SearchBtn
-            onClick={runSearch}
+            onClick={() => runSearch()}
             disabled={loading}
             aria-label="현재 지도에서 다시 검색"
           >
