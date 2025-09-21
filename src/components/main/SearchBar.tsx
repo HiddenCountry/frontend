@@ -31,7 +31,6 @@ const Wrapper = styled.div`
   gap: 10px;
   align-items: center;
 `;
-
 const Input = styled.input`
   height: 78px;
   flex: 1;
@@ -40,6 +39,12 @@ const Input = styled.input`
   border: 1px solid #ddd;
   ${({ theme }) => theme.font.xxl.medium};
   color: ${({ theme }) => theme.color.gray800};
+
+  /* 모바일/작은 화면 반응형 */
+  @media (max-width: 740px) {
+    height: 60px;
+    ${({ theme }) => theme.font.xl.medium};
+  }
 `;
 
 const SearchButton = styled.button`
@@ -54,4 +59,11 @@ const SearchButton = styled.button`
   justify-content: center;
   gap: 6px;
   color: #fff;
+
+  /* 모바일/작은 화면 반응형 */
+  @media (max-width: 740px) {
+    ${({ theme }) => theme.font.md.medium};
+    height: 60px;
+    width: 100px;
+  }
 `;
