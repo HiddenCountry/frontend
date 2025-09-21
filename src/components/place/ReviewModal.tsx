@@ -91,6 +91,8 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ onClose, placeId }) => {
           <>
             <Section>
               <Label>이 곳은 어땠나요?</Label>
+              <Hint>이색 점수를 드래그를 통해 선택해주세요!</Hint>
+
               <RatingBox>
                 {[1, 2, 3, 4, 5].map((n) => (
                   <StarButton key={n} onClick={() => setRating(n)}>
@@ -198,8 +200,6 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ onClose, placeId }) => {
 
 export default ReviewModal;
 
-// ================= Styled Components ================= //
-
 const Overlay = styled.div`
   position: fixed;
   top: 0;
@@ -256,12 +256,14 @@ const Label = styled.div`
   font-size: 16px;
   font-weight: bold;
   margin-bottom: 12px;
+  text-align: left;
 `;
 
 const Hint = styled.div`
   font-size: 13px;
   color: #666;
-  margin-bottom: 8px;
+  margin-bottom: 15px;
+  text-align: left;
 `;
 
 const RatingBox = styled.div`
@@ -303,14 +305,14 @@ const Category = styled.div`
 
 const Tag = styled.button<{ selected: boolean }>`
   margin: 4px 0;
-  padding: 8px 12px;
+  padding: 7px 5px;
   border-radius: 16px;
   border: none;
   cursor: pointer;
   background: ${({ selected }) => (selected ? "#1e90ff" : "#f2f2f2")};
   color: ${({ selected }) => (selected ? "#fff" : "#333")};
   font-size: 14px;
-  text-align: left;
+  text-align: center;
 `;
 
 const SubmitButton = styled.button`
@@ -350,6 +352,9 @@ const PhotoUploadBox = styled.div`
   justify-content: center;
   font-size: 24px;
   cursor: pointer;
+  label {
+    cursor: pointer;
+  }
 `;
 
 const CompleteButton = styled(SubmitButton)`

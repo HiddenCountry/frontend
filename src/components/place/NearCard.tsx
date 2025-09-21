@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { ReactComponent as Logo } from "../../assets/layout/Logo.svg";
 
 interface NearCardProps {
   addr1: string;
@@ -28,11 +29,15 @@ const NearCard: React.FC<NearCardProps> = ({
         })
       }
     >
-      <CardImageBox
-        style={{
-          backgroundImage: firstimage ? `url(${firstimage})` : undefined,
-        }}
-      />
+      <CardImageBox>
+        {firstimage ? (
+          <Img style={{ backgroundImage: `url(${firstimage})` }} />
+        ) : (
+          <FallbackIcon>
+            <Logo />
+          </FallbackIcon>
+        )}
+      </CardImageBox>
       <CardContent>
         <CardTitle>{title}</CardTitle>
         <CardSubTitle>{addr1}</CardSubTitle>
@@ -48,14 +53,36 @@ const CardWrapper = styled.div`
   border-radius: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: relative;
+  max-width: 100px;
 `;
 
 const CardImageBox = styled.div`
   background: ${({ theme }) => theme.color.gray200};
-  background-size: cover;
-  background-position: center;
   height: 150px;
   border-radius: 24px 24px 0px 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+`;
+
+const Img = styled.div`
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+`;
+
+const FallbackIcon = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) => theme.color.gray400};
+  svg {
+    width: 48px;
+    height: 48px;
+    margin-top: 10px;
+  }
 `;
 
 const CardContent = styled.div`
