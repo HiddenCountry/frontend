@@ -6,7 +6,11 @@ import { ReactComponent as Callout } from "../assets/login/Callout.svg";
 import { ReactComponent as KakaoLogo } from "../assets/login/KakaoLogo.svg";
 import { ReactComponent as LoginIcon } from "../assets/login/LoginIcon.svg";
 
-const KakaoRedirectPage: React.FC = () => {
+interface KakaoRedirectPageProps {
+  onLogin?: (token: string, nickname: string, profileImg?: string) => void;
+}
+
+const KakaoRedirectPage: React.FC<KakaoRedirectPageProps> = ({ onLogin }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,32 +19,34 @@ const KakaoRedirectPage: React.FC = () => {
     if (code) {
       getCallback(code)
         .then((res) => {
-          console.log("카카오 로그인 응답:", res);
-
           if (res.isSuccess) {
-            const { accessToken, refreshToken, isFirstLogin } = res.data;
+            const { accessToken, nickname, profileImg, isFirstLogin } =
+              res.data;
 
-            // 토큰 저장
+            // 닉네임 기본값 처리
+            const safeNickname =
+              nickname && nickname !== "undefined" ? nickname : "사용자";
+
             localStorage.setItem("accessToken", accessToken);
+            localStorage.setItem("nickname", safeNickname);
+            if (profileImg) localStorage.setItem("profileImage", profileImg);
 
-            // 첫 로그인 → 닉네임 입력 페이지
-            if (isFirstLogin) {
-              navigate("/signup");
-            } else {
-              navigate("/"); // 홈으로 이동
-            }
+            if (onLogin) onLogin(accessToken, nickname, profileImg);
+
+            if (isFirstLogin) navigate("/signup");
+            else navigate("/");
           } else {
-            alert("로그인에 실패했습니다. 다시 시도해주세요.");
+            alert("로그인 실패");
             navigate("/");
           }
         })
-        .catch((error) => {
-          console.error("카카오 로그인 실패:", error);
-          alert("로그인에 실패했습니다. 다시 시도해주세요.");
+        .catch((err) => {
+          console.error(err);
+          alert("로그인 실패");
           navigate("/");
         });
     }
-  }, []);
+  }, [onLogin, navigate]);
 
   return (
     <Container>

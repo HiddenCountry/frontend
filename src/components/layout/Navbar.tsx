@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { ReactComponent as NavLogo } from "../../assets/layout/Logo.svg";
@@ -7,19 +7,19 @@ import { ReactComponent as UserIconBig } from "../../assets/layout/UserIconBig.s
 
 interface NavbarProps {
   isLoggedIn?: boolean;
-  userName?: string;
-  profileImgUrl?: string;
+  nickname?: string;
+  profileImg?: string;
   onLogout?: () => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
   isLoggedIn = false,
-  userName = "사용자",
-  profileImgUrl,
+  nickname = "사용자",
+  profileImg,
   onLogout,
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
-  const [activeMenu, setActiveMenu] = useState("홈"); // 현재 선택된 메뉴 상태
+  const [activeMenu, setActiveMenu] = useState("홈");
 
   const menuItems = [
     { name: "홈", path: "/" },
@@ -29,7 +29,7 @@ const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <Nav>
-      <Logo to="/">
+      <Logo to="/" onClick={() => setActiveMenu("홈")}>
         <NavLogo />
         <span>숨은나라찾기</span>
       </Logo>
@@ -49,16 +49,14 @@ const Navbar: React.FC<NavbarProps> = ({
 
       {isLoggedIn ? (
         <ProfileWrapper onClick={() => setShowDropdown(!showDropdown)}>
-          <ProfileName>{userName} 님</ProfileName>
-          <UserIcon id="userIcon" />
+          {profileImg ? <ProfileImage src={profileImg} /> : <UserIcon />}
+          <ProfileName>{nickname} 님</ProfileName>
           {showDropdown && (
             <Dropdown>
               <UserIconBig />
-              <ProfileName>{userName} 님</ProfileName>
+              <ProfileName>{nickname} 님</ProfileName>
               <DropdownItem to="/mypage">마이페이지</DropdownItem>
-              <DropdownItem to="/" onClick={onLogout}>
-                로그아웃
-              </DropdownItem>
+              <DropdownButton onClick={onLogout}>로그아웃</DropdownButton>
             </Dropdown>
           )}
         </ProfileWrapper>
@@ -125,6 +123,7 @@ const AuthButton = styled(Link)`
   border-radius: 12px;
   color: ${({ theme }) => theme.color.primary600};
   text-decoration: none;
+  margin-right: 40px;
   cursor: pointer;
 
   &:hover {
@@ -135,12 +134,13 @@ const AuthButton = styled(Link)`
 const ProfileWrapper = styled.div`
   display: flex;
   gap: 15px;
-  margin-right: 40px;
   flex-direction: row;
   align-items: center;
   position: relative;
   cursor: pointer;
-  #userIcon {
+  margin-right: 50px;
+
+  svg {
     width: 50px;
   }
 `;
@@ -151,11 +151,11 @@ const ProfileImage = styled.div<{ src?: string }>`
   border-radius: 50%;
   background: ${({ src, theme }) =>
     src ? `url(${src}) center/cover` : theme.color.gray300};
-  margin-bottom: 4px;
 `;
 
 const ProfileName = styled.div`
-  ${({ theme }) => theme.font.md.medium};
+  ${({ theme }) => theme.font.md.bold};
+  margin: 5px 0;
   color: ${({ theme }) => theme.color.gray700};
 `;
 
@@ -172,10 +172,11 @@ const Dropdown = styled.div`
   overflow: hidden;
   z-index: 100;
   align-items: center;
+  padding: 10px;
 
   svg {
     width: 80px;
-    margin-top: 20px;
+    margin-top: 10px;
     margin-bottom: 8px;
   }
 `;
@@ -187,6 +188,20 @@ const DropdownItem = styled(Link)`
   ${({ theme }) => theme.font.md.medium};
 
   &:hover {
+    border-radius: 12px;
+    background-color: ${({ theme }) => theme.color.gray100};
+  }
+`;
+
+// 로그아웃 전용 버튼
+const DropdownButton = styled.div`
+  padding: 12px 16px;
+  color: ${({ theme }) => theme.color.gray700};
+  ${({ theme }) => theme.font.md.medium};
+  cursor: pointer;
+
+  &:hover {
+    border-radius: 12px;
     background-color: ${({ theme }) => theme.color.gray100};
   }
 `;

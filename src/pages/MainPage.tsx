@@ -76,14 +76,14 @@ const MainPage: React.FC = () => {
     sortType: "VIEW_COUNT_DESC",
   });
 
-  //Banner용 나라 및 아이콘
+  // Banner용 나라 및 아이콘
   const currentCountryInfo = countryInfoMap[filters.countryRegion] || {
     nameKR: "일본",
     Icon: Japan,
   };
   const { nameKR, Icon } = currentCountryInfo;
 
-  // api 연동
+  // 이색 관광지 api 연동
   const fetchPlaces = async (lat: number, lng: number) => {
     try {
       const res = await getPlaces(
@@ -121,6 +121,13 @@ const MainPage: React.FC = () => {
     );
   }, [currentPage, filters, searchKeyword]);
 
+  const sortOptions = [
+    { label: "조회순", value: "VIEW_COUNT_DESC" },
+    { label: "거리순", value: "DISTANCE_ASC" },
+    { label: "평점순", value: "REVIEW_SCORE_AVERAGE_DESC" },
+    { label: "리뷰 많은 순", value: "REVIEW_COUNT_DESC" },
+  ];
+
   return (
     <Container>
       <Main>
@@ -154,7 +161,18 @@ const MainPage: React.FC = () => {
               onSearch={() => setCurrentPage(0)}
             />
             <Sequence>
-              <span>조회순</span> | 거리순 | 평점순 | 리뷰 많은 순
+              {sortOptions.map((opt) => (
+                <SortItem
+                  key={opt.value}
+                  $active={filters.sortType === opt.value}
+                  onClick={() => {
+                    setFilters((prev) => ({ ...prev, sortType: opt.value }));
+                    setCurrentPage(0); // 페이지 초기화
+                  }}
+                >
+                  {opt.label}
+                </SortItem>
+              ))}
             </Sequence>
             <CardBox>
               {places.length > 0 ? (
@@ -262,21 +280,37 @@ const RightSection = styled.div`
   flex-direction: column;
   gap: 20px;
 `;
-
 const Sequence = styled.div`
+  display: flex;
+  gap: 12px;
   ${({ theme }) => theme.font.md.semibold};
   color: ${({ theme }) => theme.color.gray600};
-  text-align: left;
   cursor: pointer;
+`;
 
-  span {
-    color: ${({ theme }) => theme.color.gray800};
+const SortItem = styled.span<{ $active?: boolean }>`
+  color: ${({ $active, theme }) =>
+    $active ? theme.color.primary600 : theme.color.gray600};
+  position: relative;
+  padding: 4px 15px;
+
+  &:after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: ${({ theme, $active }) =>
+      $active ? theme.color.primary600 : "transparent"};
+    border-radius: 2px;
   }
 `;
 const CardBox = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 10px;
+  justify-content: center;
 `;
 const EmptyMessage = styled.div`
   ${({ theme }) => theme.font.xl.medium};

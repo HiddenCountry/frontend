@@ -1,19 +1,24 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { ReactComponent as SignupComplete } from "../assets/login/SignupComplete.svg";
+
 interface SignupCompletePageProps {
-  onSignupComplete?: (nickname: string) => void;
+  onSignupComplete?: (nickname: string) => void; // App 상태 갱신용
 }
 
 const SignupCompletePage: React.FC<SignupCompletePageProps> = ({
   onSignupComplete,
 }) => {
   const navigate = useNavigate();
-  const nickname = localStorage.getItem("nickname") || "OOO";
+  const nickname = localStorage.getItem("nickname") || "사용자";
+  const profileImg = localStorage.getItem("profileImage") || "";
 
-  React.useEffect(() => {
-    if (onSignupComplete) onSignupComplete(nickname);
+  // 페이지 로드 시 App 상태 업데이트
+  useEffect(() => {
+    if (onSignupComplete) {
+      onSignupComplete(nickname); // Navbar에 nickname, login 상태 반영
+    }
   }, [nickname, onSignupComplete]);
 
   return (
@@ -25,8 +30,8 @@ const SignupCompletePage: React.FC<SignupCompletePageProps> = ({
 
         <HomeButton
           onClick={() => {
-            if (onSignupComplete) onSignupComplete(nickname);
-            navigate("/");
+            if (onSignupComplete) onSignupComplete(nickname); // 바로 App 상태 갱신
+            navigate("/"); // 홈으로 이동
           }}
         >
           서비스 이용하러 가기
@@ -63,10 +68,10 @@ const Label = styled.div`
 
 const Title = styled.div`
   ${({ theme }) => theme.font.xxxl.semibold};
-  margin-bottom: 30px;
-  color: ${({ theme }) => theme.color.gray800};
   margin-bottom: 37px;
+  color: ${({ theme }) => theme.color.gray800};
 `;
+
 const HomeButton = styled.button`
   ${({ theme }) => theme.font.xl.semibold};
   color: ${({ theme }) => theme.color.gray50};
@@ -80,19 +85,12 @@ const HomeButton = styled.button`
   cursor: pointer;
   position: relative;
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.2s ease-in-out; /* 자연스러운 애니메이션 */
+    opacity 0.2s ease-in-out;
 
   &:hover {
     transform: scale(1.01) translateY(-1px);
   }
 
-  #callout {
-    position: absolute;
-    top: -40px;
-    left: 50%;
-    transform: translateX(-50%);
-    pointer-events: none;
-  }
   span {
     display: flex;
     align-items: center;

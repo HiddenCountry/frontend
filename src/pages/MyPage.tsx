@@ -61,6 +61,7 @@ const MyPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [nickname, setNickname] = useState<string>("");
   const navigate = useNavigate();
 
   // ===== 저장한 장소(북마크) 상태 =====
@@ -171,10 +172,10 @@ const MyPage: React.FC = () => {
   const goDetailFromReview = (r: MyReviewItem) => {
     navigate("/main/place", {
       state: {
-        id: r.placeId,               
+        id: r.placeId,
         contentId: r.contentId,
         title: r.placeTitle,
-        firstImage: r.placeImageUrl,  
+        firstImage: r.placeImageUrl,
         contentTypeId: r.contentTypeId,
       },
     });
@@ -192,13 +193,20 @@ const MyPage: React.FC = () => {
       ? "그냥 그랬어요"
       : "기대 이하였어요";
 
+  // 로컬스토리지에서 닉네임 불러오기
+  useEffect(() => {
+    const storedNickname = localStorage.getItem("nickname");
+    if (storedNickname) setNickname(storedNickname);
+    else setNickname("사용자");
+  }, []);
+
   return (
     <Container>
       <Main>
         <LeftCard>
           <Profile>
             <Avatar />
-            <Nickname>숨은나라찾기 님</Nickname>
+            <Nickname>{nickname} 님</Nickname>
           </Profile>
 
           <Menu>

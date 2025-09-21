@@ -111,12 +111,12 @@ const Card = styled.div`
 
 const BookmarkButton = styled.div`
   position: absolute;
-  top: 24px;
-  right: 24px;
+  top: 20px;
+  right: 15px;
   cursor: pointer;
 `;
 const ImageBox = styled.div`
-  background: #f1f3f6;
+  background: ${({ theme }) => theme.color.gray200};
   height: 150px;
   border-radius: 24px 24px 0px 0px;
   display: flex;
@@ -141,6 +141,7 @@ const FallbackIcon = styled.div`
     width: 48px;
     height: 48px;
     margin-top: 10px;
+    opacity: 0.8;
   }
 `;
 
@@ -182,8 +183,9 @@ const Tags = styled.div`
 `;
 
 const Tag = styled.span<{ blue?: boolean }>`
-  background: ${(props) => (props.blue ? "#e8f0fe" : "#f5f5f5")};
-  color: ${(props) => (props.blue ? "#1a73e8" : "#555")};
+  ${({ theme }) => theme.font.xs.bold};
+  color: ${({ theme }) => theme.color.primary500};
+  background-color: #e3f2fd80;
   border-radius: 6px;
   padding: 2px 6px;
   font-size: 11px;
