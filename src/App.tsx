@@ -19,42 +19,32 @@ import MyPage from "./pages/MyPage";
 import MapPage from "./pages/MapPage";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userName, setUserName] = useState("");
-  const [profileImg, setProfileImg] = useState("");
+  // 로그인 상태
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    !!localStorage.getItem("accessToken")
+  );
+  const [nickname, setNickname] = useState(
+    localStorage.getItem("nickname") || "사용자"
+  );
+  const [profileImg, setProfileImg] = useState(
+    localStorage.getItem("profileImage") || ""
+  );
 
-  // 임시 로컬스토리지
-  const syncLoginState = () => {
-    const token = localStorage.getItem("accessToken");
-    const savedName = localStorage.getItem("nickname");
-    const savedProfile = localStorage.getItem("profileImg");
-
-    if (token) {
-      setIsLoggedIn(true);
-      setUserName(savedName || "사용자");
-      setProfileImg(savedProfile || "");
-    } else {
-      setIsLoggedIn(false);
-      setUserName("");
-      setProfileImg("");
-    }
+  // 로그인 상태 갱신
+  const handleLogin = (token: string, nick: string, img?: string) => {
+    setIsLoggedIn(!!token);
+    setNickname(nick);
+    setProfileImg(img || "");
   };
-
-  useEffect(() => {
-    syncLoginState();
-
-    window.addEventListener("storage", syncLoginState);
-    return () => {
-      window.removeEventListener("storage", syncLoginState);
-    };
-  }, []);
 
   // 로그아웃
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("nickname");
-    localStorage.removeItem("profileImg");
-    syncLoginState();
+    localStorage.removeItem("profileImage");
+    setIsLoggedIn(false);
+    setNickname("");
+    setProfileImg("");
   };
 
   return (
@@ -64,8 +54,8 @@ function App() {
         <div className="App">
           <Navbar
             isLoggedIn={isLoggedIn}
-            userName={userName}
-            profileImgUrl={profileImg}
+            nickname={nickname}
+            profileImg={profileImg}
             onLogout={handleLogout}
           />
           <Routes>
@@ -73,7 +63,10 @@ function App() {
             <Route path="/asia" element={<AsiaHomePage />} />
             <Route path="/main" element={<MainPage />} />
             <Route path="/login" element={<KakaoLoginPage />} />
-            <Route path="/callback" element={<KakaoRedirectPage />} />
+            <Route
+              path="/callback"
+              element={<KakaoRedirectPage onLogin={handleLogin} />}
+            />
             <Route path="/signup" element={<SignupPage />} />
             <Route
               path="/signup/complete"
@@ -82,11 +75,12 @@ function App() {
                   onSignupComplete={(nickname) => {
                     localStorage.setItem("nickname", nickname);
                     setIsLoggedIn(true);
-                    setUserName(nickname);
+                    setNickname(nickname);
                   }}
                 />
               }
             />
+
             <Route path="/main/place" element={<PlaceDetail />} />
             <Route path="/main/place/near" element={<NearPlaceDetail />} />
             <Route path="/register" element={<PlaceRegistrationPage />} />
