@@ -41,6 +41,10 @@ const NearCard: React.FC<NearCardProps> = ({
       <CardContent>
         <CardTitle>{title}</CardTitle>
         <CardSubTitle>{addr1}</CardSubTitle>
+        <CardDist>
+          해당 관광지에서{" "}
+          <strong>{Math.round(Number(dist)).toLocaleString()}m</strong>
+        </CardDist>
       </CardContent>
     </CardWrapper>
   );
@@ -82,6 +86,7 @@ const FallbackIcon = styled.div`
     width: 48px;
     height: 48px;
     margin-top: 10px;
+    opacity: 0.8;
   }
 `;
 
@@ -100,4 +105,9 @@ const CardTitle = styled.div`
 const CardSubTitle = styled.div`
   ${({ theme }) => theme.font.md.medium};
   color: ${({ theme }) => theme.color.gray500};
+`;
+const CardDist = styled.div`
+  ${({ theme }) => theme.font.md.medium};
+  color: ${({ theme }) => theme.color.primary500};
+  margin-top: 5px;
 `;

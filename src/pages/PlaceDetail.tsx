@@ -8,6 +8,7 @@ import { ReactComponent as BookmarkWhite } from "../assets/place/BookmarkWhite.s
 import { ReactComponent as BookmarkBlue } from "../assets/place/BookmarkBlue.svg";
 import { ReactComponent as ImageLeft } from "../assets/place/ImageLeft.svg";
 import { ReactComponent as ImageRight } from "../assets/place/ImageRight.svg";
+import { ReactComponent as Logo } from "../assets/layout/Logo.svg";
 import NearCard from "../components/place/NearCard";
 import ReviewCard from "../components/place/ReviewCard";
 import { fetchNearbyPlaces, fetchTourImages } from "../api/TourApi";
@@ -75,6 +76,7 @@ const PlaceDetail: React.FC = () => {
   const longitude = place?.longitude;
   const latitude = place?.latitude;
   const serviceKey = process.env.REACT_APP_TOUR_SERVICE_KEY;
+  const [loading, setLoading] = useState(true); // 위치 정보 로딩 상태
 
   // 리뷰 모달창
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -112,11 +114,10 @@ const PlaceDetail: React.FC = () => {
     loadImages();
   }, [contentId, serviceKey]);
 
-  // 이미지 이동
+  // 대표이미지 이동
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
-
   const handleNext = () => {
     setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
@@ -141,12 +142,12 @@ const PlaceDetail: React.FC = () => {
     loadPlaces();
   }, [place?.contentTypeId, longitude, latitude, serviceKey]);
 
-  // 상태 추가
+  // 인근관광지 상태 추가
   const [activeNearTab, setActiveNearTab] = useState<
     "식당" | "숙소" | "관광지"
   >("식당");
 
-  // 필터링된 장소
+  // 인근관광지 필터링된 장소
   const filteredPlaces = places.filter((place) => {
     if (activeNearTab === "식당") return place.contenttypeid === "39"; // 식당
     if (activeNearTab === "숙소") return place.contenttypeid === "32"; // 숙소
@@ -166,17 +167,24 @@ const PlaceDetail: React.FC = () => {
         (position) => {
           setUserLat(position.coords.latitude);
           setUserLng(position.coords.longitude);
+          setLoading(false);
         },
         (error) => {
           console.error("사용자 위치를 가져오는데 실패했습니다.", error);
+
+          setLoading(false);
         }
       );
+    } else {
+      console.error("브라우저에서 위치 정보를 지원하지 않습니다.");
+      setLoading(false);
     }
   }, []);
 
   // 이색 상세 조회 api 연동
   const [placeDetail, setPlaceDetail] = useState<PlaceDetailType | null>(null);
-  // === placeDetail 다시 불러오기 함수 ===
+
+  // 리뷰 작성 후 placeDetail 다시 불러오기 함수
   const fetchPlaceDetail = async () => {
     if (!contentId || !contentTypeId) return;
 
@@ -205,8 +213,10 @@ const PlaceDetail: React.FC = () => {
 
   // placeDetail 로딩 useEffect
   useEffect(() => {
-    fetchPlaceDetail();
-  }, [contentId, contentTypeId, userLat, userLng, place?.id]);
+    if (!loading) {
+      fetchPlaceDetail();
+    }
+  }, [contentId, contentTypeId, userLat, userLng, place?.id, loading]);
 
   // 북마크 api 연동
   const [isBookmarked, setIsBookmarked] = useState<boolean>(
@@ -258,21 +268,25 @@ const PlaceDetail: React.FC = () => {
     setCurrentPage(page);
   };
 
+  // 리뷰 정렬
+  const reviewSortOptions = [
+    { label: "최신순", value: "LATEST" },
+    { label: "평점순", value: "RATING_DESC" },
+  ];
+  const [reviewSortType, setReviewSortType] = useState<
+    "LATEST" | "RATING_DESC"
+  >("LATEST");
+
   // 리뷰 불러오기
   const fetchReviews = async () => {
     if (!placeDetail?.id) return;
     setReviewsLoading(true);
     setReviewsError(null);
     try {
-      const res = await getReview(placeDetail.id, "LATEST", 100);
-      // 실제 리뷰 배열만 추출
+      const res = await getReview(placeDetail.id, reviewSortType, 100); // 여기에서 정렬 타입 반영
       setReviews(res.data.reviewResponses || []);
     } catch (error: any) {
-      if (error.response?.status === 403) {
-        setReviewsError("세션이 만료되었습니다. 다시 로그인해주세요.");
-      } else {
-        setReviewsError(error.message || "리뷰 조회 실패");
-      }
+      setReviewsError("세션이 만료되었습니다. 다시 로그인해주세요.");
     } finally {
       setReviewsLoading(false);
     }
@@ -280,9 +294,10 @@ const PlaceDetail: React.FC = () => {
 
   // placeDetail이 바뀔 때 리뷰 호출
   useEffect(() => {
-    fetchReviews();
-  }, [placeDetail]);
+    if (!loading && placeDetail) fetchReviews();
+  }, [placeDetail, loading, reviewSortType]);
 
+  /*
   const loadReviews = async () => {
     if (!placeDetail?.id) return;
     try {
@@ -298,25 +313,47 @@ const PlaceDetail: React.FC = () => {
   useEffect(() => {
     loadReviews();
   }, [placeDetail?.id]);
+*/
 
+  // 비행기 평균별점 계산
   const renderStars = (score: number) => {
     const stars = [];
+
     for (let i = 1; i <= 5; i++) {
       if (i <= Math.floor(score)) {
-        stars.push(<AirPlaneReivew key={i} />);
+        // 정수 부분: 불투명
+        stars.push(<AirPlaneReivew key={i} style={{ opacity: 1 }} />);
+      } else if (i === Math.ceil(score) && score % 1 !== 0) {
+        // 소수점 부분: opacity 조절
+        const fractional = score % 1;
+        stars.push(<AirPlaneReivew key={i} style={{ opacity: fractional }} />);
       } else {
+        // 나머지: 회색 비행기
         stars.push(<AirPlaneReivewX key={i} />);
       }
     }
+
     return stars;
   };
+
+  // === 로딩 화면 ===
+  if (loading) {
+    return (
+      <Container>
+        <LoadingWrapper>
+          <Spinner />
+          <LoadingText>위치 정보를 가져오는 중입니다...</LoadingText>
+        </LoadingWrapper>
+      </Container>
+    );
+  }
 
   return (
     <Container>
       <Content>
         <TopSection>
           <ImageWrapper>
-            {images.length > 0 && (
+            {images.length > 0 ? (
               <>
                 <MainImage
                   src={images[currentIndex]}
@@ -332,8 +369,13 @@ const PlaceDetail: React.FC = () => {
                   {currentIndex + 1} / {images.length}
                 </ImageIndex>
               </>
+            ) : (
+              <LogoFallback>
+                <Logo />
+              </LogoFallback>
             )}
           </ImageWrapper>
+
           <InfoCard>
             {placeDetail?.countryKoreanNames?.map(
               (name: string, idx: number) => (
@@ -357,7 +399,7 @@ const PlaceDetail: React.FC = () => {
             </Location>
             <Distance>
               {placeDetail?.distance != null
-                ? `현재 위치에서 ${placeDetail.distance.toLocaleString()}m`
+                ? `나의 현재 위치에서 ${placeDetail.distance.toLocaleString()}m`
                 : "위치 정보 없음"}
             </Distance>
             <BookmarkButton
@@ -461,8 +503,25 @@ const PlaceDetail: React.FC = () => {
               </ReviewHeader>
               <ReviewCardBox>
                 <Sequence>
-                  <span>리뷰 많은 순</span> | 거리순 | 평점순 | 조회순
+                  {[
+                    { label: "최신순", value: "LATEST" },
+                    { label: "평점순", value: "RATING_DESC" },
+                  ].map((opt) => (
+                    <SortItem
+                      key={opt.value}
+                      $active={reviewSortType === opt.value}
+                      onClick={() => {
+                        setReviewSortType(
+                          opt.value as "LATEST" | "RATING_DESC"
+                        );
+                        setCurrentPage(1); // 페이지 초기화
+                      }}
+                    >
+                      {opt.label}
+                    </SortItem>
+                  ))}
                 </Sequence>
+
                 {reviewsLoading && <div>리뷰 로딩중...</div>}
                 {reviewsError && <div>{reviewsError}</div>}
                 {!reviewsLoading && !reviewsError && reviews.length === 0 && (
@@ -507,7 +566,7 @@ const PlaceDetail: React.FC = () => {
         <ReviewModal
           onClose={() => {
             setIsReviewModalOpen(false);
-            loadReviews(); // 리뷰 다시 불러오기
+            fetchReviews(); // 리뷰 다시 불러오기
             fetchPlaceDetail(); // placeDetail 다시 불러오기 (리뷰 개수/평균 업데이트)
           }}
           placeId={placeDetail.id}
@@ -554,6 +613,24 @@ const MainImage = styled.img`
   width: 100%;
   height: 400px;
   border-radius: 24px;
+`;
+const LogoFallback = styled.div`
+  width: 100%;
+  height: 400px;
+  border-radius: 24px;
+  background-color: ${({ theme }) => theme.color.gray200};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) => theme.color.gray500};
+  gap: 10px;
+
+  svg {
+    width: 80px;
+    height: 80px;
+    opacity: 0.8;
+  }
 `;
 
 const ImageIndex = styled.div`
@@ -602,10 +679,11 @@ const InfoCard = styled.div`
 
 const Chip = styled.div`
   display: inline-block;
-  background: #eee;
+  ${({ theme }) => theme.font.sm.bold};
+  color: ${({ theme }) => theme.color.primary500};
+  background-color: #e3f2fd80;
   padding: 4px 8px;
   border-radius: 20px;
-  font-size: 12px;
   margin: 0 3px;
   margin-bottom: 8px;
 `;
@@ -823,17 +901,63 @@ const ReviewButton = styled.button`
     opacity: 0.8;
   }
 `;
-
 const Sequence = styled.div`
-  ${({ theme }) => theme.font.xs.semibold};
-  color: ${({ theme }) => theme.color.gray400};
+  display: flex;
+  gap: 12px;
+  ${({ theme }) => theme.font.md.semibold};
+  color: ${({ theme }) => theme.color.gray600};
   cursor: pointer;
-  margin: 25px 0px;
-  text-align: left;
+`;
 
-  span {
-    color: ${({ theme }) => theme.color.gray800};
+const SortItem = styled.span<{ $active?: boolean }>`
+  color: ${({ $active, theme }) =>
+    $active ? theme.color.primary600 : theme.color.gray600};
+  position: relative;
+  padding: 4px 15px;
+
+  &:after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: ${({ theme, $active }) =>
+      $active ? theme.color.primary600 : "transparent"};
+    border-radius: 2px;
   }
 `;
 
 const ReviewCardBox = styled.div``;
+
+const LoadingWrapper = styled.div`
+  width: 100%;
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
+const LoadingText = styled.div`
+  margin-top: 16px;
+  font-size: 18px;
+  color: ${({ theme }) => theme.color.gray600};
+`;
+
+const Spinner = styled.div`
+  border: 6px solid ${({ theme }) => theme.color.gray200};
+  border-top: 6px solid ${({ theme }) => theme.color.primary500};
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;

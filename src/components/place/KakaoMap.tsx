@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import styled from "styled-components";
+import { ReactComponent as Reset } from "../../assets/main/Reset.svg";
 
 interface KakaoMapProps {
   latitude: number;
@@ -53,7 +54,6 @@ function useKakaoLoader(appkey: string) {
 
   return loaded;
 }
-
 const KakaoMap: React.FC<KakaoMapProps> = ({
   latitude,
   longitude,
@@ -64,61 +64,42 @@ const KakaoMap: React.FC<KakaoMapProps> = ({
   const loaded = useKakaoLoader(KAKAO_JS_KEY);
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
 
-  // 지도 생성 + idle 이벤트
-  React.useEffect(() => {
+  // 지도 생성
+  useEffect(() => {
     if (!loaded || !containerRef.current || mapRef.current) return;
     const { kakao } = window;
-  }, [loaded]);
 
-  useEffect(() => {
-    if (!containerRef.current || !window.kakao) return;
-    const { kakao } = window;
-
-    // 지도 초기화
     const map = new kakao.maps.Map(containerRef.current, {
       center: new kakao.maps.LatLng(latitude, longitude),
       level: 5,
     });
     mapRef.current = map;
 
-    // 지도 크기 보정
-    setTimeout(() => {
-      map.relayout();
-      map.setCenter(new kakao.maps.LatLng(latitude, longitude));
-    }, 0);
-
-    // 마커 생성
+    // 마커
     const marker = new kakao.maps.Marker({
       position: new kakao.maps.LatLng(latitude, longitude),
       map,
     });
+    markerRef.current = marker;
 
-    // CustomOverlay 생성
+    // CustomOverlay
     const iwContent = `
-      <div style="
-        padding: 12px;
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        font-family: Pretendard, sans-serif;
-        word-wrap: break-word;
-        word-break: break-word;
-      ">
+      <div style="padding:12px; background:#fff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.15); font-family:Pretendard, sans-serif;">
         ${
           imageUrl
             ? `<img src="${imageUrl}" style="width:100%; border-radius:8px; margin-bottom:8px;" />`
             : ""
         }
-        <strong style="font-size:16px; color:#1e90ff; display:block; margin-bottom:4px;">
-          ${title || "장소"}
-        </strong>
-        <span style="font-size:14px; color:#555; display:block;">
-          ${address || ""}
-        </span>
+        <strong style="font-size:16px; color:#1e90ff; display:block; margin-bottom:4px;">${
+          title || "장소"
+        }</strong>
+        <span style="font-size:14px; color:#555; display:block;">${
+          address || ""
+        }</span>
       </div>
     `;
-
     const overlay = new kakao.maps.CustomOverlay({
       position: new kakao.maps.LatLng(latitude, longitude),
       content: iwContent,
@@ -126,7 +107,6 @@ const KakaoMap: React.FC<KakaoMapProps> = ({
     });
 
     let isOpen = false;
-
     kakao.maps.event.addListener(marker, "click", () => {
       if (isOpen) {
         overlay.setMap(null);
@@ -136,15 +116,62 @@ const KakaoMap: React.FC<KakaoMapProps> = ({
         isOpen = true;
       }
     });
-  }, [loaded]);
+  }, [loaded, latitude, longitude, title, address, imageUrl]);
 
-  return <MapBox ref={containerRef} />;
+  // 새로고침 버튼 클릭
+  const handleRefresh = () => {
+    if (mapRef.current) {
+      const { kakao } = window;
+      mapRef.current.setCenter(new kakao.maps.LatLng(latitude, longitude));
+      mapRef.current.setLevel(5); // 원하는 줌 레벨
+    }
+  };
+
+  return (
+    <MapContainer>
+      <MapBox ref={containerRef} />
+      <RefreshButton onClick={handleRefresh}>
+        <Reset />
+      </RefreshButton>
+    </MapContainer>
+  );
 };
 
 export default KakaoMap;
 
+const MapContainer = styled.div`
+  position: relative;
+  width: 100%;
+  height: 300px;
+  border-radius: 8px;
+`;
 const MapBox = styled.div`
   width: 100%;
   height: 300px;
   border-radius: 8px;
+`;
+const RefreshButton = styled.button`
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background-color: ${({ theme }) => theme.color.white};
+  border: 2px solid ${({ theme }) => theme.color.primary500};
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
 `;
