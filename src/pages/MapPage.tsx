@@ -18,11 +18,12 @@ import flagSA from "../assets/map/south_america.svg";
 import flagOC from "../assets/map/oceania.svg";
 import flagTR from "../assets/map/turkey.svg";
 import flagCN from "../assets/map/china.svg";
-import flagMN from "../assets/map/mongolia.svg";
+import flagMN from "../assets/main/Mongolia.svg";
 import flagARAB from "../assets/map/arab.svg";
 import flagIN from "../assets/map/india.svg";
 import flagSEA from "../assets/map/southeast_asia.svg";
 import flagJP from "../assets/map/japan.svg";
+import { ReactComponent as Logo } from "../assets/layout/Logo.svg";
 import { fetchTourImages } from "../api/TourApi";
 import { postBookmark, deleteBookmark } from "../api/Bookmark";
 
@@ -276,24 +277,31 @@ const MediaStrip: React.FC<{ place: PlaceMapItem }> = ({ place }) => {
   return (
     <CarouselWrap>
       <CarouselViewport ref={vpRef} onScroll={updateAtEnd}>
-        {(urls.length ? urls : Array.from({ length: 3 }).map(() => ""))?.map(
-          (u, i) => (
-            <CarouselItem
-              key={i}
-              style={
-                u
-                  ? {
-                      backgroundImage: `url(${u})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                    }
-                  : undefined
+  {(urls.length ? urls : Array.from({ length: 3 }).map(() => ""))?.map(
+    (u, i) => (
+      <CarouselItem
+        key={i}
+        style={
+          u
+            ? {
+                backgroundImage: `url(${u})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
               }
-              aria-label={u ? `image ${i + 1}` : "placeholder"}
-            />
-          )
+            : undefined
+        }
+        aria-label={u ? `image ${i + 1}` : "placeholder"}
+      >
+        {!u && (
+          <FallbackIcon>
+            <Logo />
+          </FallbackIcon>
         )}
-      </CarouselViewport>
+      </CarouselItem>
+    )
+  )}
+</CarouselViewport>
+
 
       {hasMore && !atEnd && (
         <MoreBtn
@@ -1272,4 +1280,20 @@ const CarouselItem = styled.div`
   border-radius: 16px;
   background: ${({ theme }) => theme.color.gray200};
   scroll-snap-align: start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const FallbackIcon = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) => theme.color.gray400};
+
+  svg {
+    width: 40px;
+    height: 40px;
+    opacity: 0.8;
+  }
 `;
