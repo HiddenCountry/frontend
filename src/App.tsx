@@ -17,6 +17,7 @@ import KakaoRedirectPage from "./pages/KakaoRedirectPage";
 import PlaceRegistrationPage from "./pages/PlaceRegistrationPage";
 import MyPage from "./pages/MyPage";
 import MapPage from "./pages/MapPage";
+import TravelRoutePage from "./pages/TravelRoutePage";
 
 function App() {
   // 로그인 상태
@@ -86,6 +87,7 @@ function App() {
             <Route path="/register" element={<PlaceRegistrationPage />} />
             <Route path="/mypage" element={<MyPage />} />
             <Route path="/map" element={<MapPage />} />
+            <Route path="/route" element={<TravelRoutePage />} />
           </Routes>
         </div>
       </BrowserRouter>
