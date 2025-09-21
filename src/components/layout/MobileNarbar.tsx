@@ -128,7 +128,7 @@ const Logo = styled(Link)`
     color: ${({ theme }) => theme.color.gray800};
   }
 
-  @media (max-width: 780px) {
+  @media (max-width: 768px) {
     order: 2; // 중앙
   }
 `;
@@ -139,7 +139,7 @@ const Menu = styled.div`
   flex: 1;
   justify-content: center;
 
-  @media (max-width: 780px) {
+  @media (max-width: 768px) {
     display: none;
   }
 `;
@@ -169,7 +169,7 @@ const AuthButton = styled(Link)`
     background-color: ${({ theme }) => theme.color.primary100};
   }
 
-  @media (max-width: 780px) {
+  @media (max-width: 768px) {
     display: none; // 모바일에서 숨김
   }
 `;
@@ -177,7 +177,7 @@ const AuthButton = styled(Link)`
 const MobileLoginIcon = styled(Link)`
   display: none;
 
-  @media (max-width: 780px) {
+  @media (max-width: 768px) {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -203,7 +203,7 @@ const ProfileWrapper = styled.div`
     width: 50px;
   }
 
-  @media (max-width: 780px) {
+  @media (max-width: 768px) {
     order: 3; // 오른쪽
   }
 `;
@@ -219,7 +219,7 @@ const ProfileImage = styled.div<{ src?: string }>`
 const ProfileName = styled.div`
   ${({ theme }) => theme.font.md.bold};
   color: ${({ theme }) => theme.color.gray700};
-  @media (max-width: 780px) {
+  @media (max-width: 768px) {
     display: none; // 모바일에서 숨기기
   }
 `;
@@ -273,7 +273,7 @@ const MobileMenuButton = styled.div`
   display: none;
   cursor: pointer;
 
-  @media (max-width: 780px) {
+  @media (max-width: 768px) {
     display: block;
     order: 1; // 모바일에서는 왼쪽으로
   }

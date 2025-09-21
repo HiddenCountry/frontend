@@ -498,7 +498,7 @@ const PlaceDetail: React.FC = () => {
                   <span>{placeDetail?.reviewScoreAverage?.toFixed(1)}</span>
                 </Rating>
                 <ReviewButton onClick={() => setIsReviewModalOpen(true)}>
-                  리뷰 작성하기
+                  리뷰 작성
                 </ReviewButton>
               </ReviewHeader>
               <ReviewCardBox>
@@ -586,15 +586,35 @@ const Container = styled.div`
 const Content = styled.main`
   width: 1000px;
   margin: 20px auto;
+
+  @media (max-width: 1200px) {
+    width: 90%;
+  }
+
+  @media (max-width: 780px) {
+    width: 100%;
+    padding: 0 16px;
+  }
 `;
 
 const TopSection = styled.div`
   display: flex;
   gap: 40px;
+
+  @media (max-width: 780px) {
+    flex-direction: column;
+    gap: 20px;
+  }
 `;
+
 const BottomSection = styled.div`
   display: flex;
   gap: 40px;
+
+  @media (max-width: 780px) {
+    flex-direction: column;
+    gap: 20px;
+  }
 `;
 const WrapperLeft = styled.div`
   position: relative;
@@ -608,11 +628,15 @@ const ImageWrapper = styled.div`
   position: relative;
   flex: 2;
 `;
-
 const MainImage = styled.img`
   width: 100%;
   height: 400px;
   border-radius: 24px;
+  object-fit: cover;
+
+  @media (max-width: 780px) {
+    height: 250px;
+  }
 `;
 const LogoFallback = styled.div`
   width: 100%;
@@ -675,6 +699,10 @@ const InfoCard = styled.div`
   text-align: left;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 780px) {
+    padding: 20px;
+  }
 `;
 
 const Chip = styled.div`
@@ -778,6 +806,11 @@ const Tab = styled.div<{ active?: boolean }>`
   font-weight: ${({ active }) => (active ? "bold" : "normal")};
   color: ${({ active }) => (active ? "#1e90ff" : "#666")};
   transition: color 0.2s;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.xl.medium};
+    padding: 10px 15px;
+  }
 `;
 
 const Section = styled.section`
@@ -793,6 +826,13 @@ const SectionTitle = styled.h2`
     ${({ theme }) => theme.font.xxxl.semibold};
     color: ${({ theme }) => theme.color.primary500};
   }
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.xxl.bold};
+    span {
+      ${({ theme }) => theme.font.xxl.bold};
+    }
+  }
 `;
 const SectionSubTitle = styled.div`
   ${({ theme }) => theme.font.xxl.semibold};
@@ -804,12 +844,20 @@ const SectionSubTitle = styled.div`
     ${({ theme }) => theme.font.xxxl.semibold};
     color: ${({ theme }) => theme.color.primary500};
   }
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.xl.bold};
+  }
 `;
 const Text = styled.div`
   ${({ theme }) => theme.font.xxl.medium};
   color: ${({ theme }) => theme.color.gray800};
   text-align: left;
   margin-bottom: 30px;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.md.medium};
+  }
 `;
 
 const MapImage = styled.img`
@@ -878,17 +926,22 @@ const Rating = styled.div`
   svg {
     margin: 5px;
   }
+
+  @media (max-width: 780px) {
+    svg {
+      margin: 0px;
+    }
+  }
 `;
 
 const ReviewButton = styled.button`
   ${({ theme }) => theme.font.md.semibold};
   color: ${({ theme }) => theme.color.white};
   background-color: ${({ theme }) => theme.color.primary500};
-  width: 150px;
-  height: 56px;
+  height: 50px;
   margin-left: auto;
   margin-top: 20px;
-  padding: 10px;
+  padding: 10px 30px;
   border: none;
   border-radius: 16px;
   cursor: pointer;
@@ -899,6 +952,11 @@ const ReviewButton = styled.button`
 
   &:hover {
     opacity: 0.8;
+  }
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.md.medium};
+    padding: 10px;
   }
 `;
 const Sequence = styled.div`

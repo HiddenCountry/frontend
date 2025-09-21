@@ -147,7 +147,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onFilterChange }) => {
 export default FilterSidebar;
 
 const Wrapper = styled.div`
-  height: 700px;
+  height: auto;
   background: ${({ theme }) => theme.color.white};
   border: 1px solid ${({ theme }) => theme.color.gray100};
   padding: 20px;
