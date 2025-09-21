@@ -1,18 +1,57 @@
 import React, { useRef, useEffect } from "react";
 import styled from "styled-components";
 
-declare global {
-  interface Window {
-    kakao: any;
-  }
-}
-
 interface KakaoMapProps {
   latitude: number;
   longitude: number;
   title?: string;
   address?: string;
   imageUrl?: string;
+}
+
+declare global {
+  interface Window {
+    kakao: any;
+  }
+}
+const TOURAPI_KEY = process.env.REACT_APP_TOUR_SERVICE_KEY;
+
+// 앱키 (CRA)
+const KAKAO_JS_KEY: string =
+  (process.env.REACT_APP_KAKAO_JS_KEY as string) || "";
+
+// SDK 로더 훅
+function useKakaoLoader(appkey: string) {
+  const [loaded, setLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!appkey) {
+      console.error("REACT_APP_KAKAO_JS_KEY가 비어 있습니다.");
+      return;
+    }
+    if (window.kakao && window.kakao.maps) {
+      window.kakao.maps.load(() => setLoaded(true));
+      return;
+    }
+    const id = "kakao-sdk";
+    if (document.getElementById(id)) {
+      const t = setInterval(() => {
+        if (window.kakao && window.kakao.maps) {
+          clearInterval(t);
+          window.kakao.maps.load(() => setLoaded(true));
+        }
+      }, 50);
+      return;
+    }
+    const s = document.createElement("script");
+    s.id = id;
+    s.async = true;
+    s.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${appkey}&autoload=false&libraries=services,clusterer`;
+    s.onload = () => window.kakao.maps.load(() => setLoaded(true));
+    document.head.appendChild(s);
+  }, [appkey]);
+
+  return loaded;
 }
 
 const KakaoMap: React.FC<KakaoMapProps> = ({
@@ -22,8 +61,15 @@ const KakaoMap: React.FC<KakaoMapProps> = ({
   address,
   imageUrl,
 }) => {
+  const loaded = useKakaoLoader(KAKAO_JS_KEY);
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
+
+  // 지도 생성 + idle 이벤트
+  React.useEffect(() => {
+    if (!loaded || !containerRef.current || mapRef.current) return;
+    const { kakao } = window;
+  }, [loaded]);
 
   useEffect(() => {
     if (!containerRef.current || !window.kakao) return;
@@ -36,7 +82,7 @@ const KakaoMap: React.FC<KakaoMapProps> = ({
     });
     mapRef.current = map;
 
-    // 👇 지도 크기 보정
+    // 지도 크기 보정
     setTimeout(() => {
       map.relayout();
       map.setCenter(new kakao.maps.LatLng(latitude, longitude));
@@ -90,7 +136,7 @@ const KakaoMap: React.FC<KakaoMapProps> = ({
         isOpen = true;
       }
     });
-  }, [latitude, longitude, title, address, imageUrl]);
+  }, [loaded]);
 
   return <MapBox ref={containerRef} />;
 };

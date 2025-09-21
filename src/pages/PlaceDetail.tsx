@@ -17,6 +17,7 @@ import { deleteBookmark, postBookmark } from "../api/Bookmark";
 import ReviewModal from "../components/place/ReviewModal";
 import { getReview } from "../api/Review";
 import { TAGS } from "../constants/Tags";
+import Pagination from "../components/main/Pagination";
 
 interface Place {
   title: string;
@@ -142,15 +143,14 @@ const PlaceDetail: React.FC = () => {
 
   // 상태 추가
   const [activeNearTab, setActiveNearTab] = useState<
-    "전체" | "식음" | "숙소" | "기타"
-  >("전체");
+    "식당" | "숙소" | "관광지"
+  >("식당");
 
   // 필터링된 장소
   const filteredPlaces = places.filter((place) => {
-    if (activeNearTab === "전체") return true;
-    if (activeNearTab === "식음") return place.contenttypeid === "39"; // 식음
+    if (activeNearTab === "식당") return place.contenttypeid === "39"; // 식당
     if (activeNearTab === "숙소") return place.contenttypeid === "32"; // 숙소
-    if (activeNearTab === "기타")
+    if (activeNearTab === "관광지")
       return ["12", "14", "15", "25", "28", "38"].includes(place.contenttypeid);
     return true;
   });
@@ -176,40 +176,35 @@ const PlaceDetail: React.FC = () => {
 
   // 이색 상세 조회 api 연동
   const [placeDetail, setPlaceDetail] = useState<PlaceDetailType | null>(null);
+  // === placeDetail 다시 불러오기 함수 ===
+  const fetchPlaceDetail = async () => {
+    if (!contentId || !contentTypeId) return;
 
-  useEffect(() => {
-    const fetchPlaceDetail = async () => {
-      if (!contentId || !contentTypeId) return;
+    try {
+      let res;
 
-      try {
-        let res;
-
-        if (userLat != null && userLng != null) {
-          // 위치정보 있는 경우
-          res = await getPlace(
-            contentId,
-            contentTypeId,
-            place?.id ?? 0,
-            userLat,
-            userLng
-          );
-        } else {
-          // 위치정보 없는 경우
-          res = await getPlaceUserNull(
-            contentId,
-            contentTypeId,
-            place?.id ?? 0
-          );
-        }
-
-        if (res.data) {
-          setPlaceDetail(res.data);
-        }
-      } catch (error) {
-        console.error("이색 관광지 상세 조회 실패", error);
+      if (userLat != null && userLng != null) {
+        res = await getPlace(
+          contentId,
+          contentTypeId,
+          place?.id ?? 0,
+          userLat,
+          userLng
+        );
+      } else {
+        res = await getPlaceUserNull(contentId, contentTypeId, place?.id ?? 0);
       }
-    };
 
+      if (res.data) {
+        setPlaceDetail(res.data);
+      }
+    } catch (error) {
+      console.error("이색 관광지 상세 조회 실패", error);
+    }
+  };
+
+  // placeDetail 로딩 useEffect
+  useEffect(() => {
     fetchPlaceDetail();
   }, [contentId, contentTypeId, userLat, userLng, place?.id]);
 
@@ -246,6 +241,23 @@ const PlaceDetail: React.FC = () => {
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
 
+  // 페이지네이션 상태
+  const [currentPage, setCurrentPage] = useState(1);
+  const reviewsPerPage = 5; // 페이지당 리뷰 개수
+
+  // 현재 페이지 리뷰 계산
+  const indexOfLastReview = currentPage * reviewsPerPage;
+  const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
+  const currentReviews = reviews.slice(indexOfFirstReview, indexOfLastReview);
+
+  // 총 페이지 수
+  const totalPages = Math.ceil(reviews.length / reviewsPerPage);
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
+
   // 리뷰 불러오기
   const fetchReviews = async () => {
     if (!placeDetail?.id) return;
@@ -256,7 +268,11 @@ const PlaceDetail: React.FC = () => {
       // 실제 리뷰 배열만 추출
       setReviews(res.data.reviewResponses || []);
     } catch (error: any) {
-      setReviewsError(error.message || "리뷰 조회 실패");
+      if (error.response?.status === 403) {
+        setReviewsError("세션이 만료되었습니다. 다시 로그인해주세요.");
+      } else {
+        setReviewsError(error.message || "리뷰 조회 실패");
+      }
     } finally {
       setReviewsLoading(false);
     }
@@ -402,7 +418,7 @@ const PlaceDetail: React.FC = () => {
             <Section ref={nearbyRef}>
               <SectionTitle>인근 관광지</SectionTitle>
               <NearTabs>
-                {["전체", "식음", "숙소", "기타"].map((tab) => (
+                {["식당", "숙소", "관광지"].map((tab) => (
                   <NearTab
                     key={tab}
                     active={activeNearTab === tab}
@@ -421,7 +437,7 @@ const PlaceDetail: React.FC = () => {
                     contentid={place.contentid}
                     contenttypeid={place.contenttypeid}
                     dist={place.dist}
-                    firstimage={place.firstimage || "https://placehold.co/150"}
+                    firstimage={place.firstimage}
                   />
                 ))}
               </NearCardBox>
@@ -430,7 +446,7 @@ const PlaceDetail: React.FC = () => {
             {/* 리뷰 */}
             <Section ref={reviewRef}>
               <SectionTitle>
-                다녀간 사람들의 생생한 후기 <span>4</span>
+                다녀간 사람들의 생생한 후기 <span>{place?.reviewCount}</span>
               </SectionTitle>
               <ReviewHeader>
                 <Rating>
@@ -448,13 +464,13 @@ const PlaceDetail: React.FC = () => {
                   <span>리뷰 많은 순</span> | 거리순 | 평점순 | 조회순
                 </Sequence>
                 {reviewsLoading && <div>리뷰 로딩중...</div>}
-                {reviewsError && <div>리뷰 불러오기 실패: {reviewsError}</div>}
+                {reviewsError && <div>{reviewsError}</div>}
                 {!reviewsLoading && !reviewsError && reviews.length === 0 && (
                   <div>리뷰가 없습니다.</div>
                 )}
                 {!reviewsLoading &&
                   !reviewsError &&
-                  reviews.map((review) => (
+                  currentReviews.map((review) => (
                     <ReviewCard
                       key={review.id}
                       reviewer={review.userNickname}
@@ -472,6 +488,15 @@ const PlaceDetail: React.FC = () => {
                       }
                     />
                   ))}
+
+                {/* 페이지네이션 버튼 */}
+                {totalPages > 1 && (
+                  <Pagination
+                    page={currentPage - 1} // currentPage는 1-based → 0-based로 변환
+                    totalPages={totalPages}
+                    onPageChange={(n) => setCurrentPage(n + 1)} // 다시 1-based로 변환
+                  />
+                )}
               </ReviewCardBox>
             </Section>
           </WrapperLeft>
@@ -482,7 +507,8 @@ const PlaceDetail: React.FC = () => {
         <ReviewModal
           onClose={() => {
             setIsReviewModalOpen(false);
-            loadReviews(); // 모달 닫으면 리뷰 재조회
+            loadReviews(); // 리뷰 다시 불러오기
+            fetchPlaceDetail(); // placeDetail 다시 불러오기 (리뷰 개수/평균 업데이트)
           }}
           placeId={placeDetail.id}
         />

@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { ReactComponent as Boomark } from "../../assets/main/Bookmark.svg";
 import { ReactComponent as Airplane } from "../../assets/main/Airplane.svg";
+import { ReactComponent as Logo } from "../../assets/layout/Logo.svg";
 
 interface CardItemProps {
   id: number;
@@ -66,12 +67,18 @@ const CardItem: React.FC<CardItemProps> = ({
       }
     >
       <BookmarkButton>{isBookmarked && <Boomark />}</BookmarkButton>
-      <ImageBox
-        style={{
-          backgroundImage: `url(${firstImage})`,
-          backgroundSize: "cover",
-        }}
-      />
+      <ImageBox>
+        {firstImage ? (
+          <Img style={{ backgroundImage: `url(${firstImage})` }} />
+        ) : (
+          <FallbackIcon>
+            <>
+              <Logo />
+            </>
+          </FallbackIcon>
+        )}
+      </ImageBox>
+
       <Content>
         <Title>{title}</Title>
         <Meta>
@@ -108,11 +115,33 @@ const BookmarkButton = styled.div`
   right: 24px;
   cursor: pointer;
 `;
-
 const ImageBox = styled.div`
   background: #f1f3f6;
   height: 150px;
   border-radius: 24px 24px 0px 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+`;
+
+const Img = styled.div`
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+`;
+
+const FallbackIcon = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) => theme.color.gray400};
+  svg {
+    width: 48px;
+    height: 48px;
+    margin-top: 10px;
+  }
 `;
 
 const Content = styled.div`
