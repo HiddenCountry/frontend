@@ -29,7 +29,7 @@ const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <Nav>
-      <Logo to="/">
+      <Logo to="/" onClick={() => setActiveMenu("홈")}>
         <NavLogo />
         <span>숨은나라찾기</span>
       </Logo>
@@ -123,6 +123,7 @@ const AuthButton = styled(Link)`
   border-radius: 12px;
   color: ${({ theme }) => theme.color.primary600};
   text-decoration: none;
+  margin-right: 40px;
   cursor: pointer;
 
   &:hover {
@@ -133,12 +134,13 @@ const AuthButton = styled(Link)`
 const ProfileWrapper = styled.div`
   display: flex;
   gap: 15px;
-  margin-right: 40px;
   flex-direction: row;
   align-items: center;
   position: relative;
   cursor: pointer;
-  #userIcon {
+  margin-right: 50px;
+
+  svg {
     width: 50px;
   }
 `;
@@ -152,7 +154,8 @@ const ProfileImage = styled.div<{ src?: string }>`
 `;
 
 const ProfileName = styled.div`
-  ${({ theme }) => theme.font.md.medium};
+  ${({ theme }) => theme.font.md.bold};
+  margin: 5px 0;
   color: ${({ theme }) => theme.color.gray700};
 `;
 
@@ -169,10 +172,11 @@ const Dropdown = styled.div`
   overflow: hidden;
   z-index: 100;
   align-items: center;
+  padding: 10px;
 
   svg {
     width: 80px;
-    margin-top: 20px;
+    margin-top: 10px;
     margin-bottom: 8px;
   }
 `;
@@ -184,6 +188,7 @@ const DropdownItem = styled(Link)`
   ${({ theme }) => theme.font.md.medium};
 
   &:hover {
+    border-radius: 12px;
     background-color: ${({ theme }) => theme.color.gray100};
   }
 `;
@@ -196,6 +201,7 @@ const DropdownButton = styled.div`
   cursor: pointer;
 
   &:hover {
+    border-radius: 12px;
     background-color: ${({ theme }) => theme.color.gray100};
   }
 `;
