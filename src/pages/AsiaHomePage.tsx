@@ -60,20 +60,6 @@ const AsiaHomePage: React.FC = () => {
           떠나볼까요?
         </Title>
 
-        {/* 나라이름 버튼
-        <CountryList>
-          {countries.map((country) => (
-            <CountryButton
-              key={country.key}
-              $highlight={hovered === country.name}
-              onMouseEnter={() => setHovered(country.name)}
-              onMouseLeave={() => setHovered(null)}
-            >
-              {country.name}
-            </CountryButton>
-          ))}
-        </CountryList>*/}
-
         <ContinentCard>
           <Path>
             <Link to="/">세계지도</Link> &gt; <span>아시아 지도</span>
@@ -103,6 +89,7 @@ const AsiaHomePage: React.FC = () => {
 
             <GridItem
               $highlight={hovered === "중화/중국"}
+              $isChina
               onMouseEnter={() => setHovered("중화/중국")}
               onMouseLeave={() => setHovered(null)}
               onClick={() =>
@@ -114,13 +101,8 @@ const AsiaHomePage: React.FC = () => {
                     }`
                 )
               }
-              style={{
-                gridColumn: "span 2",
-                width: "460px",
-                position: "relative",
-              }}
             >
-              <China style={{ position: "relative", top: "27px" }} />
+              <China />
             </GridItem>
 
             <GridItem
@@ -136,11 +118,7 @@ const AsiaHomePage: React.FC = () => {
                 )
               }
               style={{
-                gridRow: "span 2",
-                width: "225px",
-                height: "365px",
                 borderTopRightRadius: "32px",
-                borderBottomRightRadius: "32px",
               }}
             >
               <Japan />
@@ -191,6 +169,9 @@ const AsiaHomePage: React.FC = () => {
                     }`
                 )
               }
+              style={{
+                borderBottomRightRadius: "32px",
+              }}
             >
               <SoutheastAsia />
             </GridItem>
@@ -246,26 +227,6 @@ const Title = styled.div`
   }
 `;
 
-const CountryList = styled.div`
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 40px;
-`;
-
-const CountryButton = styled.button<{ $highlight?: boolean }>`
-  background: ${({ $highlight, theme }) =>
-    $highlight ? theme.color.primary100 : "white"};
-  border: none;
-  padding: 10px 18px;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-`;
-
 const ContinentCard = styled.div`
   position: relative;
   background: white;
@@ -298,16 +259,24 @@ const Path = styled.div`
     }
   }
 `;
-
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
   justify-items: center;
   align-items: center;
+  position: relative; /* 몽골 absolute 기준 */
+
+  @media (max-width: 780px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
 `;
-const GridItem = styled.div<{ $highlight?: boolean }>`
-  width: 225px;
+const GridItem = styled.div<{ $highlight?: boolean; $isChina?: boolean }>`
+  width: 100%;
   height: 180px;
   display: flex;
   flex-direction: column;
@@ -318,18 +287,40 @@ const GridItem = styled.div<{ $highlight?: boolean }>`
     $highlight ? theme.color.primary100 : theme.color.gray100};
   cursor: pointer;
   transition: all 0.2s ease;
+  position: ${({ $isChina }) => ($isChina ? "relative" : "static")};
 
   svg {
     margin-bottom: 12px;
     transition: transform 0.2s;
     transform: ${({ $highlight }) => ($highlight ? "scale(1.1)" : "scale(1)")};
+    margin-top: ${({ $isChina }) => ($isChina ? "40px" : "0px")};
+
+    @media (max-width: 780px) {
+      position: ${({ $isChina }) => ($isChina ? "static" : "relative")};
+      top: 0 !important; // China SVG top 제거
+      margin-top: ${({ $isChina }) => ($isChina ? "0px" : "0px")};
+    }
+  }
+
+  /* 반응형: grid-span 조정 */
+  @media (max-width: 780px) {
+    grid-column: auto !important;
+    grid-row: auto !important;
+    width: 100%; // 2열 → 1열
+    max-width: 460px; // 중국 폭 유지
+    height: 180px; // 높이 고정
+    border-radius: 32px;
+  }
+
+  @media (max-width: 600px) {
+    max-width: 100%;
+    height: 160px;
   }
 
   &:hover svg {
     transform: scale(1.1);
   }
 `;
-
 const MongoliaGrid = styled.div<{ $highlight?: boolean }>`
   width: 184px;
   height: 130px;
@@ -339,10 +330,14 @@ const MongoliaGrid = styled.div<{ $highlight?: boolean }>`
   border-radius: 32px;
   position: absolute;
   top: 45px;
-  left: 410px;
+
+  /* 화면 중앙 기준으로 이동 */
+  left: 50%;
+  transform: translateX(-50%); /* 부모 기준 중앙 정렬 */
+
   transition: all 0.2s ease;
   cursor: pointer;
-  z-index: 999px;
+  z-index: 999;
 
   svg {
     margin-top: -5px;
@@ -352,6 +347,22 @@ const MongoliaGrid = styled.div<{ $highlight?: boolean }>`
 
   &:hover svg {
     transform: scale(1.1);
+  }
+
+  /* 반응형 */
+  @media (max-width: 780px) {
+    position: static;
+    width: 100%;
+    height: 180px;
+    padding-top: 25px;
+    border-radius: 32px;
+    transform: none; /* static일 때 transform 제거 */
+  }
+
+  @media (max-width: 600px) {
+    max-width: 100%;
+    padding-top: 15px;
+    height: 160px;
   }
 `;
 
