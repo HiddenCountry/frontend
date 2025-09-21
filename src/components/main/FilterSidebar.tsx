@@ -37,7 +37,6 @@ const TYPE_OPTIONS = [
   { label: "관광지", value: "TOURIST_SPOT" },
   { label: "문화시설", value: "CULTURAL_FACILTY" },
   { label: "행사", value: "EVENT" },
-  { label: "여행코스", value: "TRAVEL_COURSE" },
   { label: "레포츠", value: "LEISURE_SPORTS" },
   { label: "숙소", value: "ACCOMMODATION" },
   { label: "쇼핑", value: "SHOPPING" },
