@@ -28,6 +28,7 @@ const Navbar: React.FC<NavbarProps> = ({
     { name: "홈", path: "/" },
     { name: "지도로 보기", path: "/map" },
     { name: "장소 등록 문의", path: "/register" },
+    { name: "세계여행", path: "/route" }
   ];
 
   return (
