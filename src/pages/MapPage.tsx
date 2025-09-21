@@ -905,6 +905,7 @@ export default MapPage;
 /* ============ 스타일 ============ */
 const Page = styled.div`
   min-height: 100vh;
+  ${({ theme }) => theme.font.md.regular};
 `;
 
 /* 스테이지/지도 */
@@ -945,6 +946,7 @@ const DropdownWrap = styled.div`
   position: relative;
 `;
 const DropdownBtn = styled.button<{ $active?: boolean; $open?: boolean }>`
+${({ theme }) => theme.font.md.bold};
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1037,6 +1039,7 @@ const ChipRow = styled.div`
   margin: 15px;
 `;
 const Chip = styled.button`
+${({ theme }) => theme.font.xs.bold};
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1208,6 +1211,7 @@ const CoordToast = styled.div`
 
 /* 현재 위치로 돌아가기 버튼 */
 const RecenterBtn = styled.button`
+${({ theme }) => theme.font.md.bold};
   position: absolute;
   right: 24px;
   bottom: 24px;
@@ -1230,6 +1234,7 @@ const RecenterBtn = styled.button`
 
 /* "다시 검색" 버튼 */
 const SearchBtn = styled.button`
+${({ theme }) => theme.font.md.bold};
   position: absolute;
   top: 62px;
   left: 50%;
