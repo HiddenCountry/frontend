@@ -80,6 +80,17 @@ const Card = styled.div`
   padding: 50px;
   text-align: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+
+  @media (max-width: 500px) {
+    width: 90%;
+    padding: 30px;
+    border-radius: 24px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 30px;
+    border-radius: 20px;
+  }
 `;
 
 const Title = styled.div`
@@ -87,6 +98,14 @@ const Title = styled.div`
   margin-bottom: 30px;
   text-align: left;
   color: ${({ theme }) => theme.color.gray800};
+
+  @media (max-width: 768px) {
+    ${({ theme }) => theme.font.xxl.bold};
+  }
+
+  @media (max-width: 480px) {
+    ${({ theme }) => theme.font.xl.bold};
+  }
 `;
 
 const Label = styled.div`
@@ -94,6 +113,14 @@ const Label = styled.div`
   margin-bottom: 10px;
   text-align: left;
   color: ${({ theme }) => theme.color.gray800};
+
+  @media (max-width: 768px) {
+    ${({ theme }) => theme.font.xl.semibold};
+  }
+
+  @media (max-width: 480px) {
+    ${({ theme }) => theme.font.xl.semibold};
+  }
 `;
 const Input = styled.input<{ $status: boolean | null }>`
   width: 100%;
@@ -115,6 +142,16 @@ const Input = styled.input<{ $status: boolean | null }>`
     border-color: ${({ $status, theme }) =>
       $status === false ? "red" : theme.color.primary500};
   }
+
+  @media (max-width: 768px) {
+    height: 52px;
+    font-size: 13px;
+  }
+
+  @media (max-width: 480px) {
+    height: 48px;
+    font-size: 12px;
+  }
 `;
 
 const InfoText = styled.div<{ $status: boolean | null }>`
@@ -128,7 +165,17 @@ const InfoText = styled.div<{ $status: boolean | null }>`
     if ($status) return theme.color.primary500;
     return theme.color.red500;
   }};
-  transition: color 0.2s ease; /* 색상 변경 부드럽게 */
+  transition: color 0.2s ease;
+
+  @media (max-width: 768px) {
+    margin-bottom: 80px;
+    font-size: 11px;
+  }
+
+  @media (max-width: 480px) {
+    margin-bottom: 60px;
+    font-size: 10px;
+  }
 `;
 
 const ButtonRow = styled.div`
@@ -153,6 +200,17 @@ const CancelButton = styled.button`
   &:hover {
     background: #f0f8ff;
   }
+  @media (max-width: 768px) {
+    width: 150px;
+    height: 48px;
+    font-size: 14px;
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
+    height: 44px;
+    font-size: 13px;
+  }
 `;
 
 const ConfirmButton = styled.button`
@@ -168,5 +226,17 @@ const ConfirmButton = styled.button`
 
   &:hover {
     opacity: 0.9;
+  }
+
+  @media (max-width: 768px) {
+    width: 150px;
+    height: 48px;
+    font-size: 14px;
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
+    height: 44px;
+    font-size: 13px;
   }
 `;

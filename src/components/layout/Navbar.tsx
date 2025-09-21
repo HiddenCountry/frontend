@@ -183,12 +183,14 @@ const MobileLoginIcon = styled(Link)`
     justify-content: center;
     order: 3; // 오른쪽
     color: ${({ theme }) => theme.color.primary600};
+    margin-right: -10px;
+    margin-top: 5px;
   }
 
   svg {
-    width: 36px;
-    height: 36px;
-    margin: 14px;
+    width: 30px;
+    height: 30px;
+    margin: 15px;
   }
 `;
 
@@ -200,11 +202,16 @@ const ProfileWrapper = styled.div`
   cursor: pointer;
 
   svg {
-    width: 50px;
+    width: 40px;
   }
 
   @media (max-width: 780px) {
     order: 3; // 오른쪽
+
+    svg {
+      width: 40px;
+      margin: 0px;
+    }
   }
 `;
 
@@ -276,6 +283,8 @@ const MobileMenuButton = styled.div`
   @media (max-width: 780px) {
     display: block;
     order: 1; // 모바일에서는 왼쪽으로
+    margin-left: -10px;
+    margin-top: 5px;
   }
 `;
 
@@ -287,7 +296,7 @@ const MobileMenu = styled.div`
   border-bottom: 1px solid #ddd;
   z-index: 50;
   position: absolute;
-  top: 85px;
+  top: 75px;
   left: 0;
 `;
 
