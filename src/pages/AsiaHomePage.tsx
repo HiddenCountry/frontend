@@ -225,6 +225,9 @@ const Title = styled.div`
   span {
     color: ${({ theme }) => theme.color.primary500};
   }
+  @media (max-width: 768px) {
+    font-size: 180%;
+  }
 `;
 
 const ContinentCard = styled.div`
