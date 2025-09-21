@@ -26,7 +26,7 @@ export const fetchNearbyPlaces = async (
 ) => {
   try {
     const res = await fetch(
-      `https://apis.data.go.kr/B551011/KorService2/locationBasedList2?serviceKey=${serviceKey}&numOfRows=30&pageNo=1&MobileOS=ETC&MobileApp=숨은나라찾기&_type=json&mapX=${longitude}&mapY=${latitude}&arrange=C&radius=20000&contentTypeId=${contentTypeId}`
+      `https://apis.data.go.kr/B551011/KorService2/locationBasedList2?serviceKey=${serviceKey}&numOfRows=30&pageNo=1&MobileOS=ETC&MobileApp=숨은나라찾기&_type=json&mapX=${longitude}&mapY=${latitude}&arrange=C&radius=20000`
     );
     const data = await res.json();
     const items = data?.response?.body?.items?.item ?? [];
