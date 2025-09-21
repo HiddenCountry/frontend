@@ -332,7 +332,7 @@ const SortItem = styled.span<{ $active?: boolean }>`
 `;
 const CardBox = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 250px));
+  grid-template-columns: repeat(auto-fit, minmax(230px, 230px));
   gap: 10px;
   justify-content: center;
   justify-contents: center;

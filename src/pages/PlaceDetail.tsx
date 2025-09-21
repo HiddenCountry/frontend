@@ -498,7 +498,7 @@ const PlaceDetail: React.FC = () => {
                   <span>{placeDetail?.reviewScoreAverage?.toFixed(1)}</span>
                 </Rating>
                 <ReviewButton onClick={() => setIsReviewModalOpen(true)}>
-                  리뷰 작성
+                  리뷰
                 </ReviewButton>
               </ReviewHeader>
               <ReviewCardBox>

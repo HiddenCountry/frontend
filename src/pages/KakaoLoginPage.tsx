@@ -51,11 +51,30 @@ const Card = styled.div`
   padding: 50px;
   text-align: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+
+  @media (max-width: 500px) {
+    width: 90%;
+    padding: 30px;
+    border-radius: 24px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 30px;
+    border-radius: 20px;
+  }
 `;
 
 const Title = styled.div`
   ${({ theme }) => theme.font.xxxl.bold};
   text-align: left;
+
+  @media (max-width: 768px) {
+    ${({ theme }) => theme.font.xxl.bold};
+  }
+
+  @media (max-width: 480px) {
+    ${({ theme }) => theme.font.xl.bold};
+  }
 `;
 
 const Highlight = styled.span`
@@ -65,6 +84,14 @@ const StyledLoginIcon = styled(LoginIcon)`
   width: 200px;
   height: auto;
   margin-bottom: 35px;
+
+  @media (max-width: 768px) {
+    width: 160px;
+  }
+
+  @media (max-width: 480px) {
+    width: 120px;
+  }
 `;
 const KakaoButton = styled.button`
   ${({ theme }) => theme.font.xl.semibold};
@@ -97,5 +124,16 @@ const KakaoButton = styled.button`
     align-items: center;
     justify-content: center;
     gap: 8px;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 15px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 14px;
+    padding: 10px 16px;
   }
 `;
