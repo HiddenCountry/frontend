@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { ReactComponent as NavLogo } from "../../assets/layout/Logo.svg";
@@ -7,19 +7,19 @@ import { ReactComponent as UserIconBig } from "../../assets/layout/UserIconBig.s
 
 interface NavbarProps {
   isLoggedIn?: boolean;
-  userName?: string;
-  profileImgUrl?: string;
+  nickname?: string;
+  profileImg?: string;
   onLogout?: () => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
   isLoggedIn = false,
-  userName = "사용자",
-  profileImgUrl,
+  nickname = "사용자",
+  profileImg,
   onLogout,
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
-  const [activeMenu, setActiveMenu] = useState("홈"); // 현재 선택된 메뉴 상태
+  const [activeMenu, setActiveMenu] = useState("홈");
 
   const menuItems = [
     { name: "홈", path: "/" },
@@ -49,16 +49,14 @@ const Navbar: React.FC<NavbarProps> = ({
 
       {isLoggedIn ? (
         <ProfileWrapper onClick={() => setShowDropdown(!showDropdown)}>
-          <ProfileName>{userName} 님</ProfileName>
-          <UserIcon id="userIcon" />
+          {profileImg ? <ProfileImage src={profileImg} /> : <UserIcon />}
+          <ProfileName>{nickname} 님</ProfileName>
           {showDropdown && (
             <Dropdown>
               <UserIconBig />
-              <ProfileName>{userName} 님</ProfileName>
+              <ProfileName>{nickname} 님</ProfileName>
               <DropdownItem to="/mypage">마이페이지</DropdownItem>
-              <DropdownItem to="/" onClick={onLogout}>
-                로그아웃
-              </DropdownItem>
+              <DropdownButton onClick={onLogout}>로그아웃</DropdownButton>
             </Dropdown>
           )}
         </ProfileWrapper>
@@ -151,7 +149,6 @@ const ProfileImage = styled.div<{ src?: string }>`
   border-radius: 50%;
   background: ${({ src, theme }) =>
     src ? `url(${src}) center/cover` : theme.color.gray300};
-  margin-bottom: 4px;
 `;
 
 const ProfileName = styled.div`
@@ -185,6 +182,18 @@ const DropdownItem = styled(Link)`
   text-decoration: none;
   color: ${({ theme }) => theme.color.gray700};
   ${({ theme }) => theme.font.md.medium};
+
+  &:hover {
+    background-color: ${({ theme }) => theme.color.gray100};
+  }
+`;
+
+// 로그아웃 전용 버튼
+const DropdownButton = styled.div`
+  padding: 12px 16px;
+  color: ${({ theme }) => theme.color.gray700};
+  ${({ theme }) => theme.font.md.medium};
+  cursor: pointer;
 
   &:hover {
     background-color: ${({ theme }) => theme.color.gray100};
