@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { ReactComponent as NavLogo } from "../../assets/layout/Logo.svg";
 import { ReactComponent as UserIcon } from "../../assets/layout/UserIcon.svg";
 import { ReactComponent as UserIconBig } from "../../assets/layout/UserIconBig.svg";
+import { ReactComponent as Hamburger } from "../../assets/layout/Menu.svg";
+import { ReactComponent as Login } from "../../assets/layout/Login.svg";
 
 interface NavbarProps {
   isLoggedIn?: boolean;
@@ -20,6 +22,7 @@ const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeMenu, setActiveMenu] = useState("홈");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const menuItems = [
     { name: "홈", path: "/" },
@@ -35,6 +38,7 @@ const Navbar: React.FC<NavbarProps> = ({
         <span>숨은나라찾기</span>
       </Logo>
 
+      {/* 데스크탑 메뉴 */}
       <Menu>
         {menuItems.map((menu) => (
           <MenuLink
@@ -48,6 +52,29 @@ const Navbar: React.FC<NavbarProps> = ({
         ))}
       </Menu>
 
+      {/* 모바일 햄버거 버튼 */}
+      <MobileMenuButton onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+        <Hamburger />
+      </MobileMenuButton>
+
+      {mobileMenuOpen && (
+        <MobileMenu>
+          {menuItems.map((menu) => (
+            <MobileMenuLink
+              key={menu.name}
+              to={menu.path}
+              onClick={() => {
+                setActiveMenu(menu.name);
+                setMobileMenuOpen(false);
+              }}
+            >
+              {menu.name}
+            </MobileMenuLink>
+          ))}
+        </MobileMenu>
+      )}
+
+      {/* 로그인 상태 */}
       {isLoggedIn ? (
         <ProfileWrapper onClick={() => setShowDropdown(!showDropdown)}>
           {profileImg ? <ProfileImage src={profileImg} /> : <UserIcon />}
@@ -62,7 +89,15 @@ const Navbar: React.FC<NavbarProps> = ({
           )}
         </ProfileWrapper>
       ) : (
-        <AuthButton to="/login">로그인 / 회원가입</AuthButton>
+        <>
+          {/* 데스크탑용 버튼 */}
+          <AuthButton to="/login">로그인 / 회원가입</AuthButton>
+
+          {/* 모바일용 아이콘 */}
+          <MobileLoginIcon to="/login">
+            <Login />
+          </MobileLoginIcon>
+        </>
       )}
     </Nav>
   );
@@ -72,15 +107,15 @@ export default Navbar;
 
 const Nav = styled.nav`
   width: 100%;
-  height: 100px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 32px;
+  padding: 10px 32px;
   box-sizing: border-box;
   background-color: ${({ theme }) => theme.color.white};
   border-bottom: 1px solid ${({ theme }) => theme.color.gray200};
   position: relative;
+  flex-wrap: wrap;
 `;
 
 const Logo = styled(Link)`
@@ -88,11 +123,14 @@ const Logo = styled(Link)`
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  margin-left: 40px;
 
   span {
     ${({ theme }) => theme.font.xxl.bold};
     color: ${({ theme }) => theme.color.gray800};
+  }
+
+  @media (max-width: 780px) {
+    order: 2; // 중앙
   }
 `;
 
@@ -101,6 +139,10 @@ const Menu = styled.div`
   gap: 90px;
   flex: 1;
   justify-content: center;
+
+  @media (max-width: 780px) {
+    display: none;
+  }
 `;
 
 const MenuLink = styled(Link)<{ $active?: boolean }>`
@@ -119,30 +161,58 @@ const MenuLink = styled(Link)<{ $active?: boolean }>`
 const AuthButton = styled(Link)`
   ${({ theme }) => theme.font.xl.semibold};
   background-color: ${({ theme }) => theme.color.primary50};
-  border: none;
-  padding: 8px 16px;
   border-radius: 12px;
   color: ${({ theme }) => theme.color.primary600};
   text-decoration: none;
-  margin-right: 40px;
-  cursor: pointer;
+  padding: 8px 16px;
 
   &:hover {
     background-color: ${({ theme }) => theme.color.primary100};
+  }
+
+  @media (max-width: 780px) {
+    display: none; // 모바일에서 숨김
+  }
+`;
+
+const MobileLoginIcon = styled(Link)`
+  display: none;
+
+  @media (max-width: 780px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    order: 3; // 오른쪽
+    color: ${({ theme }) => theme.color.primary600};
+    margin-right: -10px;
+    margin-top: 5px;
+  }
+
+  svg {
+    width: 30px;
+    height: 30px;
+    margin: 15px;
   }
 `;
 
 const ProfileWrapper = styled.div`
   display: flex;
   gap: 15px;
-  flex-direction: row;
   align-items: center;
   position: relative;
   cursor: pointer;
-  margin-right: 50px;
 
   svg {
-    width: 50px;
+    width: 40px;
+  }
+
+  @media (max-width: 780px) {
+    order: 3; // 오른쪽
+
+    svg {
+      width: 40px;
+      margin: 0px;
+    }
   }
 `;
 
@@ -156,23 +226,24 @@ const ProfileImage = styled.div<{ src?: string }>`
 
 const ProfileName = styled.div`
   ${({ theme }) => theme.font.md.bold};
-  margin: 5px 0;
   color: ${({ theme }) => theme.color.gray700};
+  @media (max-width: 780px) {
+    display: none; // 모바일에서 숨기기
+  }
 `;
 
 const Dropdown = styled.div`
   width: 170px;
   position: absolute;
-  top: 90px;
-  left: -42px;
+  top: 60px;
+  right: 0;
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  z-index: 100;
   align-items: center;
+  z-index: 100;
   padding: 10px;
 
   svg {
@@ -194,7 +265,6 @@ const DropdownItem = styled(Link)`
   }
 `;
 
-// 로그아웃 전용 버튼
 const DropdownButton = styled.div`
   padding: 12px 16px;
   color: ${({ theme }) => theme.color.gray700};
@@ -204,5 +274,40 @@ const DropdownButton = styled.div`
   &:hover {
     border-radius: 12px;
     background-color: ${({ theme }) => theme.color.gray100};
+  }
+`;
+
+const MobileMenuButton = styled.div`
+  display: none;
+  cursor: pointer;
+
+  @media (max-width: 780px) {
+    display: block;
+    order: 1; // 모바일에서는 왼쪽으로
+    margin-left: -10px;
+    margin-top: 5px;
+  }
+`;
+
+const MobileMenu = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: white;
+  border-bottom: 1px solid #ddd;
+  z-index: 50;
+  position: absolute;
+  top: 75px;
+  left: 0;
+`;
+
+const MobileMenuLink = styled(Link)`
+  padding: 12px 20px;
+  text-decoration: none;
+  color: ${({ theme }) => theme.color.gray700};
+  ${({ theme }) => theme.font.md.semibold};
+
+  &:hover {
+    background-color: ${({ theme }) => theme.color.gray50};
   }
 `;

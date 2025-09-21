@@ -258,20 +258,44 @@ const Banner = styled.div`
   padding: 20px 40px;
   border-radius: 12px;
   margin-bottom: 30px;
+  @media (max-width: 500px) {
+    padding: 20px;
+  }
 `;
 
 const BannerText = styled.div`
   ${({ theme }) => theme.font.xxl.bold};
   text-align: left;
-`;
 
+  @media (max-width: 500px) {
+    ${({ theme }) => theme.font.md.bold};
+  }
+`;
 const Content = styled.div`
   display: flex;
   gap: 20px;
+
+  /* 화면 좁아지면 세로로 쌓기 */
+  @media (max-width: 780px) {
+    flex-direction: column;
+  }
 `;
 
 const SidebarWrapper = styled.div`
   flex: 0 0 220px;
+
+  /* 데스크탑: 사이드바처럼 고정 */
+  @media (min-width: 781px) {
+    position: sticky;
+    top: 20px;
+  }
+
+  /* 모바일: 위쪽으로 내려서 검색바 아래에 노출 */
+  @media (max-width: 780px) {
+    width: 100%;
+    position: relative;
+    top: auto;
+  }
 `;
 
 const RightSection = styled.div`
@@ -308,9 +332,10 @@ const SortItem = styled.span<{ $active?: boolean }>`
 `;
 const CardBox = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(230px, 230px));
   gap: 10px;
   justify-content: center;
+  justify-contents: center;
 `;
 const EmptyMessage = styled.div`
   ${({ theme }) => theme.font.xl.medium};

@@ -39,20 +39,20 @@ const HomePage: React.FC = () => {
       countryRegion: "NORTH_AMERICA",
     },
     {
-      name: "남아메리카",
-      icon: SouthAmerica,
-      top: 345,
-      left: 252,
-      link: "/main",
-      countryRegion: "SOUTH_AMERICA",
-    },
-    {
       name: "아시아",
       icon: Asia,
       top: 149,
       left: 693,
       link: "/asia",
       countryRegion: "ASIA",
+    },
+    {
+      name: "남아메리카",
+      icon: SouthAmerica,
+      top: 345,
+      left: 252,
+      link: "/main",
+      countryRegion: "SOUTH_AMERICA",
     },
     {
       name: "유럽",
@@ -200,25 +200,9 @@ const Title = styled.div`
   span {
     color: ${({ theme }) => theme.color.primary500};
   }
-`;
-const CountryList = styled.div`
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 40px;
-`;
-
-const CountryButton = styled.button<{ $highlight?: boolean }>`
-  background: ${({ $highlight, theme }) =>
-    $highlight ? theme.color.primary50 : "white"};
-  border: none;
-  padding: 10px 18px;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
+  @media (max-width: 768px) {
+    font-size: 180%;
+  }
 `;
 
 const ContinentCard = styled.div`
@@ -231,34 +215,61 @@ const ContinentCard = styled.div`
   height: 500px;
   text-align: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-`;
 
-const Continent = styled.div<{ $highlight?: boolean }>`
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  transform: translate(-50%, -50%);
+  @media (max-width: 1000px) {
+    /* 데스크탑보다 작은 화면: grid로 변경 */
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 20px;
+    padding: 40px 20px;
+    padding-bottom: 50px;
+    height: auto;
+    position: relative;
+  }
 
-  svg {
-    transition: transform 0.2s, filter 0.2s;
-    ${({ $highlight }) =>
-      $highlight &&
-      css`
-        transform: scale(1.1);
-        filter: drop-shadow(0 0 5px ${({ theme }) => theme.color.primary300});
-      `}
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(1, 1fr);
   }
 `;
 
+const Continent = styled.div<{ $highlight?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  svg {
+    transition: transform 0.2s, filter 0.2s;
+
+    @media (max-width: 768px) {
+      width: 60%;
+      //height: 60%;
+    }
+
+    ${({ $highlight, theme }) =>
+      $highlight &&
+      css`
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 5px ${theme.color.primary300});
+      `}
+  }
+
+  @media (min-width: 1000px) {
+    /* 데스크탑: 기존 absolute 위치 유지 */
+    position: absolute;
+    transform: translate(-50%, -50%);
+  }
+`;
 const InfoText = styled.div`
+  width: 300px;
   position: absolute;
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   font-size: 13px;
   color: #888;

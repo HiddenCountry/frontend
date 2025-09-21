@@ -218,7 +218,6 @@ const NearPlaceDetail: React.FC = () => {
 
 export default NearPlaceDetail;
 
-// styled-components (기존 코드 유지)
 const Container = styled.div`
   color: #111;
   background: #fff;
@@ -226,15 +225,35 @@ const Container = styled.div`
 const Content = styled.main`
   width: 1000px;
   margin: 20px auto;
+
+  @media (max-width: 1200px) {
+    width: 90%;
+  }
+
+  @media (max-width: 780px) {
+    width: 100%;
+    padding: 0 16px;
+  }
 `;
 const TopSection = styled.div`
   display: flex;
   gap: 40px;
   align-items: flex-start;
+
+  @media (max-width: 780px) {
+    flex-direction: column;
+    gap: 20px;
+    align-items: stretch;
+  }
 `;
 const BottomSection = styled.div`
   display: flex;
   gap: 40px;
+
+  @media (max-width: 780px) {
+    flex-direction: column;
+    gap: 20px;
+  }
 `;
 const WrapperLeft = styled.div`
   position: relative;
@@ -252,6 +271,10 @@ const MainImage = styled.img`
   width: 100%;
   height: 400px;
   border-radius: 24px;
+
+  @media (max-width: 780px) {
+    height: 250px; /* 모바일에서는 이미지 높이 줄이기 */
+  }
 `;
 const LogoFallback = styled.div`
   width: 100%;
@@ -302,6 +325,10 @@ const InfoCard = styled.div`
   border-radius: 32px;
   text-align: left;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 780px) {
+    padding: 20px; /* 모바일에서는 패딩 줄이기 */
+  }
 `;
 const Title = styled.div`
   ${({ theme }) => theme.font.xxxl.bold};
@@ -338,6 +365,11 @@ const Tab = styled.div<{ active?: boolean }>`
   font-weight: ${({ active }) => (active ? "bold" : "normal")};
   color: ${({ active }) => (active ? "#1e90ff" : "#666")};
   transition: color 0.2s;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.xl.medium};
+    padding: 10px 15px;
+  }
 `;
 const Section = styled.section`
   margin: 50px 0;
@@ -347,18 +379,33 @@ const SectionTitle = styled.h2`
   color: ${({ theme }) => theme.color.gray800};
   margin-bottom: 12px;
   text-align: left;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.xxl.bold};
+    span {
+      ${({ theme }) => theme.font.xxl.bold};
+    }
+  }
 `;
 const SectionSubTitle = styled.div`
   ${({ theme }) => theme.font.xxl.semibold};
   color: ${({ theme }) => theme.color.gray800};
   margin-bottom: 10px;
   text-align: left;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.xl.bold};
+  }
 `;
 const Text = styled.div`
   ${({ theme }) => theme.font.xxl.medium};
   color: ${({ theme }) => theme.color.gray800};
   text-align: left;
   margin-bottom: 30px;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.md.medium};
+  }
 `;
 const MapImage = styled.img`
   width: 100%;

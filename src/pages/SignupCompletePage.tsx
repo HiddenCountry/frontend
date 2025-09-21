@@ -58,18 +58,40 @@ const Card = styled.div`
   padding: 50px;
   text-align: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+
+  @media (max-width: 500px) {
+    width: 90%;
+    padding: 30px 20px;
+    border-radius: 20px;
+
+    svg {
+      width: 160px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+  }
 `;
 
 const Label = styled.div`
   ${({ theme }) => theme.font.xxl.semibold};
   margin-bottom: 10px;
   color: ${({ theme }) => theme.color.primary500};
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.xl.semibold};
+    margin-bottom: 6px;
+  }
 `;
 
 const Title = styled.div`
   ${({ theme }) => theme.font.xxxl.semibold};
   margin-bottom: 37px;
   color: ${({ theme }) => theme.color.gray800};
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.xl.semibold};
+    margin-bottom: 24px;
+  }
 `;
 
 const HomeButton = styled.button`
@@ -96,5 +118,12 @@ const HomeButton = styled.button`
     align-items: center;
     justify-content: center;
     gap: 8px;
+  }
+
+  @media (max-width: 780px) {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 14px;
+    border-radius: 12px;
   }
 `;
