@@ -15,6 +15,7 @@ import { ReactComponent as Oceania } from "../assets/main/Oceania.svg";
 import { ReactComponent as SouthAmerica } from "../assets/main/SouthAmerica.svg";
 import { ReactComponent as SoutheastAsia } from "../assets/main/SoutheastAsia.svg";
 import { ReactComponent as Turkey } from "../assets/main/Turkey.svg";
+import { ReactComponent as Error } from "../assets/login/LoginError.svg";
 import CardItem from "../components/main/CardItem";
 import MainPagination from "../components/main/Pagination";
 import { getPlaces } from "../api/Place";
@@ -156,26 +157,37 @@ const MainPage: React.FC = () => {
               <span>조회순</span> | 거리순 | 평점순 | 리뷰 많은 순
             </Sequence>
             <CardBox>
-              {places.map((place) => (
-                <CardItem
-                  key={place.id} // 고유 key
-                  id={place.id}
-                  firstImage={place.firstImage} // 이미지 URL (없을 수도 있음)
-                  contentId={place.contentId}
-                  reviewScoreAverage={place.reviewScoreAverage} // 리뷰 점수
-                  reviewCount={place.reviewCount} // 리뷰 수
-                  addr1={place.addr1} // 주소
-                  season={place.season} // 계절
-                  hashtags={place.hashtags} // 해시태그 배열
-                  isBookmarked={place.isBookmarked} // 즐겨찾기 여부
-                  title={place.title} // 장소 이름
-                  contentTypeName={place.contentTypeName}
-                  contentTypeId={place.contentTypeId}
-                  longitude={place.longitude}
-                  latitude={place.latitude}
-                  distance={place.distance}
-                />
-              ))}
+              {places.length > 0 ? (
+                places.map((place) => (
+                  <CardItem
+                    key={place.id}
+                    id={place.id}
+                    firstImage={place.firstImage}
+                    contentId={place.contentId}
+                    reviewScoreAverage={place.reviewScoreAverage}
+                    reviewCount={place.reviewCount}
+                    addr1={place.addr1}
+                    season={place.season}
+                    hashtags={place.hashtags}
+                    isBookmarked={place.isBookmarked}
+                    title={place.title}
+                    contentTypeName={place.contentTypeName}
+                    contentTypeId={place.contentTypeId}
+                    longitude={place.longitude}
+                    latitude={place.latitude}
+                    distance={place.distance}
+                  />
+                ))
+              ) : (
+                <EmptyMessage>
+                  <Error />
+                  <div>아직 등록된 장소가 없습니다. </div>
+                  <br />
+                  우리 서비스는 데이터를 계속 모으고 있어요. <br />
+                  직접 <strong>장소 등록</strong> 기능을 이용해 주시면 더욱
+                  풍성한 여행 정보를 함께 만들 수 있습니다! 🚀
+                </EmptyMessage>
+              )}
             </CardBox>
           </RightSection>
         </Content>
@@ -266,27 +278,19 @@ const CardBox = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 10px;
 `;
-const Pagination = styled.div`
-  display: flex;
-  gap: 15px;
-  margin: 20px 0;
-  justify-content: center;
-  align-items: center;
-`;
-
-const PageButton = styled.button<{ active?: boolean }>`
+const EmptyMessage = styled.div`
   ${({ theme }) => theme.font.xl.medium};
+  color: ${({ theme }) => theme.color.gray600};
+  text-align: center;
+  padding: 40px 20px;
+  border: 1px dashed ${({ theme }) => theme.color.gray300};
+  border-radius: 12px;
+  grid-column: 1 / -1; // 전체 그리드 차지
 
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: ${({ active, theme }) =>
-    active ? theme.color.primary500 : "white"};
-  color: ${({ active, theme }) =>
-    active ? theme.color.white : theme.color.gray800};
-  border-radius: 50%;
-  cursor: pointer;
-  &:hover {
-    background: ${({ theme }) => theme.color.primary100};
+  div {
+    ${({ theme }) => theme.font.xxl.bold};
+    color: ${({ theme }) => theme.color.black};
+
+    margin-top: 15px;
   }
 `;
