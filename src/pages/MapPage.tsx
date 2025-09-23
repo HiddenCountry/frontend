@@ -22,7 +22,7 @@ import flagMN from "../assets/main/Mongolia.svg";
 import flagARAB from "../assets/map/arab.svg";
 import flagIN from "../assets/map/india.svg";
 import flagSEA from "../assets/map/southeast_asia.svg";
-import flagJP from "../assets/map/japan.svg";
+import flagJP from "../assets/main/Japan.svg";
 import { ReactComponent as Logo } from "../assets/layout/Logo.svg";
 import { fetchTourImages } from "../api/TourApi";
 import { postBookmark, deleteBookmark } from "../api/Bookmark";
