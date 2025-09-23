@@ -16,7 +16,7 @@ import { getPlace, getPlaceUserNull } from "../api/Place";
 import KakaoMap from "../components/place/KakaoMap";
 import { deleteBookmark, postBookmark } from "../api/Bookmark";
 import ReviewModal from "../components/place/ReviewModal";
-import { getReview } from "../api/Review";
+import { getReview, getReviewImages } from "../api/Review";
 import { TAGS } from "../constants/Tags";
 import Pagination from "../components/main/Pagination";
 
@@ -103,16 +103,29 @@ const PlaceDetail: React.FC = () => {
   const [images, setImages] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // tourAPI 대표이미지들
+  // tourAPI 대표이미지 + 리뷰 이미지 연동
   useEffect(() => {
     const loadImages = async () => {
       if (!contentId || !serviceKey) return;
-      const urls = await fetchTourImages(contentId, serviceKey);
+
+      // 1. tourAPI에서 이미지 가져오기
+      let urls = await fetchTourImages(contentId, serviceKey);
+
+      // 2. tourAPI 이미지가 없으면 리뷰 이미지로 대체
+      if (!urls || urls.length === 0) {
+        try {
+          const res = await getReviewImages(place?.id ?? 0); // place id로 리뷰 이미지 가져오기
+          urls = res?.data || []; // data 배열 그대로 사용
+        } catch (error) {
+          console.error("리뷰 이미지 로딩 실패", error);
+        }
+      }
+
       setImages(urls);
     };
 
     loadImages();
-  }, [contentId, serviceKey]);
+  }, [contentId, serviceKey, place?.id]);
 
   // 대표이미지 이동
   const handlePrev = () => {
@@ -360,10 +373,14 @@ const PlaceDetail: React.FC = () => {
                   alt={`관광지 이미지 ${currentIndex + 1}`}
                 />
                 <ArrowButton left onClick={handlePrev}>
-                  <ImageLeft />
+                  <span id="left">
+                    <ImageLeft />
+                  </span>
                 </ArrowButton>
                 <ArrowButton right onClick={handleNext}>
-                  <ImageRight />
+                  <span id="right">
+                    <ImageRight />
+                  </span>
                 </ArrowButton>
                 <ImageIndex>
                   {currentIndex + 1} / {images.length}
@@ -399,7 +416,9 @@ const PlaceDetail: React.FC = () => {
             </Location>
             <Distance>
               {placeDetail?.distance != null
-                ? `나의 현재 위치에서 ${placeDetail.distance.toLocaleString()}m`
+                ? `나의 현재 위치에서 ${(placeDetail.distance / 1000).toFixed(
+                    1
+                  )}km`
                 : "위치 정보 없음"}
             </Distance>
             <BookmarkButton
@@ -627,6 +646,16 @@ const WrapperRight = styled.div`
 const ImageWrapper = styled.div`
   position: relative;
   flex: 2;
+
+  #left {
+    margin-right: 3px;
+    margin-top: 3px;
+  }
+
+  #right {
+    margin-left: 3px;
+    margin-top: 3px;
+  }
 `;
 const MainImage = styled.img`
   width: 100%;

@@ -62,3 +62,17 @@ export const postReview = async (placeId: number, data: ReviewRequest) => {
 
   return response.data;
 };
+
+export const getReviewImages = async (placeId: number) => {
+  try {
+    const res = await request.get({
+      url: `/review/${placeId}/images`,
+      params: {},
+    });
+    console.log("리뷰 이미지 조회 성공", res);
+    return res;
+  } catch (error) {
+    console.error("리뷰 이미지 조회 오류 :", error);
+    throw error;
+  }
+};
