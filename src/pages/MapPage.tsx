@@ -277,37 +277,39 @@ const MediaStrip: React.FC<{ place: PlaceMapItem }> = ({ place }) => {
   return (
     <CarouselWrap>
       <CarouselViewport ref={vpRef} onScroll={updateAtEnd}>
-  {(urls.length ? urls : Array.from({ length: 3 }).map(() => ""))?.map(
-    (u, i) => (
-      <CarouselItem
-        key={i}
-        style={
-          u
-            ? {
-                backgroundImage: `url(${u})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
+        {(urls.length ? urls : Array.from({ length: 3 }).map(() => ""))?.map(
+          (u, i) => (
+            <CarouselItem
+              key={i}
+              style={
+                u
+                  ? {
+                      backgroundImage: `url(${u})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                    }
+                  : undefined
               }
-            : undefined
-        }
-        aria-label={u ? `image ${i + 1}` : "placeholder"}
-      >
-        {!u && (
-          <FallbackIcon>
-            <Logo />
-          </FallbackIcon>
+              aria-label={u ? `image ${i + 1}` : "placeholder"}
+            >
+              {!u && (
+                <FallbackIcon>
+                  <Logo />
+                </FallbackIcon>
+              )}
+            </CarouselItem>
+          )
         )}
-      </CarouselItem>
-    )
-  )}
-</CarouselViewport>
-
+      </CarouselViewport>
 
       {hasMore && !atEnd && (
         <MoreBtn
           type="button"
           aria-label="나머지 이미지 더 보기"
-          onClick={scrollNext}
+          onClick={(e) => {
+            e.stopPropagation();
+            scrollNext();
+          }}
           title={`이미지 더 보기`}
         >
           ›
@@ -946,7 +948,7 @@ const DropdownWrap = styled.div`
   position: relative;
 `;
 const DropdownBtn = styled.button<{ $active?: boolean; $open?: boolean }>`
-${({ theme }) => theme.font.md.bold};
+  ${({ theme }) => theme.font.md.bold};
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1039,7 +1041,7 @@ const ChipRow = styled.div`
   margin: 15px;
 `;
 const Chip = styled.button`
-${({ theme }) => theme.font.xs.bold};
+  ${({ theme }) => theme.font.xs.bold};
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1211,7 +1213,7 @@ const CoordToast = styled.div`
 
 /* 현재 위치로 돌아가기 버튼 */
 const RecenterBtn = styled.button`
-${({ theme }) => theme.font.md.bold};
+  ${({ theme }) => theme.font.md.bold};
   position: absolute;
   right: 24px;
   bottom: 24px;
@@ -1234,7 +1236,7 @@ ${({ theme }) => theme.font.md.bold};
 
 /* "다시 검색" 버튼 */
 const SearchBtn = styled.button`
-${({ theme }) => theme.font.md.bold};
+  ${({ theme }) => theme.font.md.bold};
   position: absolute;
   top: 62px;
   left: 50%;
