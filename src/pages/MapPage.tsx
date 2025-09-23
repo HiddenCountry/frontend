@@ -277,37 +277,39 @@ const MediaStrip: React.FC<{ place: PlaceMapItem }> = ({ place }) => {
   return (
     <CarouselWrap>
       <CarouselViewport ref={vpRef} onScroll={updateAtEnd}>
-  {(urls.length ? urls : Array.from({ length: 3 }).map(() => ""))?.map(
-    (u, i) => (
-      <CarouselItem
-        key={i}
-        style={
-          u
-            ? {
-                backgroundImage: `url(${u})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
+        {(urls.length ? urls : Array.from({ length: 3 }).map(() => ""))?.map(
+          (u, i) => (
+            <CarouselItem
+              key={i}
+              style={
+                u
+                  ? {
+                      backgroundImage: `url(${u})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                    }
+                  : undefined
               }
-            : undefined
-        }
-        aria-label={u ? `image ${i + 1}` : "placeholder"}
-      >
-        {!u && (
-          <FallbackIcon>
-            <Logo />
-          </FallbackIcon>
+              aria-label={u ? `image ${i + 1}` : "placeholder"}
+            >
+              {!u && (
+                <FallbackIcon>
+                  <Logo />
+                </FallbackIcon>
+              )}
+            </CarouselItem>
+          )
         )}
-      </CarouselItem>
-    )
-  )}
-</CarouselViewport>
-
+      </CarouselViewport>
 
       {hasMore && !atEnd && (
         <MoreBtn
           type="button"
           aria-label="나머지 이미지 더 보기"
-          onClick={scrollNext}
+          onClick={(e) => {
+            e.stopPropagation();
+            scrollNext();
+          }}
           title={`이미지 더 보기`}
         >
           ›
@@ -902,17 +904,24 @@ const MapPage: React.FC = () => {
 };
 
 export default MapPage;
+/* ====== 공통 브레이크포인트 ====== */
+const BP = {
+  md: "768px", // tablet & down
+  sm: "480px", // small phones
+};
+
 /* ============ 스타일 ============ */
 const Page = styled.div`
   min-height: 100vh;
   ${({ theme }) => theme.font.md.regular};
+  background: ${({ theme }) => theme.color.gray50};
 `;
 
 /* 스테이지/지도 */
 const Stage = styled.div`
   position: relative;
-  margin: 0 auto;
-  height: 720px;
+  margin: 12px auto;
+  height: clamp(560px, 82vh, 860px);
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid ${({ theme }) => theme.color.gray200};
@@ -922,7 +931,15 @@ const Stage = styled.div`
     ${({ theme }) => theme.color.gray100} 40%,
     ${({ theme }) => theme.color.gray100}
   );
+
+  @media (max-width: ${BP.md}) {
+    /* 모바일: 화면 꽉 채우기 (iOS-safe) */
+    height: calc(100dvh - 16px);
+    margin: 8px;
+    border-radius: 12px;
+  }
 `;
+
 const MapLayer = styled.div`
   position: absolute;
   inset: 0;
@@ -932,13 +949,19 @@ const MapLayer = styled.div`
 const Toolbar = styled.div`
   position: absolute;
   top: 14px;
-  left: 35%;
+  left: 40%;
   transform: translateX(-50%);
   display: flex;
-  gap: 36px;
+  gap: 38px;
   flex-wrap: wrap;
   justify-content: center;
   z-index: 30;
+
+  @media (max-width: ${BP.md}) {
+    top: 10px;
+    gap: 15px;
+    padding: 0 10px;
+  }
 `;
 
 /* 드롭다운 */
@@ -946,7 +969,7 @@ const DropdownWrap = styled.div`
   position: relative;
 `;
 const DropdownBtn = styled.button<{ $active?: boolean; $open?: boolean }>`
-${({ theme }) => theme.font.md.bold};
+  ${({ theme }) => theme.font.md.bold};
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -960,13 +983,18 @@ ${({ theme }) => theme.font.md.bold};
   font-weight: 800;
   color: ${({ theme, $active }) =>
     $active ? theme.color.primary700 : theme.color.gray800};
+
+  @media (max-width: ${BP.md}) {
+    padding: 8px 12px;
+    border-radius: 12px;
+  }
+
   .label {
     font-weight: 800;
   }
 `;
 const Caret = styled.span<{ $open?: boolean }>`
-  width: 0;
-  height: 0;
+  width: 0; height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
   border-top: 6px solid ${({ theme }) => theme.color.gray800};
@@ -991,11 +1019,15 @@ const Menu = styled.ul<{ $open?: boolean }>`
   transform: translateY(${(p) => (p.$open ? "0" : "-4px")});
   pointer-events: ${(p) => (p.$open ? "auto" : "none")};
   transition: opacity 120ms ease, transform 120ms ease;
+
+  @media (max-width: ${BP.md}) {
+    width: 110px;
+  }
 `;
 const MenuItem = styled.li<{ $selected?: boolean }>`
   list-style: none;
   cursor: pointer;
-  padding: 8px 12px;
+  padding: 10px 12px;
   border-radius: 10px;
   font-weight: 700;
   color: ${({ theme, $selected }) =>
@@ -1021,25 +1053,59 @@ const Hint = styled.div`
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   font-weight: 800;
   color: ${({ theme }) => theme.color.gray900};
+
+  @media (max-width: ${BP.md}) {
+    left: 12px;
+    top: 70px;
+    width: calc(100% - 24px);
+    padding: 12px;
+    border-radius: 14px;
+  }
 `;
 
-/* 좌측 목록 */
+/* 좌측 목록 -> 모바일에서 바텀시트화 */
 const LeftPanel = styled.aside`
+  /* 데스크탑 기본 */
   position: absolute;
   left: 24px;
   z-index: 20;
   width: 350px;
   background: ${({ theme }) => theme.color.white};
   border-radius: 24px;
+  --panelH: 560px;
+
+  @media (max-width: 1024px) {
+    width: 320px;
+  }
+
+  @media (max-width: ${BP.md}) {
+    /* 바텀시트 스타일 */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: auto;
+    --panelH: 46vh;
+    border-radius: 16px 16px 0 0;
+    margin: 0;
+    box-shadow: 0 -10px 28px rgba(0, 0, 0, 0.12);
+    border: 1px solid ${({ theme }) => theme.color.gray200};
+  }
 `;
+
 const ChipRow = styled.div`
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   margin: 15px;
+
+  @media (max-width: ${BP.md}) {
+    margin: 12px;
+    gap: 6px;
+  }
 `;
 const Chip = styled.button`
-${({ theme }) => theme.font.xs.bold};
+  ${({ theme }) => theme.font.xs.bold};
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1051,6 +1117,11 @@ ${({ theme }) => theme.font.xs.bold};
   background: ${({ theme }) => theme.color.primary400};
   border: 1px solid ${({ theme }) => theme.color.primary200};
   cursor: pointer;
+
+  @media (max-width: ${BP.md}) {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
 `;
 const Badge = styled.span`
   display: inline-flex;
@@ -1061,14 +1132,25 @@ const Badge = styled.span`
   color: ${({ theme }) => theme.color.gray600};
   font-weight: 700;
   font-size: 12px;
+
+  @media (max-width: ${BP.md}) {
+    font-size: 11px;
+  }
 `;
 
 /* 목록 컨테이너 */
 const CardList = styled.div`
-  height: 560px;
+  height: var(--panelH);
   overflow: auto;
   padding: 15px;
   display: block;
+
+  @media (max-width: ${BP.md}) {
+    /* 바텀시트 헤더 영역(칩/제목 등) 감안해서 살짝 줄이기 */
+    height: calc(var(--panelH) - 58px);
+    padding: 12px;
+    -webkit-overflow-scrolling: touch;
+  }
 `;
 
 /* 각 아이템 */
@@ -1078,18 +1160,26 @@ const ListCard = styled.div<{ $active?: boolean }>`
   border-radius: 14px;
   cursor: pointer;
 
-  /* 활성 카드 하이라이트 */
   background: ${({ theme, $active }) =>
     $active ? theme.color.primary50 : "transparent"};
   box-shadow: ${({ $active }) =>
     $active ? "0 4px 16px rgba(0,0,0,0.08)" : "none"};
-  transition: background 120ms ease, outline-color 120ms ease,
-    box-shadow 120ms ease;
+  transition: background 120ms ease, outline-color 120ms ease, box-shadow 120ms ease;
+
+  @media (max-width: ${BP.md}) {
+    padding: 8px 8px 14px;
+    border-radius: 12px;
+  }
 `;
+
 const CardTop = styled.div`
   position: relative;
   border-radius: 14px;
   padding: 0px 16px 12px;
+
+  @media (max-width: ${BP.md}) {
+    padding: 0 12px 10px;
+  }
 `;
 const Title = styled.h3`
   margin: 0 0 8px 0;
@@ -1098,13 +1188,24 @@ const Title = styled.h3`
   font-weight: 800;
   color: ${({ theme }) => theme.color.gray900};
   text-align: left;
+
+  @media (max-width: ${BP.md}) {
+    font-size: 18px;
+  }
 `;
+
 const MetaRow = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
   font-size: 16px;
   margin-bottom: 10px;
+
+  @media (max-width: ${BP.md}) {
+    gap: 10px;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
 `;
 const MetaPrimary = styled.span`
   display: inline-flex;
@@ -1117,15 +1218,27 @@ const MetaPrimary = styled.span`
     height: 16px;
     transform: translateY(1px);
   }
+
+  @media (max-width: ${BP.md}) {
+    svg { width: 14px; height: 14px; }
+  }
 `;
 const MetaMuted = styled.span`
   color: ${({ theme }) => theme.color.gray400};
   font-size: 14px;
+
+  @media (max-width: ${BP.md}) {
+    font-size: 12px;
+  }
 `;
 const TagRow = styled.div`
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+
+  @media (max-width: ${BP.md}) {
+    gap: 6px;
+  }
 `;
 const TagChip = styled.span`
   display: inline-flex;
@@ -1137,6 +1250,12 @@ const TagChip = styled.span`
   color: ${({ theme }) => theme.color.primary600};
   font-weight: 700;
   font-size: 12px;
+
+  @media (max-width: ${BP.md}) {
+    height: 22px;
+    font-size: 11px;
+    padding: 0 6px;
+  }
 `;
 
 const BookmarkBtn = styled.button`
@@ -1163,6 +1282,12 @@ const BookmarkBtn = styled.button`
     opacity: 0.5;
     cursor: not-allowed;
   }
+
+  @media (max-width: ${BP.md}) {
+    right: 8px;
+    top: 8px;
+    svg { width: 20px; height: 20px; } /* 터치 타깃 살짝 키움 */
+  }
 `;
 
 const MoreBtn = styled.button`
@@ -1180,12 +1305,24 @@ const MoreBtn = styled.button`
   font-weight: 700;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   cursor: pointer;
+
+  @media (max-width: ${BP.md}) {
+    right: 6px;
+    width: 28px;
+    height: 28px;
+    font-size: 15px;
+  }
 `;
+
 const Divider = styled.hr`
   border: 0;
   height: 1px;
   background: ${({ theme }) => theme.color.gray200};
   margin: 25px 0 0;
+
+  @media (max-width: ${BP.md}) {
+    margin-top: 18px;
+  }
 `;
 
 /* 좌표 토스트 */
@@ -1207,11 +1344,17 @@ const CoordToast = styled.div`
     margin-bottom: 4px;
     color: ${({ theme }) => theme.color.gray900};
   }
+
+  @media (max-width: ${BP.md}) {
+    right: 12px;
+    top: 64px; /* 툴바와 겹치지 않게 */
+    font-size: 11px;
+  }
 `;
 
 /* 현재 위치로 돌아가기 버튼 */
 const RecenterBtn = styled.button`
-${({ theme }) => theme.font.md.bold};
+  ${({ theme }) => theme.font.md.bold};
   position: absolute;
   right: 24px;
   bottom: 24px;
@@ -1227,14 +1370,20 @@ ${({ theme }) => theme.font.md.bold};
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.15);
   font-weight: 800;
   cursor: pointer;
-  &:hover {
-    filter: brightness(0.95);
+
+  &:hover { filter: brightness(0.95); }
+
+  @media (max-width: ${BP.md}) {
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0));
+    padding: 10px 12px;
+    border-radius: 12px;
   }
 `;
 
 /* "다시 검색" 버튼 */
 const SearchBtn = styled.button`
-${({ theme }) => theme.font.md.bold};
+  ${({ theme }) => theme.font.md.bold};
   position: absolute;
   top: 62px;
   left: 50%;
@@ -1248,9 +1397,13 @@ ${({ theme }) => theme.font.md.bold};
   font-weight: 800;
   color: ${({ theme }) => theme.color.primary800};
   cursor: pointer;
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  @media (max-width: ${BP.md}) {
+    top: 56px;
+    padding: 8px 12px;
+    border-radius: 12px;
   }
 `;
 
@@ -1260,6 +1413,10 @@ const StarIcon = styled(AirplaneSvg)`
   display: inline-block;
   vertical-align: middle;
   color: ${({ theme }) => theme.color.primary500};
+
+  @media (max-width: ${BP.md}) {
+    width: 13px; height: 13px;
+  }
 `;
 
 const CarouselWrap = styled.div`
@@ -1274,13 +1431,12 @@ const CarouselViewport = styled.div`
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  &::-webkit-scrollbar { display: none; }
 `;
 
 const CarouselItem = styled.div`
-  flex: 0 0 calc((100% - 16px) / 3); /* 3칸 보이도록 고정폭 */
+  /* 데스크탑: 3칸 */
+  flex: 0 0 calc((100% - 16px) / 3);
   height: 96px;
   border-radius: 16px;
   background: ${({ theme }) => theme.color.gray200};
@@ -1288,6 +1444,19 @@ const CarouselItem = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+
+  @media (max-width: ${BP.md}) {
+    /* 모바일: 2칸 보기 */
+    flex: 0 0 calc((100% - 8px) / 2);
+    height: 120px;
+    border-radius: 14px;
+  }
+
+  @media (max-width: ${BP.sm}) {
+    /* 작은 폰: 한 칸 조금 크게 */
+    flex: 0 0 92%;
+    height: 130px;
+  }
 `;
 
 const FallbackIcon = styled.div`
@@ -1300,5 +1469,9 @@ const FallbackIcon = styled.div`
     width: 40px;
     height: 40px;
     opacity: 0.8;
+
+    @media (max-width: ${BP.md}) {
+      width: 36px; height: 36px;
+    }
   }
 `;
