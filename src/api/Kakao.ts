@@ -35,7 +35,21 @@ export const getCallback = async (code: string) => {
     console.log("카카오 로그인 성공", res);
     return res;
   } catch (error) {
-    console.error("카카오 로그인 성공 :", error);
+    console.error("카카오 로그인 실패 :", error);
+    throw error;
+  }
+};
+
+export const getUserInfo = async () => {
+  try {
+    const res = await request.get({
+      url: `/user-info`,
+      params: {},
+    });
+    console.log("카카오 유저 정보 성공", res);
+    return res;
+  } catch (error) {
+    console.error("카카오 유저 정보 실패 :", error);
     throw error;
   }
 };
