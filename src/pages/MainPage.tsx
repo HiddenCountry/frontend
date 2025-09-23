@@ -67,6 +67,9 @@ const MainPage: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState("");
   const cardsPerPage = 6;
 
+  // 로딩 상태
+  const [loading, setLoading] = useState(true);
+
   // 필터 상태
   const [filters, setFilters] = useState({
     areaCode: [] as string[],
@@ -84,39 +87,42 @@ const MainPage: React.FC = () => {
   const { nameKR, Icon } = currentCountryInfo;
 
   // 이색 관광지 api 연동
-  const fetchPlaces = async (lat: number, lng: number) => {
-    try {
-      const res = await getPlaces(
-        currentPage, // API에 0페이지부터 시작
-        cardsPerPage,
-        filters.areaCode,
-        filters.contentType,
-        filters.season,
-        filters.countryRegion,
-        filters.sortType,
-        lat,
-        lng,
-        searchKeyword
-      );
-      if (res?.data?.content) {
-        setPlaces(res.data.content);
-        setTotalPages(res.data.totalPage);
-      }
-    } catch (error) {
-      console.error("장소 가져오기 실패", error);
-    }
+  const fetchPlaces = (lat: number, lng: number) => {
+    return getPlaces(
+      currentPage,
+      cardsPerPage,
+      filters.areaCode,
+      filters.contentType,
+      filters.season,
+      filters.countryRegion,
+      filters.sortType,
+      lat,
+      lng,
+      searchKeyword
+    )
+      .then((res) => {
+        if (res?.data?.content) {
+          setPlaces(res.data.content);
+          setTotalPages(res.data.totalPage);
+        }
+      })
+      .catch((error) => {
+        console.error("장소 가져오기 실패", error);
+      });
   };
 
   // 위치 기반으로 호출
   useEffect(() => {
+    setLoading(true); // 호출 시작 시 로딩 시작
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        fetchPlaces(latitude, longitude);
+        fetchPlaces(latitude, longitude).finally(() => setLoading(false)); // API 완료 후 로딩 종료
       },
       (error) => {
         console.error("위치 정보를 가져올 수 없습니다:", error);
-        fetchPlaces(37.5665, 126.978);
+        // 위치 없으면 기본 좌표
+        fetchPlaces(37.5665, 126.978).finally(() => setLoading(false)); // API 완료 후 로딩 종료
       }
     );
   }, [currentPage, filters, searchKeyword]);
@@ -127,6 +133,18 @@ const MainPage: React.FC = () => {
     { label: "평점순", value: "REVIEW_SCORE_AVERAGE_DESC" },
     { label: "리뷰 많은 순", value: "REVIEW_COUNT_DESC" },
   ];
+
+  // 로딩 화면
+  if (loading) {
+    return (
+      <Container>
+        <LoadingWrapper>
+          <Spinner />
+          <LoadingText>위치 정보를 가져오는 중입니다...</LoadingText>
+        </LoadingWrapper>
+      </Container>
+    );
+  }
 
   return (
     <Container>
@@ -202,8 +220,8 @@ const MainPage: React.FC = () => {
                   <div>아직 등록된 장소가 없습니다. </div>
                   <br />
                   우리 서비스는 데이터를 계속 모으고 있어요. <br />
-                  직접 <strong>장소 등록</strong> 기능을 이용해 주시면 더욱
-                  풍성한 여행 정보를 함께 만들 수 있습니다! 🚀
+                  직접 <strong>장소 등록 문의</strong> 기능을 이용해 주시면 더욱
+                  풍성한 여행 정보를 함께 만들 수 있습니다! ✈️
                 </EmptyMessage>
               )}
             </CardBox>
@@ -351,5 +369,36 @@ const EmptyMessage = styled.div`
     color: ${({ theme }) => theme.color.black};
 
     margin-top: 15px;
+  }
+`;
+
+// 로딩 스타일
+const LoadingWrapper = styled.div`
+  width: 100%;
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+const LoadingText = styled.div`
+  margin-top: 16px;
+  font-size: 18px;
+  color: ${({ theme }) => theme.color.gray600};
+`;
+const Spinner = styled.div`
+  border: 6px solid ${({ theme }) => theme.color.gray200};
+  border-top: 6px solid ${({ theme }) => theme.color.primary500};
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 `;

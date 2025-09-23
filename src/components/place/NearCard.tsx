@@ -43,7 +43,7 @@ const NearCard: React.FC<NearCardProps> = ({
         <CardSubTitle>{addr1}</CardSubTitle>
         <CardDist>
           해당 관광지에서{" "}
-          <strong>{Math.round(Number(dist)).toLocaleString()}m</strong>
+          <strong>{`${(Number(dist) / 1000).toFixed(1)}km`}</strong>
         </CardDist>
       </CardContent>
     </CardWrapper>

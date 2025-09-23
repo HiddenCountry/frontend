@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ReactComponent as NavLogo } from "../../assets/layout/Logo.svg";
 import { ReactComponent as UserIcon } from "../../assets/layout/UserIcon.svg";
 import { ReactComponent as UserIconBig } from "../../assets/layout/UserIconBig.svg";
@@ -20,6 +20,7 @@ const Navbar: React.FC<NavbarProps> = ({
   profileImg,
   onLogout,
 }) => {
+  const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeMenu, setActiveMenu] = useState("홈");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -28,8 +29,17 @@ const Navbar: React.FC<NavbarProps> = ({
     { name: "홈", path: "/" },
     { name: "지도로 보기", path: "/map" },
     { name: "장소 등록 문의", path: "/register" },
-    { name: "세계여행", path: "/route" }
+    { name: "여행 코스", path: "/route" }
   ];
+
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout(); // 기존 로그아웃 로직
+    }
+    setShowDropdown(false);
+    navigate("/"); // 홈으로 이동
+    setActiveMenu("홈"); // 메뉴도 홈으로 설정
+  };
 
   return (
     <Nav>
@@ -84,7 +94,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <UserIconBig />
               <ProfileName>{nickname} 님</ProfileName>
               <DropdownItem to="/mypage">마이페이지</DropdownItem>
-              <DropdownButton onClick={onLogout}>로그아웃</DropdownButton>
+              <DropdownButton onClick={handleLogout}>로그아웃</DropdownButton>
             </Dropdown>
           )}
         </ProfileWrapper>
@@ -110,12 +120,16 @@ const Nav = styled.nav`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 32px;
+  padding: 10px 32px; // 기본 데스크탑 패딩
   box-sizing: border-box;
   background-color: ${({ theme }) => theme.color.white};
   border-bottom: 1px solid ${({ theme }) => theme.color.gray200};
   position: relative;
   flex-wrap: wrap;
+
+  @media (max-width: 780px) {
+    padding: 0px 16px; // 모바일에서는 패딩 줄이기
+  }
 `;
 
 const Logo = styled(Link)`
@@ -130,7 +144,10 @@ const Logo = styled(Link)`
   }
 
   @media (max-width: 780px) {
-    order: 2; // 중앙
+    order: 2;
+    span {
+      ${({ theme }) => theme.font.md.bold}; // 글자 크기 줄이기
+    }
   }
 `;
 
@@ -165,6 +182,7 @@ const AuthButton = styled(Link)`
   color: ${({ theme }) => theme.color.primary600};
   text-decoration: none;
   padding: 8px 16px;
+  margin: 12px 0;
 
   &:hover {
     background-color: ${({ theme }) => theme.color.primary100};
@@ -207,10 +225,9 @@ const ProfileWrapper = styled.div`
   }
 
   @media (max-width: 780px) {
-    order: 3; // 오른쪽
-
+    order: 3;
     svg {
-      width: 40px;
+      width: 32px; // 모바일에서 아이콘 조금 줄임
       margin: 0px;
     }
   }
@@ -284,7 +301,7 @@ const MobileMenuButton = styled.div`
   @media (max-width: 780px) {
     display: block;
     order: 1; // 모바일에서는 왼쪽으로
-    margin-left: -10px;
+    margin-left: 0px;
     margin-top: 5px;
   }
 `;

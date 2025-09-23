@@ -8,6 +8,12 @@ import { ReactComponent as Europe } from "../assets/home/Europe.svg";
 import { ReactComponent as Africa } from "../assets/home/Africa.svg";
 import { ReactComponent as Asia } from "../assets/home/Asia.svg";
 import { ReactComponent as Oceania } from "../assets/home/Oceania.svg";
+import { ReactComponent as NorthAmericaM } from "../assets/home/mobile/NorthAmericaM.svg";
+import { ReactComponent as SouthAmericaM } from "../assets/home/mobile/SouthAmericaM.svg";
+import { ReactComponent as EuropeM } from "../assets/home/mobile/EuropeM.svg";
+import { ReactComponent as AfricaM } from "../assets/home/mobile/AfricaM.svg";
+import { ReactComponent as AsiaM } from "../assets/home/mobile/AsiaM.svg";
+import { ReactComponent as OceaniaM } from "../assets/home/mobile/OceaniaM.svg";
 import { ReactComponent as Caution } from "../assets/home/Caution.svg";
 import OnboardingModal from "./OnboardingModal";
 import LoginModal from "./LoginModal";
@@ -19,7 +25,6 @@ const HomePage: React.FC = () => {
 
   // 로컬스토리지 accessToken 확인 후 모달 노출 여부 결정
   const [showOnboarding, setShowOnboarding] = useState(false);
-
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
@@ -33,6 +38,7 @@ const HomePage: React.FC = () => {
     {
       name: "북아메리카",
       icon: NorthAmerica,
+      iconM: NorthAmericaM,
       top: 150,
       left: 200,
       link: "/main",
@@ -41,6 +47,7 @@ const HomePage: React.FC = () => {
     {
       name: "아시아",
       icon: Asia,
+      iconM: AsiaM,
       top: 149,
       left: 693,
       link: "/asia",
@@ -49,6 +56,7 @@ const HomePage: React.FC = () => {
     {
       name: "남아메리카",
       icon: SouthAmerica,
+      iconM: SouthAmericaM,
       top: 345,
       left: 252,
       link: "/main",
@@ -57,6 +65,7 @@ const HomePage: React.FC = () => {
     {
       name: "유럽",
       icon: Europe,
+      iconM: EuropeM,
       top: 126,
       left: 470,
       link: "/main",
@@ -65,6 +74,7 @@ const HomePage: React.FC = () => {
     {
       name: "아프리카",
       icon: Africa,
+      iconM: AfricaM,
       top: 307,
       left: 470,
       link: "/main",
@@ -73,6 +83,7 @@ const HomePage: React.FC = () => {
     {
       name: "오세아니아",
       icon: Oceania,
+      iconM: OceaniaM,
       top: 350,
       left: 800,
       link: "/main",
@@ -87,6 +98,14 @@ const HomePage: React.FC = () => {
     const jongseong = (lastChar - 0xac00) % 28; // 받침 여부 확인
     return word + (jongseong === 0 ? "로" : "으로");
   };
+
+  // 화면 크기에 따라 데스크탑 여부 판단
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1000);
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1000);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <Container>
@@ -122,40 +141,28 @@ const HomePage: React.FC = () => {
           떠나볼까요?
         </Title>
 
-        {/* 나라이름 버튼 
-        <CountryList>
-          {continents.map((continent) => {
-            const isHovered = hoveredContinent === continent.name;
-            return (
-              <CountryButton
-                key={continent.name}
-                $highlight={isHovered}
-                onMouseEnter={() => setHoveredContinent(continent.name)}
-                onMouseLeave={() => setHoveredContinent(null)}
-                onClick={() => continent.link && navigate(continent.link)}
-              >
-                {continent.name}
-              </CountryButton>
-            );
-          })}
-        </CountryList>*/}
-
-        <ContinentCard>
+        <ContinentCard $isDesktop={isDesktop}>
           {continents.map((continent) => {
             const Icon = continent.icon;
+            const IconM = continent.iconM;
+
             const isHovered = hoveredContinent === continent.name;
 
             return (
               <Continent
                 key={continent.name}
-                style={{ top: continent.top, left: continent.left }}
+                style={
+                  isDesktop
+                    ? { top: continent.top, left: continent.left }
+                    : undefined
+                }
                 $highlight={isHovered}
                 onMouseEnter={() => setHoveredContinent(continent.name)}
                 onMouseLeave={() => setHoveredContinent(null)}
                 onClick={() => {
                   const token = localStorage.getItem("accessToken");
                   if (!token) {
-                    setShowLoginModal(true); // 로그인 모달 띄우기
+                    setShowLoginModal(true);
                   } else if (continent.link) {
                     navigate(
                       `${continent.link}?countryRegion=${continent.countryRegion}`
@@ -163,7 +170,13 @@ const HomePage: React.FC = () => {
                   }
                 }}
               >
-                <Icon />
+                {isDesktop ? (
+                  <Icon />
+                ) : (
+                  <>
+                    <IconM />
+                  </>
+                )}
               </Continent>
             );
           })}
@@ -205,33 +218,31 @@ const Title = styled.div`
   }
 `;
 
-const ContinentCard = styled.div`
+const ContinentCard = styled.div<{ $isDesktop: boolean }>`
   position: relative;
   background: white;
   border-radius: 16px;
   padding: 80px 60px;
   max-width: 1000px;
   width: 100%;
-  height: 500px;
+  height: ${({ $isDesktop }) => ($isDesktop ? "500px" : "auto")};
   text-align: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 
-  @media (max-width: 1000px) {
-    /* 데스크탑보다 작은 화면: grid로 변경 */
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-gap: 20px;
-    padding: 40px 20px;
-    padding-bottom: 50px;
-    height: auto;
-    position: relative;
-  }
+  ${({ $isDesktop }) =>
+    !$isDesktop &&
+    css`
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-gap: 6px;
+      padding: 40px 20px;
+      padding-bottom: 50px;
 
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(1, 1fr);
-  }
+      @media (max-width: 768px) {
+        grid-template-columns: repeat(1, 1fr);
+      }
+    `}
 `;
-
 const Continent = styled.div<{ $highlight?: boolean }>`
   display: flex;
   flex-direction: column;
@@ -239,28 +250,46 @@ const Continent = styled.div<{ $highlight?: boolean }>`
   justify-content: center;
   cursor: pointer;
 
+  font-size: 20px;
+  font-weight: bold;
+  background: ${({ theme }) => theme.color.gray100};
+  border-radius: 32px;
+  padding: 20px;
+  transition: all 0.2s;
+  gap: 10px; /* 아이콘과 텍스트 사이 간격 */
+
   svg {
     transition: transform 0.2s, filter 0.2s;
+    height: auto;
+  }
 
-    @media (max-width: 768px) {
-      width: 60%;
-      //height: 60%;
-    }
+  span {
+    margin-top: 5px;
+  }
 
-    ${({ $highlight, theme }) =>
-      $highlight &&
-      css`
+  ${({ $highlight, theme }) =>
+    $highlight &&
+    css`
+      background: ${theme.color.primary100};
+      color: ${theme.color.primary600};
+      transform: scale(1.05);
+
+      svg {
         transform: scale(1.1);
         filter: drop-shadow(0 0 5px ${theme.color.primary300});
-      `}
-  }
+      }
+    `}
 
   @media (min-width: 1000px) {
-    /* 데스크탑: 기존 absolute 위치 유지 */
     position: absolute;
     transform: translate(-50%, -50%);
+    background: transparent;
+    font-size: 0; // 텍스트 숨김
+    padding: 0;
+    gap: 0; // 간격 제거
   }
 `;
+
 const InfoText = styled.div`
   width: 300px;
   position: absolute;
@@ -273,6 +302,7 @@ const InfoText = styled.div`
   gap: 6px;
   font-size: 13px;
   color: #888;
+  margin-top: 10px;
 
   svg {
     flex-shrink: 0;

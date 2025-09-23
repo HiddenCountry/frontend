@@ -104,3 +104,21 @@ export const getPlaceNear = async (
     throw error;
   }
 };
+
+// 인근 관광지(id==null) 상세 정보 조회 - 유저 위치정보 없애기
+export const getPlaceNearUserNull = async (
+  contentId: number,
+  contentTypeId: number
+) => {
+  try {
+    const res = await request.get({
+      url: `/place?contentId=${contentId}&contentTypeId=${contentTypeId}`,
+      params: {},
+    });
+    console.log("인근 관광지 상세 조회 성공-유저위치X :", res);
+    return res;
+  } catch (error) {
+    console.error("인근 관광지 상세 조회 성공-유저위치X :", error);
+    throw error;
+  }
+};

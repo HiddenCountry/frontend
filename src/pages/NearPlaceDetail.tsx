@@ -5,7 +5,11 @@ import { fetchTourImages } from "../api/TourApi";
 import KakaoMap from "../components/place/KakaoMap";
 import { ReactComponent as ImageLeft } from "../assets/place/ImageLeft.svg";
 import { ReactComponent as ImageRight } from "../assets/place/ImageRight.svg";
-import { getPlaceNear } from "../api/Place";
+import {
+  getPlaceNear,
+  getPlaceNearUserNull,
+  getPlaceUserNull,
+} from "../api/Place";
 import { ReactComponent as Logo } from "../assets/layout/Logo.svg";
 
 interface InfoItem {
@@ -94,16 +98,16 @@ const NearPlaceDetail: React.FC = () => {
   // placeDetail 불러오기 (사용자 위치 필요)
   useEffect(() => {
     const fetchPlaceDetail = async () => {
-      if (!contentid || !contenttypeid || userLat == null || userLng == null)
-        return;
+      if (!contentid || !contenttypeid) return;
 
       try {
-        const res = await getPlaceNear(
-          contentid,
-          contenttypeid,
-          userLat,
-          userLng
-        );
+        let res;
+
+        if (userLat != null && userLng != null) {
+          res = await getPlaceNear(contentid, contenttypeid, userLat, userLng);
+        } else {
+          res = await getPlaceNearUserNull(contentid, contenttypeid);
+        }
         if (res.data) setPlaceDetail(res.data);
       } catch (error) {
         console.error("이색 관광지 상세 조회 실패", error);
@@ -139,10 +143,14 @@ const NearPlaceDetail: React.FC = () => {
                   alt={`관광지 이미지 ${currentIndex + 1}`}
                 />
                 <ArrowButton left onClick={handlePrev}>
-                  <ImageLeft />
+                  <span id="left">
+                    <ImageLeft />
+                  </span>
                 </ArrowButton>
                 <ArrowButton right onClick={handleNext}>
-                  <ImageRight />
+                  <span id="right">
+                    <ImageRight />
+                  </span>
                 </ArrowButton>
                 <ImageIndex>
                   {currentIndex + 1} / {images.length}
@@ -165,7 +173,11 @@ const NearPlaceDetail: React.FC = () => {
               {placeDetail?.contentTypeKoreanName}
             </Location>
             <Distance>
-              나의 현재 위치에서 {placeDetail?.distance.toLocaleString()}m
+              {placeDetail?.distance != null
+                ? `나의 현재 위치에서 ${(placeDetail.distance / 1000).toFixed(
+                    1
+                  )}km`
+                : "위치 정보 없음"}
             </Distance>
           </InfoCard>
         </TopSection>
@@ -266,6 +278,16 @@ const WrapperRight = styled.div`
 const ImageWrapper = styled.div`
   position: relative;
   flex: 2;
+
+  #left {
+    margin-right: 3px;
+    margin-top: 3px;
+  }
+
+  #right {
+    margin-left: 3px;
+    margin-top: 3px;
+  }
 `;
 const MainImage = styled.img`
   width: 100%;
