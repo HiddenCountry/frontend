@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { ReactComponent as Boomark } from "../../assets/main/Bookmark.svg";
+import { ReactComponent as BoomarkX } from "../../assets/main/BookmarkX.svg";
 import { ReactComponent as Airplane } from "../../assets/main/Airplane.svg";
 import { ReactComponent as Logo } from "../../assets/layout/Logo.svg";
+import { deleteBookmark, postBookmark } from "../../api/Bookmark";
 
 interface CardItemProps {
   id: number;
@@ -41,7 +43,23 @@ const CardItem: React.FC<CardItemProps> = ({
   distance,
 }) => {
   const navigate = useNavigate();
+  const [bookmarked, setBookmarked] = useState(isBookmarked);
 
+  // 북마크 토글 핸들러
+  const handleBookmarkClick = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // 카드 전체 클릭 막기
+    try {
+      if (bookmarked) {
+        await deleteBookmark(id);
+        setBookmarked(false);
+      } else {
+        await postBookmark(id);
+        setBookmarked(true);
+      }
+    } catch (error) {
+      console.error("북마크 토글 실패:", error);
+    }
+  };
   return (
     <Card
       onClick={() =>
@@ -66,15 +84,15 @@ const CardItem: React.FC<CardItemProps> = ({
         })
       }
     >
-      <BookmarkButton>{isBookmarked && <Boomark />}</BookmarkButton>
+      <BookmarkButton onClick={handleBookmarkClick}>
+        {bookmarked ? <Boomark /> : <BoomarkX />}
+      </BookmarkButton>
       <ImageBox>
         {firstImage ? (
           <Img style={{ backgroundImage: `url(${firstImage})` }} />
         ) : (
           <FallbackIcon>
-            <>
-              <Logo />
-            </>
+            <Logo />
           </FallbackIcon>
         )}
       </ImageBox>
@@ -84,7 +102,8 @@ const CardItem: React.FC<CardItemProps> = ({
         <Meta>
           <Airplane />
           <span>
-            {reviewScoreAverage} 리뷰 {reviewCount}
+            {reviewScoreAverage.toFixed(1)} <span id="review">리뷰</span>{" "}
+            {reviewCount}
           </span>
         </Meta>
         <Meta>{addr1}</Meta>
@@ -173,6 +192,12 @@ const Meta = styled.div`
 
   svg {
     flex-shrink: 0; // 아이콘이 줄어들지 않도록
+  }
+
+  #review {
+    color: ${({ theme }) => theme.color.primary500};
+    ${({ theme }) => theme.font.sm.semibold};
+    margin-left: 5px;
   }
 `;
 
