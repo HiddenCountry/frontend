@@ -1,36 +1,52 @@
 import React, { useEffect } from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ReactComponent as SignupComplete } from "../assets/login/SignupComplete.svg";
 
-interface SignupCompletePageProps {
-  onSignupComplete?: (nickname: string) => void; // App 상태 갱신용
+interface LocationState {
+  nickname?: string;
 }
 
-const SignupCompletePage: React.FC<SignupCompletePageProps> = ({
-  onSignupComplete,
-}) => {
-  const navigate = useNavigate();
-  const nickname = localStorage.getItem("nickname") || "사용자";
-  const profileImg = localStorage.getItem("profileImage") || "";
+interface SignupCompletePageProps {
+  onLogin?: (token?: string, nickname?: string, profileImg?: string) => void;
+}
 
-  // 페이지 로드 시 App 상태 업데이트
+const SignupCompletePage: React.FC<SignupCompletePageProps> = ({ onLogin }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as LocationState;
+
+  const token = localStorage.getItem("accessToken");
+
+  // state에서 전달된 닉네임, 없으면 "사용자" 사용
+  const displayNickname = state?.nickname || "사용자";
+
+  // 스크롤 막기
   useEffect(() => {
-    if (onSignupComplete) {
-      onSignupComplete(nickname); // Navbar에 nickname, login 상태 반영
+    const originalStyle = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
+  // App 상태 업데이트
+  useEffect(() => {
+    if (onLogin) {
+      onLogin(token || undefined, displayNickname);
     }
-  }, [nickname, onSignupComplete]);
+  }, [displayNickname, token, onLogin]);
 
   return (
     <Container>
       <Card>
         <SignupComplete />
         <Label>회원가입 완료</Label>
-        <Title>{nickname}님, 환영해요!</Title>
+        <Title>{displayNickname}님, 환영해요!</Title>
 
         <HomeButton
           onClick={() => {
-            if (onSignupComplete) onSignupComplete(nickname); // 바로 App 상태 갱신
             navigate("/"); // 홈으로 이동
           }}
         >

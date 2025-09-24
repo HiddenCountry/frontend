@@ -259,6 +259,9 @@ const PlaceDetail: React.FC = () => {
     }
   };
 
+  // 컴포넌트 상단
+  const nearCardRef = useRef<HTMLDivElement>(null);
+
   // 리뷰 상태
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
@@ -464,10 +467,14 @@ const PlaceDetail: React.FC = () => {
               <SectionTitle>지도</SectionTitle>
               {placeDetail?.latitude && placeDetail?.longitude ? (
                 <KakaoMap
-                  latitude={placeDetail.latitude}
-                  longitude={placeDetail.longitude}
-                  title={placeDetail.title}
-                  address={placeDetail.address}
+                  points={[
+                    {
+                      latitude: placeDetail.latitude,
+                      longitude: placeDetail.longitude,
+                      title: placeDetail.title,
+                      address: placeDetail.address,
+                    },
+                  ]}
                 />
               ) : (
                 <MapImage src="https://placehold.co/600x300" />
@@ -489,19 +496,51 @@ const PlaceDetail: React.FC = () => {
                   </NearTab>
                 ))}
               </NearTabs>
-              <NearCardBox>
-                {filteredPlaces.map((place, idx) => (
-                  <NearCard
-                    key={idx}
-                    title={place.title}
-                    addr1={place.addr1}
-                    contentid={place.contentid}
-                    contenttypeid={place.contenttypeid}
-                    dist={place.dist}
-                    firstimage={place.firstimage}
-                  />
-                ))}
-              </NearCardBox>
+
+              {/* 래퍼 + 좌우 버튼 */}
+              <NearCardWrapper>
+                <ArrowButton
+                  left
+                  onClick={() => {
+                    nearCardRef.current?.scrollBy({
+                      left: -300,
+                      behavior: "smooth",
+                    });
+                  }}
+                >
+                  <ImageLeft />
+                </ArrowButton>
+
+                <NearCardBox ref={nearCardRef}>
+                  {filteredPlaces.map((place, idx) => (
+                    <NearCard
+                      key={idx}
+                      title={place.title}
+                      addr1={place.addr1}
+                      contentid={place.contentid}
+                      contenttypeid={place.contenttypeid}
+                      dist={place.dist}
+                      firstimage={place.firstimage}
+                      latitude={latitude}
+                      longitude={longitude}
+                      title2={placeDetail?.title}
+                      addr2={placeDetail?.address}
+                    />
+                  ))}
+                </NearCardBox>
+
+                <ArrowButton
+                  right
+                  onClick={() => {
+                    nearCardRef.current?.scrollBy({
+                      left: 300,
+                      behavior: "smooth",
+                    });
+                  }}
+                >
+                  <ImageRight />
+                </ArrowButton>
+              </NearCardWrapper>
             </Section>
 
             {/* 리뷰 */}
@@ -541,10 +580,10 @@ const PlaceDetail: React.FC = () => {
                   ))}
                 </Sequence>
 
-                {reviewsLoading && <div>리뷰 로딩중...</div>}
-                {reviewsError && <div>{reviewsError}</div>}
+                {reviewsLoading && <div id="info">리뷰 로딩중...</div>}
+                {reviewsError && <div id="info">{reviewsError}</div>}
                 {!reviewsLoading && !reviewsError && reviews.length === 0 && (
-                  <div>리뷰가 없습니다.</div>
+                  <div id="info">리뷰가 없습니다.</div>
                 )}
                 {!reviewsLoading &&
                   !reviewsError &&
@@ -703,7 +742,7 @@ const ArrowButton = styled.button<{ left?: boolean; right?: boolean }>`
   ${({ left }) => left && `left: 12px;`}
   ${({ right }) => right && `right: 12px;`}
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.8);
   color: #fff;
   border: none;
   font-size: 20px;
@@ -714,6 +753,7 @@ const ArrowButton = styled.button<{ left?: boolean; right?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 999;
 
   &:hover {
     background: rgba(255, 255, 255);
@@ -743,11 +783,19 @@ const Chip = styled.div`
   border-radius: 20px;
   margin: 0 3px;
   margin-bottom: 8px;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.sm.semibold};
+  }
 `;
 
 const Title = styled.div`
   ${({ theme }) => theme.font.xxxl.bold};
   margin: 8px 0;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.xxl.bold};
+  }
 `;
 
 const Review = styled.div`
@@ -766,18 +814,30 @@ const Review = styled.div`
   svg {
     flex-shrink: 0;
   }
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.md.medium};
+  }
 `;
 const SubTitle = styled.span`
   ${({ theme }) => theme.font.xxl.semibold};
   color: ${({ theme }) => theme.color.gray600};
   margin: 6px 0;
   margin-right: 10px;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.xl.semibold};
+  }
 `;
 
 const Location = styled.div`
   ${({ theme }) => theme.font.xxl.medium};
   color: ${({ theme }) => theme.color.gray800};
   margin-bottom: 10px;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.xl.medium};
+  }
 `;
 
 const Distance = styled.div`
@@ -785,6 +845,12 @@ const Distance = styled.div`
   color: ${({ theme }) => theme.color.primary500};
   margin-top: 15px;
   margin-bottom: 2px;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.xl.semibold};
+    margin-top: 7px;
+    margin-bottom: 0px;
+  }
 `;
 const BookmarkButton = styled.button<{ bookmarked?: boolean }>`
   ${({ theme }) => theme.font.xxl.medium};
@@ -817,6 +883,11 @@ const BookmarkButton = styled.button<{ bookmarked?: boolean }>`
 
   &:hover {
     opacity: 0.8;
+  }
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.xl.medium};
+    margin-top: 10px;
   }
 `;
 
@@ -899,12 +970,18 @@ const Address = styled.div`
   color: #555;
   text-align: left;
 `;
+const NearCardWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+`;
 
 const NearTabs = styled.div`
   display: flex;
   gap: 20px;
   margin: 20px 0;
   margin-bottom: 30px;
+  text-align: center;
 `;
 const NearTab = styled.div<{ active?: boolean }>`
   ${({ theme }) => theme.font.xl.medium};
@@ -917,14 +994,15 @@ const NearTab = styled.div<{ active?: boolean }>`
   color: ${({ active }) => (active ? "#fff" : "#333")};
   cursor: pointer;
 `;
+
 const NearCardBox = styled.div`
   max-width: 600px;
   display: flex;
   gap: 20px;
-  width: 100%;
   flex-wrap: nowrap;
   overflow-x: auto;
   padding-bottom: 10px;
+  scroll-behavior: smooth;
 
   &::-webkit-scrollbar {
     height: 8px;
@@ -958,6 +1036,7 @@ const Rating = styled.div`
 
   @media (max-width: 780px) {
     svg {
+      width: 35px;
       margin: 0px;
     }
   }
@@ -969,7 +1048,7 @@ const ReviewButton = styled.button`
   background-color: ${({ theme }) => theme.color.primary500};
   height: 50px;
   margin-left: auto;
-  margin-top: 20px;
+  margin-top: 15px;
   padding: 10px 30px;
   border: none;
   border-radius: 16px;
@@ -984,8 +1063,8 @@ const ReviewButton = styled.button`
   }
 
   @media (max-width: 780px) {
-    ${({ theme }) => theme.font.md.medium};
-    padding: 10px;
+    ${({ theme }) => theme.font.sm.medium};
+    padding: 0px 15px;
   }
 `;
 const Sequence = styled.div`
@@ -1015,7 +1094,12 @@ const SortItem = styled.span<{ $active?: boolean }>`
   }
 `;
 
-const ReviewCardBox = styled.div``;
+const ReviewCardBox = styled.div`
+  #info {
+    margin: 40px 20px;
+    text-align: center;
+  }
+`;
 
 const LoadingWrapper = styled.div`
   width: 100%;

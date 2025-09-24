@@ -13,6 +13,16 @@ interface KakaoRedirectPageProps {
 const KakaoRedirectPage: React.FC<KakaoRedirectPageProps> = ({ onLogin }) => {
   const navigate = useNavigate();
 
+  // 스크롤 막기
+  useEffect(() => {
+    const originalStyle = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
   useEffect(() => {
     const code = new URL(window.location.href).searchParams.get("code");
 
@@ -28,7 +38,6 @@ const KakaoRedirectPage: React.FC<KakaoRedirectPageProps> = ({ onLogin }) => {
               nickname && nickname !== "undefined" ? nickname : "사용자";
 
             localStorage.setItem("accessToken", accessToken);
-            localStorage.setItem("nickname", safeNickname);
             if (profileImg) localStorage.setItem("profileImage", profileImg);
 
             if (onLogin) onLogin(accessToken, nickname, profileImg);
@@ -75,7 +84,8 @@ const Container = styled.div`
   height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: 120px;
 `;
 
 const Card = styled.div`

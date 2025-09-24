@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { ReactComponent as NavLogo } from "../../assets/layout/Logo.svg";
 import { ReactComponent as UserIcon } from "../../assets/layout/UserIcon.svg";
 import { ReactComponent as UserIconBig } from "../../assets/layout/UserIconBig.svg";
 import { ReactComponent as Hamburger } from "../../assets/layout/Menu.svg";
 import { ReactComponent as Login } from "../../assets/layout/Login.svg";
+import { getUserInfo } from "../../api/Kakao";
+import LoginModal from "../common/LoginModal";
 
 interface NavbarProps {
   isLoggedIn?: boolean;
@@ -21,95 +23,136 @@ const Navbar: React.FC<NavbarProps> = ({
   onLogout,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeMenu, setActiveMenu] = useState("홈");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const menuItems = [
     { name: "홈", path: "/" },
     { name: "지도로 보기", path: "/map" },
     { name: "장소 등록 문의", path: "/register" },
-    { name: "여행 코스", path: "/route" }
+    { name: "여행 코스", path: "/route" },
   ];
 
+  // 세션 체크: 로그인 안 된 상태 + 토큰 있음 → API 호출
+  useEffect(() => {
+    const checkSession = async () => {
+      if (location.pathname === "/" || location.pathname === "/login") return;
+      const token = localStorage.getItem("accessToken");
+      if (!token || isLoggedIn) return;
+
+      try {
+        const res = await getUserInfo();
+        if (res.code === "COMMON403") {
+          setShowLoginModal(true);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    checkSession();
+  }, [location.pathname, isLoggedIn]);
+
   const handleLogout = () => {
-    if (onLogout) {
-      onLogout(); // 기존 로그아웃 로직
-    }
+    if (onLogout) onLogout();
     setShowDropdown(false);
-    navigate("/"); // 홈으로 이동
-    setActiveMenu("홈"); // 메뉴도 홈으로 설정
+    navigate("/");
+    setActiveMenu("홈");
   };
 
   return (
-    <Nav>
-      <Logo to="/" onClick={() => setActiveMenu("홈")}>
-        <NavLogo />
-        <span>숨은나라찾기</span>
-      </Logo>
+    <>
+      <Nav>
+        <Logo to="/" onClick={() => setActiveMenu("홈")}>
+          <NavLogo />
+          <span>숨은나라찾기</span>
+        </Logo>
 
-      {/* 데스크탑 메뉴 */}
-      <Menu>
-        {menuItems.map((menu) => (
-          <MenuLink
-            key={menu.name}
-            to={menu.path}
-            $active={activeMenu === menu.name}
-            onClick={() => setActiveMenu(menu.name)}
-          >
-            {menu.name}
-          </MenuLink>
-        ))}
-      </Menu>
-
-      {/* 모바일 햄버거 버튼 */}
-      <MobileMenuButton onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-        <Hamburger />
-      </MobileMenuButton>
-
-      {mobileMenuOpen && (
-        <MobileMenu>
+        {/* 데스크탑 메뉴 */}
+        <Menu>
           {menuItems.map((menu) => (
-            <MobileMenuLink
+            <MenuLink
               key={menu.name}
               to={menu.path}
-              onClick={() => {
-                setActiveMenu(menu.name);
-                setMobileMenuOpen(false);
-              }}
+              $active={activeMenu === menu.name}
+              onClick={() => setActiveMenu(menu.name)}
             >
               {menu.name}
-            </MobileMenuLink>
+            </MenuLink>
           ))}
-        </MobileMenu>
-      )}
+        </Menu>
 
-      {/* 로그인 상태 */}
-      {isLoggedIn ? (
-        <ProfileWrapper onClick={() => setShowDropdown(!showDropdown)}>
-          {profileImg ? <ProfileImage src={profileImg} /> : <UserIcon />}
-          <ProfileName>{nickname} 님</ProfileName>
-          {showDropdown && (
-            <Dropdown>
-              <UserIconBig />
-              <ProfileName>{nickname} 님</ProfileName>
-              <DropdownItem to="/mypage">마이페이지</DropdownItem>
-              <DropdownButton onClick={handleLogout}>로그아웃</DropdownButton>
-            </Dropdown>
-          )}
-        </ProfileWrapper>
-      ) : (
-        <>
-          {/* 데스크탑용 버튼 */}
-          <AuthButton to="/login">로그인 / 회원가입</AuthButton>
+        {/* 모바일 햄버거 */}
+        <MobileMenuButton onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          <Hamburger />
+        </MobileMenuButton>
 
-          {/* 모바일용 아이콘 */}
-          <MobileLoginIcon to="/login">
-            <Login />
-          </MobileLoginIcon>
-        </>
+        {mobileMenuOpen && (
+          <MobileMenu>
+            {menuItems.map((menu) => (
+              <MobileMenuLink
+                key={menu.name}
+                to={menu.path}
+                onClick={() => {
+                  setActiveMenu(menu.name);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                {menu.name}
+              </MobileMenuLink>
+            ))}
+          </MobileMenu>
+        )}
+
+        {/* 로그인 상태 */}
+        {isLoggedIn ? (
+          <ProfileWrapper onClick={() => setShowDropdown(!showDropdown)}>
+            {profileImg ? <ProfileImage src={profileImg} /> : <UserIcon />}
+            <ProfileName>{nickname} 님</ProfileName>
+            {showDropdown && (
+              <Dropdown>
+                <UserIconBig />
+                <ProfileName>{nickname} 님</ProfileName>
+                <DropdownItem to="/mypage">마이페이지</DropdownItem>
+                <DropdownButton onClick={handleLogout}>로그아웃</DropdownButton>
+              </Dropdown>
+            )}
+          </ProfileWrapper>
+        ) : (
+          <>
+            <AuthButton to="/login">로그인 / 회원가입</AuthButton>
+            <MobileLoginIcon to="/login">
+              <Login />
+            </MobileLoginIcon>
+          </>
+        )}
+      </Nav>
+
+      {/* 로그인 모달 */}
+      {showLoginModal && (
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+          title="로그인이 필요해요!"
+          description={
+            <>
+              세션이 만료되었습니다.
+              <br />
+              로그인을 해주세요!
+            </>
+          }
+          confirmText="로그인"
+          onConfirm={() => {
+            if (onLogout) onLogout(); // 로그아웃 처리
+            setShowLoginModal(false);
+            navigate("/login");
+          }}
+        />
       )}
-    </Nav>
+    </>
   );
 };
 
@@ -120,7 +163,7 @@ const Nav = styled.nav`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 32px; // 기본 데스크탑 패딩
+  padding: 10px 32px;
   box-sizing: border-box;
   background-color: ${({ theme }) => theme.color.white};
   border-bottom: 1px solid ${({ theme }) => theme.color.gray200};
@@ -128,7 +171,7 @@ const Nav = styled.nav`
   flex-wrap: wrap;
 
   @media (max-width: 780px) {
-    padding: 0px 16px; // 모바일에서는 패딩 줄이기
+    padding: 0px 16px;
   }
 `;
 
@@ -146,7 +189,7 @@ const Logo = styled(Link)`
   @media (max-width: 780px) {
     order: 2;
     span {
-      ${({ theme }) => theme.font.md.bold}; // 글자 크기 줄이기
+      ${({ theme }) => theme.font.md.bold};
     }
   }
 `;
@@ -189,27 +232,25 @@ const AuthButton = styled(Link)`
   }
 
   @media (max-width: 780px) {
-    display: none; // 모바일에서 숨김
+    display: none;
   }
 `;
 
 const MobileLoginIcon = styled(Link)`
   display: none;
+  svg {
+    width: 30px;
+    height: 30px;
+    margin: 17px 0px;
+    margin-right: 2px;
+  }
 
   @media (max-width: 780px) {
     display: flex;
     align-items: center;
     justify-content: center;
-    order: 3; // 오른쪽
+    order: 3;
     color: ${({ theme }) => theme.color.primary600};
-    margin-right: -10px;
-    margin-top: 5px;
-  }
-
-  svg {
-    width: 30px;
-    height: 30px;
-    margin: 15px;
   }
 `;
 
@@ -227,7 +268,7 @@ const ProfileWrapper = styled.div`
   @media (max-width: 780px) {
     order: 3;
     svg {
-      width: 32px; // 모바일에서 아이콘 조금 줄임
+      width: 32px;
       margin: 0px;
     }
   }
@@ -244,8 +285,10 @@ const ProfileImage = styled.div<{ src?: string }>`
 const ProfileName = styled.div`
   ${({ theme }) => theme.font.md.bold};
   color: ${({ theme }) => theme.color.gray700};
+
+  padding: 5px 0;
   @media (max-width: 780px) {
-    display: none; // 모바일에서 숨기기
+    display: none;
   }
 `;
 
@@ -300,8 +343,8 @@ const MobileMenuButton = styled.div`
 
   @media (max-width: 780px) {
     display: block;
-    order: 1; // 모바일에서는 왼쪽으로
-    margin-left: 0px;
+    order: 1;
+    margin-left: 5px;
     margin-top: 5px;
   }
 `;

@@ -10,6 +10,10 @@ interface NearCardProps {
   dist: string;
   firstimage?: string;
   title: string;
+  title2?: string;
+  addr2?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 const NearCard: React.FC<NearCardProps> = ({
@@ -19,13 +23,26 @@ const NearCard: React.FC<NearCardProps> = ({
   dist,
   firstimage,
   title,
+  title2,
+  addr2,
+  latitude,
+  longitude,
 }) => {
   const navigate = useNavigate();
   return (
     <CardWrapper
       onClick={() =>
         navigate("near", {
-          state: { addr1, contentid, contenttypeid, dist, firstimage, title },
+          state: {
+            addr2,
+            contentid,
+            contenttypeid,
+            dist,
+            firstimage,
+            title2,
+            latitude,
+            longitude,
+          },
         })
       }
     >
@@ -100,14 +117,25 @@ const CardContent = styled.div`
 const CardTitle = styled.div`
   ${({ theme }) => theme.font.xxl.bold};
   color: ${({ theme }) => theme.color.gray800};
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.xl.bold};
+  }
 `;
 
 const CardSubTitle = styled.div`
   ${({ theme }) => theme.font.md.medium};
   color: ${({ theme }) => theme.color.gray500};
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.sm.medium};
+  }
 `;
 const CardDist = styled.div`
   ${({ theme }) => theme.font.md.medium};
   color: ${({ theme }) => theme.color.primary500};
   margin-top: 5px;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.sm.medium};
+  }
 `;
