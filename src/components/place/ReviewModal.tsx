@@ -1,4 +1,4 @@
-import React, { useState, useRef, ChangeEvent } from "react";
+import React, { useState, ChangeEvent } from "react";
 import styled from "styled-components";
 import { ReactComponent as AirPlaneReview } from "../../assets/place/AirplaneReview.svg";
 import { ReactComponent as CloseIcon } from "../../assets/place/Close.svg";
@@ -18,8 +18,6 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ onClose, placeId }) => {
   const [images, setImages] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
-  const step2Ref = useRef<HTMLDivElement | null>(null);
-
   const token = localStorage.getItem("accessToken") || "";
 
   const toggleTag = (key: string) => {
@@ -34,7 +32,6 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ onClose, placeId }) => {
 
   const handleNext = () => {
     setStep(2);
-    step2Ref.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -80,12 +77,13 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ onClose, placeId }) => {
     <Overlay>
       <ModalBox>
         <Header>
-          <Step>{step}/2</Step>
-          <Title>다녀온 곳의 리뷰를 작성해 보세요!</Title>
+          <Step onClick={() => setStep(step === 1 ? 2 : 1)}>{step}/2</Step>
+
           <CloseButton onClick={onClose}>
             <CloseIcon />
           </CloseButton>
         </Header>
+        <Title>다녀온 곳의 리뷰를 작성해 보세요!</Title>
 
         {step === 1 && (
           <>
@@ -101,8 +99,15 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ onClose, placeId }) => {
                     />
                   </StarButton>
                 ))}
+
                 <RatingText>
-                  {rating === 5 ? "완벽했어요!" : `${rating}점`}
+                  {{
+                    1: "기대 이하였어요.",
+                    2: "그냥 그랬어요.",
+                    3: "나쁘지 않았어요.",
+                    4: "좋았어요!",
+                    5: "완벽했어요!",
+                  }[rating] || ""}
                 </RatingText>
               </RatingBox>
             </Section>
@@ -155,7 +160,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ onClose, placeId }) => {
         )}
 
         {step === 2 && (
-          <Step2 ref={step2Ref}>
+          <Step2>
             <Section>
               <Label>해당 별점을 준 이유를 설명해 주세요.</Label>
               <Hint>최대 1,000자까지 입력할 수 있어요.</Hint>
@@ -233,12 +238,12 @@ const Step = styled.div`
   font-size: 14px;
   color: #1e90ff;
   font-weight: bold;
+  cursor: pointer;
 `;
 
-const Title = styled.h2`
-  flex: 1;
-  text-align: center;
-  font-size: 20px;
+const Title = styled.div`
+  ${({ theme }) => theme.font.xxl.bold};
+  text-align: left;
   margin: 0;
 `;
 
@@ -255,7 +260,7 @@ const Section = styled.div`
 const Label = styled.div`
   font-size: 16px;
   font-weight: bold;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
   text-align: left;
 `;
 
@@ -279,7 +284,7 @@ const StarButton = styled.button`
 `;
 
 const RatingText = styled.span`
-  font-size: 14px;
+  ${({ theme }) => theme.font.md.bold};
   color: #333;
   margin-left: 8px;
 `;
@@ -304,15 +309,15 @@ const Category = styled.div`
 `;
 
 const Tag = styled.button<{ selected: boolean }>`
+  ${({ theme }) => theme.font.sm.bold};
   margin: 4px 0;
   padding: 7px 5px;
   border-radius: 16px;
   border: none;
   cursor: pointer;
-  background: ${({ selected }) => (selected ? "#1e90ff" : "#f2f2f2")};
-  color: ${({ selected }) => (selected ? "#fff" : "#333")};
-  font-size: 14px;
-  text-align: center;
+  background: ${({ selected, theme }) =>
+    selected ? theme.color.primary400 : theme.color.gray100};
+  color: ${({ selected, theme }) => (selected ? "#fff" : theme.color.gray600)};
 `;
 
 const SubmitButton = styled.button`
@@ -340,6 +345,7 @@ const TextArea = styled.textarea`
   padding: 12px;
   font-size: 14px;
   resize: none;
+  ${({ theme }) => theme.font.sm.medium};
 `;
 
 const PhotoUploadBox = styled.div`
@@ -351,7 +357,6 @@ const PhotoUploadBox = styled.div`
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  cursor: pointer;
   label {
     cursor: pointer;
   }
