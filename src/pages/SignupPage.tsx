@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { patchNickname } from "../api/Kakao";
@@ -8,6 +8,16 @@ const SignupPage: React.FC = () => {
   const [error, setError] = useState("");
   const [isValid, setIsValid] = useState<boolean | null>(null); // null: 입력 전, true: 유효, false: 유효X
   const navigate = useNavigate();
+
+  // 스크롤 막기
+  useEffect(() => {
+    const originalStyle = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
 
   const handleChange = (value: string) => {
     setNickname(value);
@@ -29,8 +39,12 @@ const SignupPage: React.FC = () => {
 
       if (res.isSuccess) {
         console.log("닉네임 변경 성공:", res.data);
-        localStorage.setItem("nickname", nickname);
-        navigate("/signup/complete");
+
+        // App 상태 반영 위해 로컬에 저장 가능 (선택)
+        //localStorage.setItem("nickname", nickname);
+
+        // 닉네임을 state로 전달
+        navigate("/signup/complete", { state: { nickname } });
       } else {
         alert(res.message || "닉네임 변경에 실패했습니다.");
       }
@@ -39,6 +53,7 @@ const SignupPage: React.FC = () => {
       alert("닉네임 변경에 실패했습니다. 다시 시도해주세요.");
     }
   };
+
   return (
     <Container>
       <Card>
