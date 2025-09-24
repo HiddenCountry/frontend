@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { ReactComponent as Callout } from "../assets/login/Callout.svg";
@@ -7,6 +7,16 @@ import { ReactComponent as LoginIcon } from "../assets/login/LoginIcon.svg";
 
 const KakaoLoginPage: React.FC = () => {
   const navigate = useNavigate();
+
+  // 스크롤 막기
+  useEffect(() => {
+    const originalStyle = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
 
   // 카카오 로그인
   const KAKAO_CLIENT_ID = process.env.REACT_APP_KAKAO_CLIENT_ID;

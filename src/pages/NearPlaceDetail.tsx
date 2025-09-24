@@ -35,7 +35,8 @@ interface PlaceDetailType {
 const NearPlaceDetail: React.FC = () => {
   const serviceKey = process.env.REACT_APP_TOUR_SERVICE_KEY;
   const location = useLocation();
-  const { contentid, contenttypeid } = location.state;
+  const { contentid, contenttypeid, latitude, longitude, title2, addr2 } =
+    location.state;
 
   const [activeTab, setActiveTab] = useState<"소개" | "지도">("소개");
 
@@ -210,10 +211,20 @@ const NearPlaceDetail: React.FC = () => {
               <SectionTitle>지도</SectionTitle>
               {placeDetail?.latitude && placeDetail?.longitude ? (
                 <KakaoMap
-                  latitude={placeDetail.latitude}
-                  longitude={placeDetail.longitude}
-                  title={placeDetail.title}
-                  address={placeDetail.address}
+                  points={[
+                    {
+                      latitude: placeDetail.latitude,
+                      longitude: placeDetail.longitude,
+                      title: placeDetail.title,
+                      address: placeDetail.address,
+                    },
+                    {
+                      latitude: latitude,
+                      longitude: longitude,
+                      title: title2,
+                      address: addr2,
+                    },
+                  ]}
                 />
               ) : (
                 <MapImage src="https://placehold.co/600x300" />
@@ -295,7 +306,7 @@ const MainImage = styled.img`
   border-radius: 24px;
 
   @media (max-width: 780px) {
-    height: 250px; /* 모바일에서는 이미지 높이 줄이기 */
+    height: 250px;
   }
 `;
 const LogoFallback = styled.div`
@@ -355,23 +366,41 @@ const InfoCard = styled.div`
 const Title = styled.div`
   ${({ theme }) => theme.font.xxxl.bold};
   margin: 8px 0;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.xxl.bold};
+  }
 `;
 const SubTitle = styled.span`
   ${({ theme }) => theme.font.xxl.semibold};
   color: ${({ theme }) => theme.color.gray600};
   margin: 6px 0;
   margin-right: 10px;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.xl.semibold};
+  }
 `;
 const Location = styled.div`
   ${({ theme }) => theme.font.xxl.medium};
   color: ${({ theme }) => theme.color.gray800};
   margin-bottom: 10px;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.xl.medium};
+  }
 `;
 const Distance = styled.div`
   ${({ theme }) => theme.font.xxl.semibold};
   color: ${({ theme }) => theme.color.primary500};
   margin-top: 15px;
   margin-bottom: 8px;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.xl.semibold};
+    margin-top: 7px;
+    margin-bottom: 0px;
+  }
 `;
 const TabMenu = styled.div`
   ${({ theme }) => theme.font.xxl.semibold};
@@ -440,7 +469,6 @@ const Address = styled.div`
   text-align: left;
 `;
 
-// 로딩 스타일
 const LoadingWrapper = styled.div`
   width: 100%;
   height: 80vh;

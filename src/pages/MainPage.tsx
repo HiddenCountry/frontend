@@ -65,6 +65,7 @@ const MainPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [searchTrigger, setSearchTrigger] = useState(0);
   const cardsPerPage = 6;
 
   // 로딩 상태
@@ -125,7 +126,7 @@ const MainPage: React.FC = () => {
         fetchPlaces(37.5665, 126.978).finally(() => setLoading(false)); // API 완료 후 로딩 종료
       }
     );
-  }, [currentPage, filters, searchKeyword]);
+  }, [currentPage, filters, searchTrigger]);
 
   const sortOptions = [
     { label: "조회순", value: "VIEW_COUNT_DESC" },
@@ -176,7 +177,10 @@ const MainPage: React.FC = () => {
             <SearchBar
               value={searchKeyword}
               onChange={(val) => setSearchKeyword(val)}
-              onSearch={() => setCurrentPage(0)}
+              onSearch={() => {
+                setCurrentPage(0);
+                setSearchTrigger((prev) => prev + 1);
+              }}
             />
             <Sequence>
               {sortOptions.map((opt) => (
@@ -328,6 +332,11 @@ const Sequence = styled.div`
   ${({ theme }) => theme.font.md.semibold};
   color: ${({ theme }) => theme.color.gray600};
   cursor: pointer;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.sm.semibold};
+    gap: 6px;
+  }
 `;
 
 const SortItem = styled.span<{ $active?: boolean }>`
@@ -350,11 +359,23 @@ const SortItem = styled.span<{ $active?: boolean }>`
 `;
 const CardBox = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 230px));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
   justify-content: center;
-  justify-contents: center;
+
+  @media (max-width: 780px) {
+    grid-template-columns: repeat(2, 1fr);
+    justify-content: center;
+    justify-items: center;
+    gap: 5px;
+  }
+
+  @media (max-width: 350px) {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
 `;
+
 const EmptyMessage = styled.div`
   ${({ theme }) => theme.font.xl.medium};
   color: ${({ theme }) => theme.color.gray600};
