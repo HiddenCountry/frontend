@@ -753,7 +753,7 @@ const ArrowButton = styled.button<{ left?: boolean; right?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 999;
+  z-index: 9;
 
   &:hover {
     background: rgba(255, 255, 255);
