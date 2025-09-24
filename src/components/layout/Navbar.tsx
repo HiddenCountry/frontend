@@ -96,6 +96,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <MobileMenuLink
                 key={menu.name}
                 to={menu.path}
+                $active={activeMenu === menu.name}
                 onClick={() => {
                   setActiveMenu(menu.name);
                   setMobileMenuOpen(false);
@@ -357,17 +358,19 @@ const MobileMenu = styled.div`
   border-bottom: 1px solid #ddd;
   z-index: 50;
   position: absolute;
-  top: 75px;
+  top: 65px;
   left: 0;
+  text-align: center;
 `;
 
-const MobileMenuLink = styled(Link)`
+const MobileMenuLink = styled(Link)<{ $active?: boolean }>`
   padding: 12px 20px;
   text-decoration: none;
-  color: ${({ theme }) => theme.color.gray700};
+  color: ${({ theme, $active }) =>
+    $active ? theme.color.primary500 : theme.color.gray600};
   ${({ theme }) => theme.font.md.semibold};
 
   &:hover {
-    background-color: ${({ theme }) => theme.color.gray50};
+    background-color: ${({ theme }) => theme.color.gray100};
   }
 `;
