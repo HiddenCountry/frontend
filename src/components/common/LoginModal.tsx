@@ -1,13 +1,24 @@
 import React from "react";
 import styled from "styled-components";
-import { ReactComponent as LoginIcon } from "../assets/login/LoginError.svg";
+import { ReactComponent as LoginIcon } from "../../assets/home/Caution.svg";
 
-interface LoginModalProps {
+interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
+  title?: string;
+  description?: string | React.ReactNode;
+  confirmText?: string;
+  onConfirm?: () => void;
 }
 
-const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
+const Modal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  title = "알림",
+  description = "",
+  confirmText = "확인",
+  onConfirm,
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -18,26 +29,19 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           <IconWrapper>
             <LoginIcon />
           </IconWrapper>
-          <Title>로그인이 필요해요!</Title>
-          <Description>
-            대한민국 속 숨겨진 나라를 찾고 싶다면
-            <br />
-            로그인을 해주세요!
-          </Description>
+          <Title>{title}</Title>
+          <Description>{description}</Description>
         </Content>
         <Footer>
-          <Button onClick={() => (window.location.href = "/login")}>
-            로그인
-          </Button>
+          <Button onClick={onConfirm}>{confirmText}</Button>
         </Footer>
       </ModalContainer>
     </Overlay>
   );
 };
 
-export default LoginModal;
+export default Modal;
 
-// Styled Components
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
@@ -45,7 +49,7 @@ const Overlay = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 999;
+  z-index: 9999;
 `;
 
 const ModalContainer = styled.div`
@@ -85,7 +89,6 @@ const IconWrapper = styled.div`
 
 const Title = styled.div`
   ${({ theme }) => theme.font.xxxl.bold};
-
   font-size: 22px;
   font-weight: bold;
   margin-bottom: 15px;
@@ -93,7 +96,6 @@ const Title = styled.div`
 
 const Description = styled.div`
   ${({ theme }) => theme.font.xxl.medium};
-
   font-size: 16px;
   color: #555;
   margin-bottom: 15px;
