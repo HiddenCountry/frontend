@@ -216,8 +216,9 @@ const ModalContent = styled.div`
 `;
 
 const ModalImg = styled.img`
-  max-width: 100%;
-  max-height: 100%;
+  width: 600px; // 모달 이미지 가로 폭 통일
+  max-height: 80vh; // 세로는 화면 기준 제한
+  object-fit: contain; // 비율 유지하면서 맞춤
   border-radius: 12px;
   display: block;
 `;
