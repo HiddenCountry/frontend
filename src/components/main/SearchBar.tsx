@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { ReactComponent as SearchIcon } from "../../assets/main/SearchIcon.svg";
+import { ReactComponent as SearchIcon } from "../../assets/main/Search.svg";
 
 interface SearchBarProps {
   value: string; // 검색어
@@ -19,6 +19,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, onSearch }) => {
       />
       <SearchButton onClick={onSearch}>
         <SearchIcon />
+        검색
       </SearchButton>
     </Wrapper>
   );
@@ -43,11 +44,12 @@ const Input = styled.input`
   /* 모바일/작은 화면 반응형 */
   @media (max-width: 740px) {
     height: 60px;
-    ${({ theme }) => theme.font.xl.medium};
+    ${({ theme }) => theme.font.md.medium};
   }
 `;
 
 const SearchButton = styled.button`
+  ${({ theme }) => theme.font.xxl.medium};
   width: 160px;
   height: 78px;
   background: ${({ theme }) => theme.color.primary500};
