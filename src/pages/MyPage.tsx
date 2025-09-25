@@ -6,6 +6,7 @@ import { ReactComponent as ProfileSvg } from "../assets/mypage/profile.svg";
 import { getBookmarkPlaces } from "../api/Bookmark";
 import { useNavigate } from "react-router-dom";
 import { fetchMyReviews } from "../api/Mypage";
+import { getUserInfo } from "../api/Kakao";
 
 /** ====== 북마크 타입 ====== */
 type BookmarkPlace = {
@@ -62,6 +63,7 @@ const MyPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [nickname, setNickname] = useState<string>("");
+  const [profileUrl, setProfileUrl] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // ===== 저장한 장소(북마크) 상태 =====
@@ -193,11 +195,54 @@ const MyPage: React.FC = () => {
       ? "그냥 그랬어요"
       : "기대 이하였어요";
 
-  // 로컬스토리지에서 닉네임 불러오기
+  // 닉네임 불러오기
   useEffect(() => {
     const storedNickname = localStorage.getItem("nickname");
+    const storedProfile =
+      localStorage.getItem("profileImageUrl") ||
+      localStorage.getItem("profileImg");
+
     if (storedNickname) setNickname(storedNickname);
     else setNickname("사용자");
+
+    if (storedProfile) setProfileUrl(storedProfile);
+
+    // 서버에서 최신 세션/프로필 확인 (토큰 있을 때만)
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+
+    (async () => {
+      try {
+        const res = await getUserInfo();
+
+        // API 응답 형태별 안전 파싱
+        const data = res?.data?.data || res?.data || res;
+
+        const serverNickname: string =
+          data?.nickname ||
+          data?.user?.nickname ||
+          data?.profile?.nickname ||
+          "";
+        const serverProfile: string | null =
+          data?.profileImg ||
+          data?.profileImageUrl ||
+          data?.profileImage ||
+          data?.imageUrl ||
+          null;
+
+        if (serverNickname) {
+          setNickname(serverNickname);
+          localStorage.setItem("nickname", serverNickname);
+        }
+        if (serverProfile) {
+          setProfileUrl(serverProfile);
+          localStorage.setItem("profileImageUrl", serverProfile);
+        }
+      } catch (e) {
+        // 세션 만료(COMMON403) 등은 조용히 무시 (마이페이지 진입 시 Navbar 쪽 모달 처리와 충돌 방지)
+        // console.warn("getUserInfo failed", e);
+      }
+    })();
   }, []);
 
   return (
@@ -205,7 +250,11 @@ const MyPage: React.FC = () => {
       <Main>
         <LeftCard>
           <Profile>
-            <Avatar />
+            {profileUrl ? (
+              <AvatarImg src={profileUrl} alt="프로필 이미지" />
+            ) : (
+              <Avatar />
+            )}
             <Nickname>{nickname} 님</Nickname>
           </Profile>
 
@@ -368,4 +417,14 @@ const ErrorBox = styled.div`
   padding: 16px;
   border-radius: 12px;
   margin-top: 8px;
+`;
+
+const AvatarImg = styled.img`
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin: 8px auto 12px;
+  border: 1px solid ${({ theme }) => theme.color.gray200};
 `;
