@@ -115,7 +115,11 @@ const Navbar: React.FC<NavbarProps> = ({
             <ProfileName>{nickname} 님</ProfileName>
             {showDropdown && (
               <Dropdown>
-                <UserIconBig />
+                {profileImg ? (
+                  <ProfileImageBig src={profileImg} />
+                ) : (
+                  <UserIconBig />
+                )}
                 <ProfileName>{nickname} 님</ProfileName>
                 <DropdownItem to="/mypage">마이페이지</DropdownItem>
                 <DropdownButton onClick={handleLogout}>로그아웃</DropdownButton>
@@ -276,8 +280,10 @@ const ProfileWrapper = styled.div`
 `;
 
 const ProfileImage = styled.div<{ src?: string }>`
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
+  margin: 12px 0px;
+  margin-left: -8px;
   border-radius: 50%;
   background: ${({ src, theme }) =>
     src ? `url(${src}) center/cover` : theme.color.gray300};
@@ -312,6 +318,19 @@ const Dropdown = styled.div`
     margin-top: 10px;
     margin-bottom: 8px;
   }
+`;
+
+const ProfileImageBig = styled.div<{ src?: string }>`
+  width: 80px;
+  height: 80px;
+  margin-top: 10px;
+  margin-bottom: 8px;
+  border-radius: 50%;
+  background-color: ${({ theme }) => theme.color.gray300};
+  background-image: ${({ src }) => (src ? `url(${src})` : "none")};
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 `;
 
 const DropdownItem = styled(Link)`

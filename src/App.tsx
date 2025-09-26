@@ -35,7 +35,7 @@ function App() {
           if (res.isSuccess) {
             setIsLoggedIn(true);
             setNickname(res.data.nickname || "사용자");
-            setProfileImg(res.data.profileImg || "");
+            setProfileImg(res.data.profileImage || "");
           } else {
             console.error("유저 정보 로드 실패:", res.message);
             setIsLoggedIn(false);

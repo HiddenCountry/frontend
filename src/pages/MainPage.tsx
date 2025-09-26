@@ -50,7 +50,7 @@ const countryInfoMap: Record<
   JAPAN: { nameKR: "일본", Icon: Japan },
   MONGOLIA: { nameKR: "몽골", Icon: Mongolia },
   NORTH_AMERICA: { nameKR: "북아메리카", Icon: NorthAmerica },
-  OCEANINA: { nameKR: "오세아니아", Icon: Oceania },
+  OCEANIA: { nameKR: "오세아니아", Icon: Oceania },
   SOUTH_AMERICA: { nameKR: "남아메리카", Icon: SouthAmerica },
   SOUTHEAST_ASIA: { nameKR: "동남아시아", Icon: SoutheastAsia },
   TURKEY: { nameKR: "터키", Icon: Turkey },
