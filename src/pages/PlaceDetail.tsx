@@ -98,30 +98,39 @@ const PlaceDetail: React.FC = () => {
 
     target?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
-
   // 대표이미지
   const [images, setImages] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // ✅ 리뷰 이미지로 대체되었는지 여부
+  const [isReviewImageFallback, setIsReviewImageFallback] = useState(false);
 
   // tourAPI 대표이미지 + 리뷰 이미지 연동
   useEffect(() => {
     const loadImages = async () => {
       if (!contentId || !serviceKey) return;
 
+      let urls: string[] = [];
+      let usedReviewFallback = false;
+
       // 1. tourAPI에서 이미지 가져오기
-      let urls = await fetchTourImages(contentId, serviceKey);
+      urls = await fetchTourImages(contentId, serviceKey);
 
       // 2. tourAPI 이미지가 없으면 리뷰 이미지로 대체
       if (!urls || urls.length === 0) {
         try {
           const res = await getReviewImages(place?.id ?? 0); // place id로 리뷰 이미지 가져오기
-          urls = res?.data || []; // data 배열 그대로 사용
+          urls = res?.data || [];
+          if (urls.length > 0) {
+            usedReviewFallback = true; // 리뷰 이미지 안내 문구
+          }
         } catch (error) {
           console.error("리뷰 이미지 로딩 실패", error);
         }
       }
 
       setImages(urls);
+      setIsReviewImageFallback(usedReviewFallback);
     };
 
     loadImages();
@@ -388,6 +397,13 @@ const PlaceDetail: React.FC = () => {
                 <ImageIndex>
                   {currentIndex + 1} / {images.length}
                 </ImageIndex>
+
+                {/* ✅ 리뷰 이미지로 대체된 경우 안내 문구 */}
+                {isReviewImageFallback && (
+                  <NoticeText>
+                    해당 사진은 리뷰 이미지로 대체되었습니다.
+                  </NoticeText>
+                )}
               </>
             ) : (
               <LogoFallback>
@@ -758,6 +774,12 @@ const ArrowButton = styled.button<{ left?: boolean; right?: boolean }>`
   &:hover {
     background: rgba(255, 255, 255);
   }
+`;
+const NoticeText = styled.p`
+  font-size: 12px;
+  color: ${({ theme }) => theme.color.gray600};
+  text-align: center;
+  margin-top: 6px;
 `;
 
 const InfoCard = styled.div`
