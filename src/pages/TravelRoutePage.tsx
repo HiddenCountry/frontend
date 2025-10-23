@@ -2,6 +2,8 @@ import React from "react";
 import KakaoMapRoute from "./KakaoMapRoute";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import TravelCourseCard from "../components/travel/TravelCourseCard";
+import { getTravelCourse } from "../api/TravelCourse";
 
 /* ============ kakao 전역 타입 ============ */
 declare global {
@@ -184,8 +186,38 @@ const TravelRoutePage: React.FC = () => {
 
   const current = travelCourses.find((c) => c.title === selected)!;
 
+  /* 여행 코스 목록 상태 */
+  const [travelCoursesList, setTravelCoursesList] = React.useState<
+    { courseId: number; title: string; firstImage: string }[]
+  >([]);
+
+  /* 여행 코스 리스트 api 연동 */
+  React.useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const res = await getTravelCourse();
+
+        if (res.code === "COMMON200") {
+          setTravelCoursesList(res.data);
+        } else {
+          console.error("여행 코스 조회 실패:", res);
+        }
+      } catch (err) {
+        console.error("서버 통신 오류:", err);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
   return (
     <Page>
+      {/* 인기코스 제목*/}
+      <Top3Header>
+        <SmallTitle>코스를 탐색하고, 나만의 루트를 공유하세요</SmallTitle>
+        <BigTitle>인기 코스 TOP 3</BigTitle>
+      </Top3Header>
+
       {/* 메뉴 */}
       <Menu>
         {travelCourses.map((course) => (
@@ -244,6 +276,29 @@ const TravelRoutePage: React.FC = () => {
           />
         </RightPanel>
       </Content>
+      <CourseSection>
+        <CourseButton
+          onClick={() => {
+            navigate("/route/plan");
+          }}
+        >
+          코스 등록하기
+        </CourseButton>
+        <CourseList>
+          {travelCoursesList.length > 0 ? (
+            travelCoursesList.map((item) => (
+              <TravelCourseCard
+                key={item.courseId}
+                courseId={item.courseId}
+                firstImage={item.firstImage}
+                title={item.title}
+              />
+            ))
+          ) : (
+            <EmptyText>등록된 여행 코스가 없습니다 😢</EmptyText>
+          )}
+        </CourseList>
+      </CourseSection>
     </Page>
   );
 };
@@ -256,6 +311,22 @@ const Page = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1rem;
+`;
+const Top3Header = styled.header``;
+
+const SmallTitle = styled.div`
+  ${({ theme }) => theme.font.xxxl.bold};
+  margin-top: 10px;
+  text-align: center;
+  color: ${({ theme }) => theme.color.gray800};
+`;
+
+const BigTitle = styled.div`
+  ${({ theme }) => theme.font.xxxl.bold};
+  font-size: 50px;
+  margin: 10px 0 25px 0;
+  text-align: center;
+  color: ${({ theme }) => theme.color.gray800};
 `;
 
 const Menu = styled.nav`
@@ -441,4 +512,50 @@ const RightPanel = styled.section`
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+`;
+
+const CourseSection = styled.section`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4rem;
+  width: 100%;
+`;
+
+const CourseButton = styled.button`
+  ${({ theme }) => theme.font.md.bold};
+  padding: 0.8rem 2rem;
+  border-radius: 10px;
+  border: none;
+  background: ${({ theme }) => theme.color.primary500};
+  color: ${({ theme }) => theme.color.white};
+  transition: all 0.2s ease;
+  &:hover {
+    transform: translateY(-1px);
+    border-color: ${({ theme }) => theme.color.gray300};
+    background: ${({ theme }) => theme.color.primary600};
+    color: ${({ theme }) => theme.color.white};
+  }
+`;
+
+const CourseList = styled.div`
+  margin-top: 4rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3열 */
+  gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr); /* 태블릿: 2열 */
+  }
+
+  @media (max-width: 400px) {
+    grid-template-columns: 1fr; /* 모바일: 1열 */
+  }
+`;
+
+const EmptyText = styled.div`
+  ${({ theme }) => theme.font.md.regular};
+  color: ${({ theme }) => theme.color.gray500};
+  margin-top: 2rem;
 `;
