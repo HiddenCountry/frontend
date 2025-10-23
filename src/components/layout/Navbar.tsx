@@ -120,7 +120,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 ) : (
                   <UserIconBig />
                 )}
-                <ProfileName>{nickname} 님</ProfileName>
+                <DropdownProfileName>{nickname} 님</DropdownProfileName>
                 <DropdownItem to="/mypage">마이페이지</DropdownItem>
                 <DropdownButton onClick={handleLogout}>로그아웃</DropdownButton>
               </Dropdown>
@@ -201,7 +201,7 @@ const Logo = styled(Link)`
 
 const Menu = styled.div`
   display: flex;
-  gap: 90px;
+  gap: 60px;
   flex: 1;
   justify-content: center;
 
@@ -302,7 +302,7 @@ const ProfileName = styled.div`
 const Dropdown = styled.div`
   width: 170px;
   position: absolute;
-  top: 60px;
+  top: 75px;
   right: 0;
   background: white;
   border-radius: 12px;
@@ -319,7 +319,15 @@ const Dropdown = styled.div`
     margin-bottom: 8px;
   }
 `;
+const DropdownProfileName = styled.div`
+  ${({ theme }) => theme.font.md.bold};
+  color: ${({ theme }) => theme.color.gray700};
+  padding: 5px 0;
 
+  @media (max-width: 780px) {
+    display: block;
+  }
+`;
 const ProfileImageBig = styled.div<{ src?: string }>`
   width: 80px;
   height: 80px;
