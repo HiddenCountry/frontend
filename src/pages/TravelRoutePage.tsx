@@ -319,6 +319,14 @@ const SmallTitle = styled.div`
   margin-top: 10px;
   text-align: center;
   color: ${({ theme }) => theme.color.gray800};
+
+  @media (max-width: 768px) {
+    ${({ theme }) => theme.font.xl.bold}; /* 작은 화면에서는 폰트 축소 */
+  }
+
+  @media (max-width: 480px) {
+    ${({ theme }) => theme.font.md.bold};
+  }
 `;
 
 const BigTitle = styled.div`
@@ -327,6 +335,19 @@ const BigTitle = styled.div`
   margin: 10px 0 25px 0;
   text-align: center;
   color: ${({ theme }) => theme.color.gray800};
+
+  @media (max-width: 1024px) {
+    font-size: 40px;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 32px;
+    margin: 8px 0 20px 0;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 26px;
+  }
 `;
 
 const Menu = styled.nav`
@@ -334,6 +355,17 @@ const Menu = styled.nav`
   justify-content: center;
   gap: 1rem;
   margin-bottom: 2rem;
+  flex-wrap: wrap; /* 버튼이 화면 좁아지면 자동 줄바꿈 */
+
+  @media (max-width: 768px) {
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    gap: 0.3rem;
+    margin-bottom: 1rem;
+  }
 `;
 
 const MenuButton = styled.button<{ $active?: boolean }>`
@@ -349,6 +381,7 @@ const MenuButton = styled.button<{ $active?: boolean }>`
   box-shadow: ${({ $active }) =>
     $active ? "0 4px 12px rgba(0,0,0,0.2)" : "none"};
   transition: all 0.2s ease;
+
   &:hover {
     transform: translateY(-1px);
     border-color: ${({ theme }) => theme.color.gray300};
@@ -356,6 +389,16 @@ const MenuButton = styled.button<{ $active?: boolean }>`
       $active ? theme.color.primary600 : theme.color.gray100};
     color: ${({ theme, $active }) =>
       $active ? theme.color.white : theme.color.gray900};
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.75rem;
   }
 `;
 
@@ -375,6 +418,13 @@ const TopRoute = styled.div`
   justify-content: center;
   gap: 1.2rem;
   padding: 1rem 0;
+  flex-wrap: wrap; /* 줄바꿈 가능 */
+
+  @media (max-width: 768px) {
+    justify-content: center;
+    gap: 0.8rem;
+    padding: 0.5rem 0;
+  }
 `;
 
 const RouteLine = styled.div<{ $gradEnd: string }>`
@@ -390,6 +440,10 @@ const RouteLine = styled.div<{ $gradEnd: string }>`
     ${({ $gradEnd }) => $gradEnd}
   );
   z-index: 1;
+
+  @media (max-width: 768px) {
+    display: none; /* 모바일에서는 Line 숨김 */
+  }
 `;
 
 const RouteNode = styled.div`
@@ -407,21 +461,26 @@ const RouteNode = styled.div`
   color: ${({ theme }) => theme.color.primary500};
   white-space: nowrap;
   transition: transform 0.2s ease, background 0.2s ease;
+
   &:hover {
     transform: scale(1.06);
     background: #f0faff;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0 10px;
+    height: 32px;
+    font-size: 0.75rem;
   }
 `;
 
 const Plane = styled.div`
   position: absolute;
-  top: calc(50% - 15px);
-  left: 5%;
-  font-size: 1.5rem;
-  animation: fly 10s linear infinite;
+  font-size: 2rem;
   z-index: 3;
+  animation: flyDesktop 10s linear infinite;
 
-  @keyframes fly {
+  @keyframes flyDesktop {
     0% {
       left: 5%;
       transform: rotate(10deg);
@@ -433,6 +492,32 @@ const Plane = styled.div`
     100% {
       left: 95%;
       transform: rotate(-10deg);
+    }
+  }
+
+  /* 모바일: 왼쪽 아래 → 오른쪽 위 대각선 */
+  @media (max-width: 768px) {
+    font-size: 1.6rem;
+    top: auto;
+    left: 0%;
+    animation: flyMobile 10s linear infinite;
+  }
+
+  @keyframes flyMobile {
+    0% {
+      left: 0%;
+      top: 100%;
+      transform: rotate(45deg);
+    }
+    50% {
+      left: 50%;
+      top: 50%;
+      transform: rotate(0deg);
+    }
+    100% {
+      left: 90%;
+      top: 0%;
+      transform: rotate(-15deg);
     }
   }
 `;
@@ -542,8 +627,11 @@ const CourseButton = styled.button`
 const CourseList = styled.div`
   margin-top: 4rem;
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3열 */
+  grid-template-columns: repeat(4, 1fr); /* 3열 */
   gap: 1.5rem;
+  @media (max-width: 1000px) {
+    grid-template-columns: repeat(3, 1fr); /* 태블릿: 2열 */
+  }
 
   @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr); /* 태블릿: 2열 */

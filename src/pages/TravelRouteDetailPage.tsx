@@ -173,6 +173,13 @@ const TopRoute = styled.div`
   justify-content: center;
   gap: 1.2rem;
   padding: 1rem 0;
+  flex-wrap: wrap; /* 줄바꿈 가능 */
+
+  @media (max-width: 768px) {
+    justify-content: center;
+    gap: 0.8rem;
+    padding: 0.5rem 0;
+  }
 `;
 
 const RouteLine = styled.div<{ $gradEnd: string }>`
@@ -180,7 +187,7 @@ const RouteLine = styled.div<{ $gradEnd: string }>`
   top: 50%;
   left: 5%;
   right: 5%;
-  height: 4px;
+  height: 3px;
   border-radius: 8px;
   background: linear-gradient(
     to right,
@@ -205,17 +212,24 @@ const RouteNode = styled.div`
   color: ${({ theme }) => theme.color.primary500};
   white-space: nowrap;
   transition: transform 0.2s ease, background 0.2s ease;
+
   &:hover {
     transform: scale(1.06);
     background: #f0faff;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0 10px;
+    height: 32px;
+    font-size: 0.75rem;
   }
 `;
 
 const Plane = styled.div`
   position: absolute;
-  top: calc(50% - 15px);
+  top: calc(50% - 12px);
   left: 5%;
-  font-size: 1.5rem;
+  font-size: 2rem;
   animation: fly 10s linear infinite;
   z-index: 3;
 
