@@ -169,7 +169,7 @@ const TravelPlanPage: React.FC = () => {
 
       if (res.isSuccess || res.data?.code === "COMMON200") {
         alert("여행 코스가 성공적으로 등록되었습니다!");
-        //navigate("/route");
+        navigate("/route");
       } else {
         alert("등록 중 문제가 발생했습니다.");
       }
@@ -395,11 +395,12 @@ export default TravelPlanPage;
 const Container = styled.div`
   display: flex;
   gap: 20px;
-  padding: 20px;
+  padding: 20px 15%;
   flex-direction: column;
 
   @media (max-width: 768px) {
     flex-direction: column;
+    padding: 20px;
   }
 `;
 const TopContainer = styled.div`
