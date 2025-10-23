@@ -14,6 +14,7 @@ interface NearCardProps {
   addr2?: string;
   latitude?: number;
   longitude?: number;
+  onClick?: () => void;
 }
 
 const NearCard: React.FC<NearCardProps> = ({
@@ -27,11 +28,18 @@ const NearCard: React.FC<NearCardProps> = ({
   addr2,
   latitude,
   longitude,
+  onClick,
 }) => {
   const navigate = useNavigate();
   return (
     <CardWrapper
-      onClick={() =>
+      onClick={() => {
+        if (onClick) {
+          onClick(); // onClick이 있으면 실행
+          return; // navigate 실행하지 않고 종료
+        }
+
+        // onClick이 없을 경우에만 navigate
         navigate("near", {
           state: {
             addr2,
@@ -43,8 +51,8 @@ const NearCard: React.FC<NearCardProps> = ({
             latitude,
             longitude,
           },
-        })
-      }
+        });
+      }}
     >
       <CardImageBox>
         {firstimage ? (

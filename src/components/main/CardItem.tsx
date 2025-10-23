@@ -6,6 +6,7 @@ import { ReactComponent as BoomarkX } from "../../assets/main/BookmarkX.svg";
 import { ReactComponent as Airplane } from "../../assets/main/Airplane.svg";
 import { ReactComponent as Logo } from "../../assets/layout/Logo.svg";
 import { deleteBookmark, postBookmark } from "../../api/Bookmark";
+import LoginModal from "../../components/common/LoginModal";
 
 interface CardItemProps {
   id: number;
@@ -45,9 +46,17 @@ const CardItem: React.FC<CardItemProps> = ({
   const navigate = useNavigate();
   const [bookmarked, setBookmarked] = useState(isBookmarked);
 
+  // 로그인 모달
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
   // 북마크 토글 핸들러
   const handleBookmarkClick = async (e: React.MouseEvent) => {
     e.stopPropagation(); // 카드 전체 클릭 막기
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      setShowLoginModal(true);
+      return;
+    }
     try {
       if (bookmarked) {
         await deleteBookmark(id);
@@ -84,6 +93,23 @@ const CardItem: React.FC<CardItemProps> = ({
         })
       }
     >
+      {/* 로그인 모달 */}
+      {showLoginModal && (
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+          title="로그인이 필요해요!"
+          description={
+            <>
+              대한민국 속 숨겨진 나라를 찾고 싶다면
+              <br />
+              로그인을 해주세요!
+            </>
+          }
+          confirmText="로그인"
+          onConfirm={() => (window.location.href = "/login")}
+        />
+      )}
       <BookmarkButton onClick={handleBookmarkClick}>
         {bookmarked ? <Boomark /> : <BoomarkX />}
       </BookmarkButton>
