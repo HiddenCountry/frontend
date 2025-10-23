@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import FilterSidebar from "../components/main/FilterSidebar";
 import SearchBar from "../components/main/SearchBar";
 import { ReactComponent as Africa } from "../assets/main/Africa.svg";
@@ -58,11 +58,17 @@ const countryInfoMap: Record<
 
 const MainPage: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
   const initialCountryRegion = queryParams.get("countryRegion") || "EUROPE";
 
   const [places, setPlaces] = useState<Place[]>([]);
-  const [currentPage, setCurrentPage] = useState(0);
+  //const [currentPage, setCurrentPage] = useState(0);
+  const initialPage = Math.max(
+    0,
+    parseInt(queryParams.get("page") || "1", 10) - 1
+  );
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(1);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [searchTrigger, setSearchTrigger] = useState(0);
@@ -134,6 +140,13 @@ const MainPage: React.FC = () => {
     { label: "평점순", value: "REVIEW_SCORE_AVERAGE_DESC" },
     { label: "리뷰 많은 순", value: "REVIEW_COUNT_DESC" },
   ];
+
+  // 메인페이지 page url 표ㅣㅅ
+  useEffect(() => {
+    const newParams = new URLSearchParams(location.search);
+    newParams.set("page", (currentPage + 1).toString());
+    navigate({ search: newParams.toString() }, { replace: true });
+  }, [currentPage, location.search, navigate]);
 
   // 로딩 화면
   if (loading) {

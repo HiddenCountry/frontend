@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { ReactComponent as Logo } from "../../assets/layout/Logo.svg";
 
-interface NearCardProps {
+interface TravelCardProps {
   addr1: string;
   contentid: string;
   contenttypeid: string;
@@ -15,9 +15,9 @@ interface NearCardProps {
   latitude?: number;
   longitude?: number;
   onClick?: () => void;
+  selected?: boolean;
 }
-
-const NearCard: React.FC<NearCardProps> = ({
+const TravelCard: React.FC<TravelCardProps> = ({
   addr1,
   contentid,
   contenttypeid,
@@ -29,29 +29,17 @@ const NearCard: React.FC<NearCardProps> = ({
   latitude,
   longitude,
   onClick,
+  selected,
 }) => {
   const navigate = useNavigate();
   return (
     <CardWrapper
+      selected={selected}
       onClick={() => {
         if (onClick) {
-          onClick(); // onClick이 있으면 실행
-          return; // navigate 실행하지 않고 종료
+          onClick();
+          return;
         }
-
-        // onClick이 없을 경우에만 navigate
-        navigate("near", {
-          state: {
-            addr2,
-            contentid,
-            contenttypeid,
-            dist,
-            firstimage,
-            title2,
-            latitude,
-            longitude,
-          },
-        });
       }}
     >
       <CardImageBox>
@@ -66,29 +54,36 @@ const NearCard: React.FC<NearCardProps> = ({
       <CardContent>
         <CardTitle>{title}</CardTitle>
         <CardSubTitle>{addr1}</CardSubTitle>
-        <CardDist>
-          해당 관광지에서{" "}
-          <strong>{`${(Number(dist) / 1000).toFixed(1)}km`}</strong>
-        </CardDist>
       </CardContent>
     </CardWrapper>
   );
 };
 
-export default NearCard;
+export default TravelCard;
 
-const CardWrapper = styled.div`
-  min-width: 200px;
+const CardWrapper = styled.div<{ selected?: boolean }>`
+  display: flex;
+  margin: 5px 10px;
+  align-items: center;
   border-radius: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  position: relative;
-  max-width: 100px;
+  overflow: hidden;
+  max-width: 100%;
+  cursor: pointer;
+  min-height: 100px;
+  border: 3px solid
+    ${({ selected, theme }) =>
+      selected ? theme.color.primary500 : "transparent"};
+  transition: transform 0.2s, border 0.2s;
+  &:hover {
+    transform: translateY(-2px);
+  }
 `;
 
 const CardImageBox = styled.div`
+  flex: 0 0 150px;
+  aspect-ratio: 1 / 1; /* 정사각형 유지 */
   background: ${({ theme }) => theme.color.gray200};
-  height: 150px;
-  border-radius: 24px 24px 0px 0px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -110,16 +105,17 @@ const FallbackIcon = styled.div`
   svg {
     width: 48px;
     height: 48px;
-    margin-top: 10px;
     opacity: 0.8;
   }
 `;
-
 const CardContent = styled.div`
+  flex: 1;
   background: ${({ theme }) => theme.color.white};
-  border-radius: 0px 0px 24px 24px;
   padding: 10px 20px;
-  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100px; /* 내용에 따라 최소 높이 확보 */
 `;
 
 const CardTitle = styled.div`
@@ -138,6 +134,7 @@ const CardSubTitle = styled.div`
     ${({ theme }) => theme.font.sm.medium};
   }
 `;
+
 const CardDist = styled.div`
   ${({ theme }) => theme.font.md.medium};
   color: ${({ theme }) => theme.color.primary500};

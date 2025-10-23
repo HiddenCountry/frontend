@@ -32,8 +32,6 @@ const HomePage: React.FC = () => {
     }
   }, []);
 
-  const [showLoginModal, setShowLoginModal] = useState(false);
-
   const continents = [
     {
       name: "북아메리카",
@@ -117,23 +115,6 @@ const HomePage: React.FC = () => {
             onClose={() => setShowOnboarding(false)}
           />
         )}
-        {/* 로그인 모달 */}
-        {showLoginModal && (
-          <LoginModal
-            isOpen={showLoginModal}
-            onClose={() => setShowLoginModal(false)}
-            title="로그인이 필요해요!"
-            description={
-              <>
-                대한민국 속 숨겨진 나라를 찾고 싶다면
-                <br />
-                로그인을 해주세요!
-              </>
-            }
-            confirmText="로그인"
-            onConfirm={() => (window.location.href = "/login")}
-          />
-        )}
         <Title>
           오늘은{" "}
           <AnimatePresence mode="wait">
@@ -170,10 +151,7 @@ const HomePage: React.FC = () => {
                 onMouseEnter={() => setHoveredContinent(continent.name)}
                 onMouseLeave={() => setHoveredContinent(null)}
                 onClick={() => {
-                  const token = localStorage.getItem("accessToken");
-                  if (!token) {
-                    setShowLoginModal(true);
-                  } else if (continent.link) {
+                  if (continent.link) {
                     navigate(
                       `${continent.link}?countryRegion=${continent.countryRegion}`
                     );
@@ -245,8 +223,8 @@ const ContinentCard = styled.div<{ $isDesktop: boolean }>`
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       grid-gap: 6px;
-      padding: 40px 20px;
-      padding-bottom: 50px;
+      padding: 40px 40px;
+      padding-bottom: 60px;
 
       @media (max-width: 768px) {
         grid-template-columns: repeat(1, 1fr);
@@ -297,6 +275,12 @@ const Continent = styled.div<{ $highlight?: boolean }>`
     font-size: 0; // 텍스트 숨김
     padding: 0;
     gap: 0; // 간격 제거
+  }
+
+  @media (max-width: 768px) {
+    svg {
+      width: 110px;
+    }
   }
 `;
 

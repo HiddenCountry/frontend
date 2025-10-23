@@ -19,6 +19,7 @@ import ReviewModal from "../components/place/ReviewModal";
 import { getReview, getReviewImages } from "../api/Review";
 import { TAGS } from "../constants/Tags";
 import Pagination from "../components/main/Pagination";
+import LoginModal from "../components/common/LoginModal";
 
 interface Place {
   title: string;
@@ -68,6 +69,7 @@ const PlaceDetail: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
     "소개" | "지도" | "인근 관광지" | "리뷰"
   >("소개");
+  const token = localStorage.getItem("accessToken");
 
   const location = useLocation();
   const place = location.state as CardItemProps | undefined;
@@ -102,7 +104,7 @@ const PlaceDetail: React.FC = () => {
   const [images, setImages] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // ✅ 리뷰 이미지로 대체되었는지 여부
+  // 리뷰 이미지로 대체되었는지 여부
   const [isReviewImageFallback, setIsReviewImageFallback] = useState(false);
 
   // tourAPI 대표이미지 + 리뷰 이미지 연동
@@ -252,6 +254,11 @@ const PlaceDetail: React.FC = () => {
   }, [placeDetail]);
 
   const handleBookmarkClick = async () => {
+    if (!token) {
+      setShowLoginModal(true);
+      return;
+    }
+
     if (!placeDetail?.id) return;
 
     try {
@@ -302,9 +309,19 @@ const PlaceDetail: React.FC = () => {
     "LATEST" | "RATING_DESC"
   >("LATEST");
 
+  // 리뷰 버튼
+  const handleReview = () => {
+    if (!token) {
+      setShowLoginModal(true);
+      return;
+    }
+    setIsReviewModalOpen(true);
+  };
+
   // 리뷰 불러오기
   const fetchReviews = async () => {
     if (!placeDetail?.id) return;
+
     setReviewsLoading(true);
     setReviewsError(null);
     try {
@@ -321,24 +338,6 @@ const PlaceDetail: React.FC = () => {
   useEffect(() => {
     if (!loading && placeDetail) fetchReviews();
   }, [placeDetail, loading, reviewSortType]);
-
-  /*
-  const loadReviews = async () => {
-    if (!placeDetail?.id) return;
-    try {
-      const res = await getReview(placeDetail.id, "LATEST", 100);
-      if (res.data?.reviewResponses) {
-        setReviews(res.data.reviewResponses);
-      }
-    } catch (error) {
-      console.error("리뷰 조회 실패", error);
-    }
-  };
-
-  useEffect(() => {
-    loadReviews();
-  }, [placeDetail?.id]);
-*/
 
   // 비행기 평균별점 계산
   const renderStars = (score: number) => {
@@ -361,6 +360,9 @@ const PlaceDetail: React.FC = () => {
     return stars;
   };
 
+  // 로그인 모달
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
   // === 로딩 화면 ===
   if (loading) {
     return (
@@ -375,6 +377,23 @@ const PlaceDetail: React.FC = () => {
 
   return (
     <Container>
+      {/* 로그인 모달 */}
+      {showLoginModal && (
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+          title="로그인이 필요해요!"
+          description={
+            <>
+              대한민국 속 숨겨진 나라를 찾고 싶다면
+              <br />
+              로그인을 해주세요!
+            </>
+          }
+          confirmText="로그인"
+          onConfirm={() => (window.location.href = "/login")}
+        />
+      )}
       <Content>
         <TopSection>
           <ImageWrapper>
@@ -398,7 +417,7 @@ const PlaceDetail: React.FC = () => {
                   {currentIndex + 1} / {images.length}
                 </ImageIndex>
 
-                {/* ✅ 리뷰 이미지로 대체된 경우 안내 문구 */}
+                {/* 리뷰 이미지로 대체된 경우 안내 문구 */}
                 {isReviewImageFallback && (
                   <NoticeText>
                     해당 사진은 리뷰 이미지로 대체되었습니다.
@@ -571,9 +590,7 @@ const PlaceDetail: React.FC = () => {
                     : Array(5).fill(<AirPlaneReivewX />)}
                   <span>{placeDetail?.reviewScoreAverage?.toFixed(1)}</span>
                 </Rating>
-                <ReviewButton onClick={() => setIsReviewModalOpen(true)}>
-                  리뷰
-                </ReviewButton>
+                <ReviewButton onClick={handleReview}>리뷰</ReviewButton>
               </ReviewHeader>
               <ReviewCardBox>
                 <Sequence>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import styled from "styled-components";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/layout/Navbar";
 import { ThemeProvider } from "styled-components";
 import { theme } from "./styles/theme";
@@ -19,6 +20,62 @@ import MyPage from "./pages/MyPage";
 import MapPage from "./pages/MapPage";
 import TravelRoutePage from "./pages/TravelRoutePage";
 import { getUserInfo } from "./api/Kakao";
+import Footer from "./components/layout/Footer";
+import ChatPage from "./pages/ChatPage";
+import TravelPlanPage from "./pages/TravelPlanPage";
+import TravelRouteDetailPage from "./pages/TravelRouteDetailPage";
+import { ReactComponent as ChatButton } from "./assets/layout/ChatButton.svg";
+
+const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
+  const hideFooter = location.pathname === "/chat"; // 채팅화면에서는 푸터X
+  const hideChatButton = location.pathname === "/chat"; // 채팅화면에서는 버튼X
+
+  const handleClick = () => {
+    window.location.href = "/chat";
+  };
+
+  return (
+    <>
+      {children}
+      {!hideFooter && <Footer />}
+
+      {/* 오른쪽 아래 플로팅 버튼 */}
+      {!hideChatButton && (
+        <FloatingButton onClick={handleClick}>
+          <ChatButton />
+        </FloatingButton>
+      )}
+    </>
+  );
+};
+
+// 스타일
+const FloatingButton = styled.button`
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  svg {
+    width: 60px;
+    height: 60px;
+    fill: white;
+  }
+`;
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -67,33 +124,38 @@ function App() {
     <ThemeProvider theme={theme}>
       <GlobalStyle />
       <BrowserRouter>
-        <Navbar
-          isLoggedIn={isLoggedIn}
-          nickname={nickname}
-          profileImg={profileImg}
-          onLogout={handleLogout}
-        />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/asia" element={<AsiaHomePage />} />
-          <Route path="/main" element={<MainPage />} />
-          <Route path="/login" element={<KakaoLoginPage />} />
-          <Route
-            path="/callback"
-            element={<KakaoRedirectPage onLogin={updateUserState} />}
+        <AppLayout>
+          <Navbar
+            isLoggedIn={isLoggedIn}
+            nickname={nickname}
+            profileImg={profileImg}
+            onLogout={handleLogout}
           />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route
-            path="/signup/complete"
-            element={<SignupCompletePage onLogin={updateUserState} />}
-          />
-          <Route path="/main/place" element={<PlaceDetail />} />
-          <Route path="/main/place/near" element={<NearPlaceDetail />} />
-          <Route path="/register" element={<PlaceRegistrationPage />} />
-          <Route path="/mypage" element={<MyPage />} />
-          <Route path="/map" element={<MapPage />} />
-          <Route path="/route" element={<TravelRoutePage />} />
-        </Routes>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/asia" element={<AsiaHomePage />} />
+            <Route path="/main" element={<MainPage />} />
+            <Route path="/login" element={<KakaoLoginPage />} />
+            <Route
+              path="/callback"
+              element={<KakaoRedirectPage onLogin={updateUserState} />}
+            />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route
+              path="/signup/complete"
+              element={<SignupCompletePage onLogin={updateUserState} />}
+            />
+            <Route path="/main/place" element={<PlaceDetail />} />
+            <Route path="/main/place/near" element={<NearPlaceDetail />} />
+            <Route path="/register" element={<PlaceRegistrationPage />} />
+            <Route path="/mypage" element={<MyPage />} />
+            <Route path="/map" element={<MapPage />} />
+            <Route path="/route" element={<TravelRoutePage />} />
+            <Route path="/route/detail" element={<TravelRouteDetailPage />} />
+            <Route path="/route/plan" element={<TravelPlanPage />} />
+            <Route path="/chat" element={<ChatPage />} />
+          </Routes>
+        </AppLayout>
       </BrowserRouter>
     </ThemeProvider>
   );

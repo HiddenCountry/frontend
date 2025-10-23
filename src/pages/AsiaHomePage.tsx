@@ -240,6 +240,10 @@ const ContinentCard = styled.div`
   min-height: 500px;
   text-align: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+  @media (max-width: 600px) {
+    padding: 40px 40px 60px;
+  }
 `;
 
 const Path = styled.div`
@@ -260,6 +264,9 @@ const Path = styled.div`
     &:hover {
       text-decoration: underline;
     }
+  }
+  @media (max-width: 600px) {
+    margin-bottom: 30px;
   }
 `;
 const Grid = styled.div`
@@ -370,6 +377,7 @@ const MongoliaGrid = styled.div<{ $highlight?: boolean }>`
 `;
 
 const InfoText = styled.div`
+  width: 300px;
   position: absolute;
   bottom: 20px;
   left: 50%;

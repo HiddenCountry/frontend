@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled, { css } from "styled-components";
+import { postInquiry } from "../api/Inquiry";
 
 const TITLE_MAX = 20;
 const BODY_MAX = 1000;
@@ -8,12 +9,14 @@ const BODY_MAX = 1000;
 const PlaceRegistrationPage: React.FC = () => {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const titleCount = useMemo(() => `${title.length}/${TITLE_MAX}`, [title]);
   const bodyCount = useMemo(() => `${body.length}/${BODY_MAX}`, [body]);
 
   const isValid = title.trim().length > 0 && body.trim().length > 0;
   const navigate = useNavigate();
+
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
@@ -21,17 +24,36 @@ const PlaceRegistrationPage: React.FC = () => {
       navigate("/login", { replace: true });
     }
   }, [navigate]);
-  const onSubmit = (e: React.FormEvent) => {
+
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValid) return;
-    // TODO: API 연동
-    alert("제출되었습니다 소중한 의견 감사합니다.");
+
+    try {
+      setLoading(true);
+      await postInquiry({ title: title.trim(), content: body.trim() });
+      alert("제출되었습니다. 소중한 의견 감사합니다.");
+      setTitle("");
+      setBody("");
+    } catch (err) {
+      console.error(err);
+      alert("제출에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Container>
       <Inner>
         <PageTitle>장소 등록 요청하기</PageTitle>
+        <SubTitle>
+          아직 등록되지 않은 이국적이고 특별한 장소가 있나요? 숨겨진 명소를
+          공유해주세요!
+        </SubTitle>
+        <SubTitle>
+          여러분의 제안으로 더 많은 사람들이 새로운 여행지를 만날 수 있습니다.
+        </SubTitle>
 
         <Form onSubmit={onSubmit}>
           <Field>
@@ -63,7 +85,7 @@ const PlaceRegistrationPage: React.FC = () => {
           </Field>
 
           <Submit type="submit" disabled={!isValid}>
-            완료
+            {loading ? "제출 중..." : "완료"}{" "}
           </Submit>
         </Form>
       </Inner>
@@ -88,6 +110,13 @@ const PageTitle = styled.h1`
   ${({ theme }) => theme.font.xxxl.bold};
   color: ${({ theme }) => theme.color.gray900};
   letter-spacing: -0.02em;
+  margin-bottom: 10px;
+`;
+
+const SubTitle = styled.h1`
+  ${({ theme }) => theme.font.md.medium};
+  color: ${({ theme }) => theme.color.gray600};
+  margin: 2px 5px;
 `;
 
 const Form = styled.form`
