@@ -4,8 +4,10 @@ export const fetchTourImages = async (
   serviceKey: string
 ): Promise<string[]> => {
   try {
+    const baseUrl = process.env.REACT_APP_BASE_URL;
     const res = await fetch(
-      `https://apis.data.go.kr/B551011/KorService2/detailImage2?serviceKey=${serviceKey}&MobileApp=숨은나라찾기&MobileOS=ETC&pageNo=1&numOfRows=30&contentId=${contentId}&imageYN=Y&_type=json`
+      //`https://apis.data.go.kr/B551011/KorService2/detailImage2?serviceKey=${serviceKey}&MobileApp=숨은나라찾기&MobileOS=ETC&pageNo=1&numOfRows=30&contentId=${contentId}&imageYN=Y&_type=json`
+      `${baseUrl}/api/tour/detailImage?serviceKey=${serviceKey}&MobileApp=숨은나라찾기&MobileOS=ETC&pageNo=1&numOfRows=30&contentId=${contentId}&imageYN=Y&_type=json`
     );
     const data = await res.json();
     const items = data.response.body.items.item ?? [];
@@ -25,8 +27,10 @@ export const fetchNearbyPlaces = async (
   serviceKey: string
 ) => {
   try {
+    const baseUrl = process.env.REACT_APP_BASE_URL;
     const res = await fetch(
-      `https://apis.data.go.kr/B551011/KorService2/locationBasedList2?serviceKey=${serviceKey}&numOfRows=30&pageNo=1&MobileOS=ETC&MobileApp=숨은나라찾기&_type=json&mapX=${longitude}&mapY=${latitude}&arrange=C&radius=20000`
+      //`https://apis.data.go.kr/B551011/KorService2/locationBasedList2?serviceKey=${serviceKey}&numOfRows=30&pageNo=1&MobileOS=ETC&MobileApp=숨은나라찾기&_type=json&mapX=${longitude}&mapY=${latitude}&arrange=C&radius=20000`
+      `${baseUrl}/api/tour/location?serviceKey=${serviceKey}&numOfRows=30&pageNo=1&MobileOS=ETC&MobileApp=숨은나라찾기&_type=json&mapX=${longitude}&mapY=${latitude}&arrange=C&radius=20000`
     );
     const data = await res.json();
     const items = data?.response?.body?.items?.item ?? [];
