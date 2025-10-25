@@ -19,7 +19,7 @@ const TravelCourseCard: React.FC<CardItemProps> = ({
   return (
     <Card
       onClick={() =>
-        navigate("detail", {
+        navigate("/route/detail", {
           state: {
             courseId,
           },
@@ -52,6 +52,13 @@ const Card = styled.div`
   margin-bottom: 15px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: relative;
+
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  }
 
   @media (max-width: 500px) {
     width: 170px;
