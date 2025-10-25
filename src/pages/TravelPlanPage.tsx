@@ -115,7 +115,7 @@ const TravelPlanPage: React.FC = () => {
   // 관광지 조회
   const handleSearch = async () => {
     try {
-      setSelectedPlaces([]);
+      //setSelectedPlaces([]);
 
       const area = region === "ALL" ? [] : [region];
 
@@ -425,7 +425,7 @@ const SmallTitle = styled.div`
   color: ${({ theme }) => theme.color.gray800};
 
   @media (max-width: 768px) {
-    ${({ theme }) => theme.font.xl.bold}; /* 작은 화면에서는 폰트 축소 */
+    ${({ theme }) => theme.font.xl.bold};
   }
 
   @media (max-width: 480px) {
@@ -581,6 +581,10 @@ const Button = styled.button`
   &:hover {
     background: ${({ theme }) => theme.color.primary600};
     transform: translateY(-1px);
+  }
+
+  @media (max-width: 780px) {
+    padding: 8px 10px;
   }
 `;
 

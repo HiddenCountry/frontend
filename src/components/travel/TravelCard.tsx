@@ -90,7 +90,7 @@ const CardImageBox = styled.div`
   overflow: hidden;
 
   @media (max-width: 780px) {
-    flex: 0 0 100px;
+    flex: 0 0 95px;
   }
 `;
 
@@ -127,7 +127,7 @@ const CardTitle = styled.div`
   color: ${({ theme }) => theme.color.gray800};
 
   @media (max-width: 780px) {
-    ${({ theme }) => theme.font.xl.bold};
+    ${({ theme }) => theme.font.md.bold};
   }
 `;
 
@@ -135,7 +135,7 @@ const CardSubTitle = styled.div`
   ${({ theme }) => theme.font.md.medium};
   color: ${({ theme }) => theme.color.gray500};
   @media (max-width: 780px) {
-    ${({ theme }) => theme.font.sm.medium};
+    ${({ theme }) => theme.font.xs.medium};
   }
 `;
 
