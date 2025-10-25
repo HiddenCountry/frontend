@@ -2,7 +2,11 @@ import React, { useState, useEffect } from "react";
 import KakaoMapRoute from "./KakaoMapRoute";
 import styled from "styled-components";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getTravelCourseDetail } from "../api/TravelCourse";
+import {
+  deleteTravelCourseDetail,
+  getTravelCourseDetail,
+} from "../api/TravelCourse";
+import { ReactComponent as Logo } from "../assets/layout/Logo.svg";
 
 /* ============ kakao 전역 타입 ============ */
 declare global {
@@ -54,6 +58,7 @@ const TravelRouteDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const courseId = (location.state as any)?.courseId as number;
+  const [loading, setLoading] = useState(false);
 
   const [courseData, setCourseData] = useState<{
     title: string;
@@ -70,7 +75,7 @@ const TravelRouteDetailPage: React.FC = () => {
         const data = res.data;
         setCourseData({
           title: data.title,
-          color: "#0288d1", // 필요하면 API에서 받아오는 컬러 사용
+          color: "#0288d1",
           places: data.places,
         });
       } catch (err) {
@@ -94,7 +99,25 @@ const TravelRouteDetailPage: React.FC = () => {
       },
     });
   };
+
+  const handleDelete = async () => {
+    if (!window.confirm("정말 이 여행 코스를 삭제하시겠습니까?")) return;
+
+    try {
+      setLoading(true);
+      await deleteTravelCourseDetail(courseId);
+      alert("코스 삭제에 성공했습니다.");
+      navigate(-1); // 이전 페이지로 이동
+    } catch (err) {
+      console.error(err);
+      alert("코스 삭제에 실패했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!courseData) return <div>로딩중...</div>;
+
   return (
     <Page>
       {/* 타이틀 */}
@@ -106,6 +129,9 @@ const TravelRouteDetailPage: React.FC = () => {
           {courseData.places.map((item) => (
             <RouteNode key={item.id}>{item.title}</RouteNode>
           ))}
+          <DeleteButton onClick={handleDelete} disabled={loading}>
+            {loading ? "삭제중..." : "삭제"}
+          </DeleteButton>
         </TopRoute>
       </Header>
 
@@ -120,13 +146,17 @@ const TravelRouteDetailPage: React.FC = () => {
                   <PlaceDesc>{item.description}</PlaceDesc>
                 </PlaceInfo>
                 <PlaceImage>
-                  <img
-                    src={
-                      item.firstImage || "https://via.placeholder.com/200x120"
-                    }
-                    alt={item.title}
-                    loading="lazy"
-                  />
+                  {item.firstImage ? (
+                    <img
+                      src={item.firstImage}
+                      alt={item.title}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <FallbackIcon>
+                      <Logo />
+                    </FallbackIcon>
+                  )}
                 </PlaceImage>
               </PlaceCardInner>
             </PlaceCard>
@@ -166,6 +196,31 @@ const Title = styled.h1`
   color: ${({ theme }) => theme.color.primary500};
 `;
 
+const DeleteButton = styled.button`
+  ${({ theme }) => theme.font.sm.medium};
+  background-color: ${({ theme }) => theme.color.gray100};
+  color: ${({ theme }) => theme.color.gray500};
+  padding: 3px 10px;
+  border-radius: 8px;
+  border: 2px solid ${({ theme }) => theme.color.gray500};
+  cursor: pointer;
+  position: absolute;
+  right: 0;
+  bottom: -30px;
+  transition: background 0.2s ease, transform 0.15s ease;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.color.gray300};
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    background-color: ${({ theme }) => theme.color.gray400};
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
 const TopRoute = styled.div`
   position: relative;
   display: flex;
@@ -173,7 +228,8 @@ const TopRoute = styled.div`
   justify-content: center;
   gap: 1.2rem;
   padding: 1rem 0;
-  flex-wrap: wrap; /* 줄바꿈 가능 */
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
 
   @media (max-width: 768px) {
     justify-content: center;
@@ -278,8 +334,13 @@ const PlaceCard = styled.article`
   margin-bottom: 1rem;
   padding: 1rem;
   transition: transform 0.15s ease;
+
   &:hover {
     transform: translateY(-3px);
+  }
+
+  @media (max-width: 500px) {
+    padding: 0.8rem;
   }
 `;
 
@@ -288,6 +349,11 @@ const PlaceCardInner = styled.div`
   align-items: flex-start; /* 위 정렬 */
   justify-content: space-between; /* 좌 텍스트 / 우 이미지 */
   gap: 1rem;
+
+  @media (max-width: 500px) {
+    flex-direction: column; /* 모바일에서는 세로 배치 */
+    align-items: center;
+  }
 `;
 
 const PlaceImage = styled.div`
@@ -296,9 +362,39 @@ const PlaceImage = styled.div`
     height: 120px;
     border-radius: 12px;
     object-fit: cover;
+
+    @media (max-width: 500px) {
+      width: 70%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
   }
 `;
 
+const FallbackIcon = styled.div`
+  background-color: ${({ theme }) => theme.color.gray200};
+  width: 200px;
+  height: 120px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 48px;
+    height: 48px;
+    opacity: 0.8;
+  }
+
+  @media (max-width: 500px) {
+    svg {
+      width: 36px;
+      height: 36px;
+      opacity: 0.8;
+    }
+  }
+`;
 const PlaceInfo = styled.div`
   flex: 1;
   display: flex;
@@ -306,17 +402,30 @@ const PlaceInfo = styled.div`
   align-items: flex-start; /* 왼쪽 정렬 */
   justify-content: flex-start; /* 위쪽 정렬 */
   text-align: left;
+
+  @media (max-width: 500px) {
+    align-items: center; /* 모바일에서는 가운데 정렬 */
+    text-align: center;
+  }
 `;
 
 const PlaceTitle = styled.div`
   ${({ theme }) => theme.font.xl.bold};
   color: ${({ theme }) => theme.color.primary500};
+
+  @media (max-width: 500px) {
+    ${({ theme }) => theme.font.md.bold};
+  }
 `;
 
 const PlaceDesc = styled.p`
   margin: 0.4rem 0 0;
   ${({ theme }) => theme.font.sm.regular};
   color: ${({ theme }) => theme.color.gray700};
+
+  @media (max-width: 500px) {
+    ${({ theme }) => theme.font.xs.regular};
+  }
 `;
 
 const RightPanel = styled.section`
