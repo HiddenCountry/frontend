@@ -81,13 +81,17 @@ const CardWrapper = styled.div<{ selected?: boolean }>`
 `;
 
 const CardImageBox = styled.div`
-  flex: 0 0 150px;
-  aspect-ratio: 1 / 1; /* 정사각형 유지 */
+  flex: 0 0 130px;
+  aspect-ratio: 1 / 1;
   background: ${({ theme }) => theme.color.gray200};
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+
+  @media (max-width: 780px) {
+    flex: 0 0 100px;
+  }
 `;
 
 const Img = styled.div`
@@ -115,7 +119,7 @@ const CardContent = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 100px; /* 내용에 따라 최소 높이 확보 */
+  min-height: 100px;
 `;
 
 const CardTitle = styled.div`

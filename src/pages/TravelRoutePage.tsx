@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import KakaoMapRoute from "./KakaoMapRoute";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import TravelCourseCard from "../components/travel/TravelCourseCard";
 import { getTravelCourse } from "../api/TravelCourse";
+import LoginModal from "../components/common/LoginModal";
+import { ReactComponent as Error } from "../assets/login/LoginError.svg";
 
 /* ============ kakao 전역 타입 ============ */
 declare global {
@@ -210,8 +212,37 @@ const TravelRoutePage: React.FC = () => {
     fetchCourses();
   }, []);
 
+  // 로그인 모달
+  const token = localStorage.getItem("accessToken");
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const handleClick = () => {
+    if (!token) {
+      setShowLoginModal(true);
+      return;
+    }
+    window.location.href = "/route/new";
+  };
+
   return (
     <Page>
+      {/* 로그인 모달 */}
+      {showLoginModal && (
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+          title="로그인이 필요해요!"
+          description={
+            <>
+              대한민국 속 숨겨진 나라를 찾고 싶다면
+              <br />
+              로그인을 해주세요!
+            </>
+          }
+          confirmText="로그인"
+          onConfirm={() => (window.location.href = "/login")}
+        />
+      )}
       {/* 인기코스 제목*/}
       <Top3Header>
         <SmallTitle>코스를 탐색하고, 나만의 루트를 공유하세요</SmallTitle>
@@ -277,13 +308,7 @@ const TravelRoutePage: React.FC = () => {
         </RightPanel>
       </Content>
       <CourseSection>
-        <CourseButton
-          onClick={() => {
-            navigate("/route/plan");
-          }}
-        >
-          코스 등록하기
-        </CourseButton>
+        <CourseButton onClick={handleClick}>코스 등록하기</CourseButton>
         <CourseList>
           {travelCoursesList.length > 0 ? (
             travelCoursesList.map((item) => (
@@ -295,7 +320,13 @@ const TravelRoutePage: React.FC = () => {
               />
             ))
           ) : (
-            <EmptyText>등록된 여행 코스가 없습니다 😢</EmptyText>
+            <EmptyMessage>
+              <Error />
+              <div>아직 등록된 여행 코스가 없습니다. </div>
+              <br />
+              지금 바로 여행 코스를 등록하고, 나만의 여행 루트를 만들어보세요!
+              🗺️
+            </EmptyMessage>
           )}
         </CourseList>
       </CourseSection>
@@ -551,8 +582,13 @@ const PlaceCard = styled.article`
   margin-bottom: 1rem;
   padding: 1rem;
   transition: transform 0.15s ease;
+
   &:hover {
     transform: translateY(-3px);
+  }
+
+  @media (max-width: 500px) {
+    padding: 0.8rem;
   }
 `;
 
@@ -561,6 +597,11 @@ const PlaceCardInner = styled.div`
   align-items: flex-start; /* 위 정렬 */
   justify-content: space-between; /* 좌 텍스트 / 우 이미지 */
   gap: 1rem;
+
+  @media (max-width: 500px) {
+    flex-direction: column; /* 모바일에서는 세로 배치 */
+    align-items: center;
+  }
 `;
 
 const PlaceImage = styled.div`
@@ -569,6 +610,13 @@ const PlaceImage = styled.div`
     height: 120px;
     border-radius: 12px;
     object-fit: cover;
+
+    @media (max-width: 500px) {
+      width: 70%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
   }
 `;
 
@@ -579,17 +627,30 @@ const PlaceInfo = styled.div`
   align-items: flex-start; /* 왼쪽 정렬 */
   justify-content: flex-start; /* 위쪽 정렬 */
   text-align: left;
+
+  @media (max-width: 500px) {
+    align-items: center; /* 모바일에서는 가운데 정렬 */
+    text-align: center;
+  }
 `;
 
 const PlaceTitle = styled.div`
   ${({ theme }) => theme.font.xl.bold};
   color: ${({ theme }) => theme.color.primary500};
+
+  @media (max-width: 500px) {
+    ${({ theme }) => theme.font.md.bold};
+  }
 `;
 
 const PlaceDesc = styled.p`
   margin: 0.4rem 0 0;
   ${({ theme }) => theme.font.sm.regular};
   color: ${({ theme }) => theme.color.gray700};
+
+  @media (max-width: 500px) {
+    ${({ theme }) => theme.font.xs.regular};
+  }
 `;
 
 const RightPanel = styled.section`
@@ -609,8 +670,8 @@ const CourseSection = styled.section`
 `;
 
 const CourseButton = styled.button`
-  ${({ theme }) => theme.font.md.bold};
-  padding: 0.8rem 2rem;
+  ${({ theme }) => theme.font.xxl.semibold};
+  padding: 1rem 3rem;
   border-radius: 10px;
   border: none;
   background: ${({ theme }) => theme.color.primary500};
@@ -630,20 +691,34 @@ const CourseList = styled.div`
   grid-template-columns: repeat(4, 1fr); /* 3열 */
   gap: 1.5rem;
   @media (max-width: 1000px) {
-    grid-template-columns: repeat(3, 1fr); /* 태블릿: 2열 */
+    grid-template-columns: repeat(3, 1fr);
   }
 
   @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr); /* 태블릿: 2열 */
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 1rem;
   }
 
-  @media (max-width: 400px) {
-    grid-template-columns: 1fr; /* 모바일: 1열 */
+  @media (max-width: 350px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 `;
 
-const EmptyText = styled.div`
-  ${({ theme }) => theme.font.md.regular};
-  color: ${({ theme }) => theme.color.gray500};
-  margin-top: 2rem;
+const EmptyMessage = styled.div`
+  ${({ theme }) => theme.font.xl.medium};
+  color: ${({ theme }) => theme.color.gray600};
+  text-align: center;
+  padding: 20px 30px;
+  border: 1px dashed ${({ theme }) => theme.color.gray300};
+  border-radius: 12px;
+  grid-column: 1 / -1; // 전체 그리드 차지
+
+  div {
+    ${({ theme }) => theme.font.xxl.bold};
+    color: ${({ theme }) => theme.color.black};
+
+    margin-top: 15px;
+  }
 `;
