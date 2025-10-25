@@ -285,7 +285,7 @@ const Plane = styled.div`
   position: absolute;
   top: calc(50% - 12px);
   left: 5%;
-  font-size: 2rem;
+  font-size: 1.5rem;
   animation: fly 10s linear infinite;
   z-index: 3;
 
