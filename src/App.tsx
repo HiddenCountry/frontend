@@ -25,13 +25,22 @@ import ChatPage from "./pages/ChatPage";
 import TravelPlanPage from "./pages/TravelPlanPage";
 import TravelRouteDetailPage from "./pages/TravelRouteDetailPage";
 import { ReactComponent as ChatButton } from "./assets/layout/ChatButton.svg";
+import LoginModal from "./components/common/LoginModal";
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const hideFooter = location.pathname === "/chat"; // 채팅화면에서는 푸터X
   const hideChatButton = location.pathname === "/chat"; // 채팅화면에서는 버튼X
 
+  // 로그인 모달
+  const token = localStorage.getItem("accessToken");
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
   const handleClick = () => {
+    if (!token) {
+      setShowLoginModal(true);
+      return;
+    }
     window.location.href = "/chat";
   };
 
@@ -46,11 +55,28 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <ChatButton />
         </FloatingButton>
       )}
+
+      {/* 로그인 모달 */}
+      {showLoginModal && (
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+          title="로그인이 필요해요!"
+          description={
+            <>
+              대한민국 속 숨겨진 나라를 찾고 싶다면
+              <br />
+              로그인을 해주세요!
+            </>
+          }
+          confirmText="로그인"
+          onConfirm={() => (window.location.href = "/login")}
+        />
+      )}
     </>
   );
 };
 
-// 스타일
 const FloatingButton = styled.button`
   position: fixed;
   bottom: 30px;
@@ -152,7 +178,7 @@ function App() {
             <Route path="/map" element={<MapPage />} />
             <Route path="/route" element={<TravelRoutePage />} />
             <Route path="/route/detail" element={<TravelRouteDetailPage />} />
-            <Route path="/route/plan" element={<TravelPlanPage />} />
+            <Route path="/route/new" element={<TravelPlanPage />} />
             <Route path="/chat" element={<ChatPage />} />
           </Routes>
         </AppLayout>

@@ -16,7 +16,7 @@ interface Message {
   role: Role;
   content: string;
   time?: string;
-  relevantDocuments?: RelevantDocument[]; // ✅ 관련 여행지
+  relevantDocuments?: RelevantDocument[]; // 관련 여행지
 }
 
 interface Conversation {
@@ -330,6 +330,10 @@ const Avatar = styled.div<{ $role: Role }>`
     $role === "user" ? theme.color.white : theme.color.black};
   background: ${({ $role, theme }) =>
     $role === "user" ? "transparent" : theme.color.primary50};
+
+  svg {
+    width: 25px;
+  }
 `;
 
 const Bubble = styled.div<{ $role: Role }>`
@@ -343,6 +347,18 @@ const Bubble = styled.div<{ $role: Role }>`
   color: ${({ $role }) => ($role === "user" ? "white" : "inherit")};
   line-height: 1.6;
   box-shadow: 0 1px 3px ${({ theme }) => theme.color.primary500};
+
+  /* ===== 새 메시지 등장 애니메이션 ===== */
+  animation: slideUpFade 0.3s ease forwards;
+  transform: translateY(10px);
+  opacity: 0;
+
+  @keyframes slideUpFade {
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
 `;
 
 const Time = styled.div`
@@ -420,7 +436,7 @@ const LoadingDots = styled.div`
   }
 `;
 
-/* ✅ 관련 여행지 카드 스타일 */
+/* 관련 여행지 카드 스타일 */
 const DocumentGrid = styled.div`
   margin-top: 12px;
   display: grid;

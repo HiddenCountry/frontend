@@ -115,7 +115,7 @@ const TravelPlanPage: React.FC = () => {
   // 관광지 조회
   const handleSearch = async () => {
     try {
-      setSelectedPlaces([]);
+      //setSelectedPlaces([]);
 
       const area = region === "ALL" ? [] : [region];
 
@@ -281,43 +281,53 @@ const TravelPlanPage: React.FC = () => {
 
   return (
     <Container>
+      <TitleHeader>
+        <SmallTitle>마음이 향하는 곳을 따라 나만의 길을 그려보세요</SmallTitle>
+        <BigTitle>나만의 여행 코스 만들기</BigTitle>
+      </TitleHeader>
+
       <TopContainer>
         <Sidebar>
-          <Title>여행 코스 만들기</Title>
-
           <CourseSaveBox>
-            <input
+            <Label htmlFor="courseName">코스 이름</Label>
+            <Input
+              id="courseName"
               type="text"
               placeholder="코스 이름을 입력하세요"
               value={courseName}
               onChange={(e) => setCourseName(e.target.value)}
             />
-            <SaveButton onClick={handleSaveCourse}>코스 등록하기</SaveButton>
           </CourseSaveBox>
 
           <Controls>
-            <Select
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-            >
-              <option value="">대륙 선택</option>
-              {CONTINENTS.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </Select>
+            <Label htmlFor="courseName">코스 선택</Label>
+            <SelectRow>
+              <Select
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+              >
+                <option value="">대륙 선택</option>
+                {CONTINENTS.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </Select>
 
-            <Select value={region} onChange={(e) => setRegion(e.target.value)}>
-              <option value="">지역 선택</option>
-              {AREA_OPTIONS.map((r) => (
-                <option key={r.value} value={r.value}>
-                  {r.label}
-                </option>
-              ))}
-            </Select>
+              <Select
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+              >
+                <option value="">지역 선택</option>
+                {AREA_OPTIONS.map((r) => (
+                  <option key={r.value} value={r.value}>
+                    {r.label}
+                  </option>
+                ))}
+              </Select>
 
-            <Button onClick={handleSearch}>조회</Button>
+              <Button onClick={handleSearch}>조회</Button>
+            </SelectRow>
           </Controls>
 
           <Places>
@@ -337,6 +347,7 @@ const TravelPlanPage: React.FC = () => {
               />
             ))}
           </Places>
+          <SaveButton onClick={handleSaveCourse}>코스 등록하기</SaveButton>
         </Sidebar>
         <MapContainer>
           <MapBox ref={mapRef} />
@@ -394,61 +405,187 @@ export default TravelPlanPage;
 
 const Container = styled.div`
   display: flex;
-  gap: 20px;
-  padding: 20px 15%;
   flex-direction: column;
+  gap: 32px;
+  padding: 40px 12%;
+  background: ${({ theme }) => theme.color.gray50};
+  min-height: 100vh;
 
-  @media (max-width: 768px) {
-    flex-direction: column;
-    padding: 20px;
+  @media (max-width: 1024px) {
+    padding: 24px;
   }
 `;
+
+const TitleHeader = styled.header``;
+
+const SmallTitle = styled.div`
+  ${({ theme }) => theme.font.xxxl.bold};
+  margin-top: 10px;
+  text-align: center;
+  color: ${({ theme }) => theme.color.gray800};
+
+  @media (max-width: 768px) {
+    ${({ theme }) => theme.font.xl.bold};
+  }
+
+  @media (max-width: 480px) {
+    ${({ theme }) => theme.font.md.bold};
+  }
+`;
+
+const BigTitle = styled.div`
+  ${({ theme }) => theme.font.xxxl.bold};
+  font-size: 50px;
+  margin: 10px 0 25px 0;
+  text-align: center;
+  color: ${({ theme }) => theme.color.gray800};
+
+  @media (max-width: 1024px) {
+    font-size: 40px;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 32px;
+    margin: 8px 0 0px 0;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 26px;
+  }
+`;
+
 const TopContainer = styled.div`
   display: flex;
-  gap: 20px;
+  gap: 24px;
 
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
     flex-direction: column;
   }
 `;
-const Title = styled.div`
-  ${({ theme }) => theme.font.xxxl.bold};
-  color: ${({ theme }) => theme.color.gray900};
-`;
+
 const Sidebar = styled.div`
-  width: 33%;
-  max-height: 70vh;
+  flex: 1;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  max-height: 75vh;
+  overflow: hidden;
 
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
     width: 100%;
   }
 `;
 
 const MapContainer = styled.div`
-  width: 67%;
-  height: 70vh;
-  border: 1px solid #ccc;
-  position: relative;
-
-  @media (max-width: 768px) {
-    width: 100%;
-    height: 60vh;
-  }
+  flex: 2;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 `;
 
 const MapBox = styled.div`
   width: 100%;
-  height: 100%;
+  height: 70vh;
+  border-radius: 16px;
+
+  @media (max-width: 900px) {
+    height: 60vh;
+  }
+`;
+
+const CourseSaveBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; // label과 input 간 간격
+  width: 100%;
+  max-width: 400px;
+  margin: 1rem auto;
+`;
+
+const Label = styled.label`
+  ${({ theme }) => theme.font.md.semibold};
+  color: ${({ theme }) => theme.color.gray800};
+`;
+
+const Input = styled.input`
+  padding: 0.8rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.color.primary500};
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+  }
+
+  &::placeholder {
+    color: #ccc;
+  }
+`;
+
+const SaveButton = styled.button`
+  ${({ theme }) => theme.font.xl.semibold};
+  padding: 0.8rem 1rem;
+  background: ${({ theme }) => theme.color.primary500};
+  color: white;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+
+  &:hover {
+    background: ${({ theme }) => theme.color.primary600};
+    transform: translateY(-1px);
+  }
 `;
 
 const Controls = styled.div`
   display: flex;
+  flex-direction: column;
   gap: 10px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+  margin-bottom: 8px;
+`;
+const SelectRow = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+`;
+const Select = styled.select`
+  width: 100px;
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: white;
+  font-size: 14px;
+  cursor: pointer;
+`;
+
+const Button = styled.button`
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: ${({ theme }) => theme.color.primary500};
+  color: white;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+
+  &:hover {
+    background: ${({ theme }) => theme.color.primary600};
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 780px) {
+    padding: 8px 10px;
+  }
 `;
 
 const Places = styled.div`
@@ -457,71 +594,30 @@ const Places = styled.div`
   gap: 10px;
   flex: 1;
   overflow-y: auto;
-  max-height: 500px;
+  padding-right: 8px;
+  -webkit-overflow-scrolling: touch;
 
-  @media (max-width: 768px) {
-    max-height: 300px;
+  /* 스크롤바 커스텀 */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: ${({ theme }) => theme.color.gray300};
+    border-radius: 4px;
   }
 `;
 
-const Select = styled.select`
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-`;
-
-const Button = styled.button`
-  padding: 8px 16px;
-  border-radius: 6px;
-  background: #0077ff;
-  color: white;
-  cursor: pointer;
-  &:hover {
-    background: #005fcc;
-  }
-`;
-
-const SelectedList = styled.div`
-  margin-top: 10px;
-`;
-
-const SelectedItem = styled.div`
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 10px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  margin: 5px 0;
-`;
-
-const RemoveBtn = styled.button`
-  border: none;
-  background: transparent;
-  cursor: pointer;
-`;
-
-const DistanceInfo = styled.div`
-  margin-top: 15px;
-  font-weight: bold;
-  color: #333;
-`;
-
-const TotalDistance = styled.div`
-  margin-top: 10px;
-  color: #d9534f;
-`;
 const BottomContainer = styled.div`
   display: flex;
   gap: 20px;
   width: 100%;
-  padding: 20px;
-  background: #f9f9f9;
-  border-radius: 8px;
-  min-height: 250px; /* 최소 높이 추가 */
+  padding: 24px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
     flex-direction: column;
-    min-height: auto;
   }
 `;
 
@@ -529,34 +625,54 @@ const BottomColumn = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  overflow-y: auto;
-  //max-height: 300px;
+  gap: 16px;
 `;
 
-const CourseSaveBox = styled.div`
+const SelectedList = styled.div`
+  h3 {
+    margin-bottom: 8px;
+    ${({ theme }) => theme.font.xl.bold};
+    color: ${({ theme }) => theme.color.gray900};
+  }
+`;
+
+const SelectedItem = styled.div`
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
+  justify-content: space-between;
+  padding: 8px 12px;
+  margin: 5px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  background: ${({ theme }) => theme.color.gray50};
+  transition: 0.2s;
 
-  input {
-    flex: 1;
-    padding: 10px 12px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+  &:hover {
+    background: ${({ theme }) => theme.color.gray100};
   }
 `;
 
-const SaveButton = styled.button`
-  padding: 10px 16px;
-  background: ${({ theme }) => theme.color.primary500 || "#0077ff"};
-  color: white;
-  border-radius: 6px;
+const RemoveBtn = styled.button`
   border: none;
+  background: transparent;
   cursor: pointer;
-  font-weight: bold;
-  &:hover {
-    background: ${({ theme }) => theme.color.primary600 || "#005fcc"};
+  font-size: 16px;
+`;
+
+const DistanceInfo = styled.div`
+  h3 {
+    margin-bottom: 8px;
+    ${({ theme }) => theme.font.xl.bold};
+    color: ${({ theme }) => theme.color.gray900};
   }
+
+  div {
+    ${({ theme }) => theme.font.md.semibold};
+    color: ${({ theme }) => theme.color.gray700};
+  }
+`;
+
+const TotalDistance = styled.div`
+  margin-top: 10px;
+  ${({ theme }) => theme.font.md.semibold};
+  color: ${({ theme }) => theme.color.primary600};
 `;
