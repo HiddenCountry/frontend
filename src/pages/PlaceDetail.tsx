@@ -547,21 +547,29 @@ const PlaceDetail: React.FC = () => {
                 </ArrowButton>
 
                 <NearCardBox ref={nearCardRef}>
-                  {filteredPlaces.map((place, idx) => (
-                    <NearCard
-                      key={idx}
-                      title={place.title}
-                      addr1={place.addr1}
-                      contentid={place.contentid}
-                      contenttypeid={place.contenttypeid}
-                      dist={place.dist}
-                      firstimage={place.firstimage}
-                      latitude={latitude}
-                      longitude={longitude}
-                      title2={placeDetail?.title}
-                      addr2={placeDetail?.address}
-                    />
-                  ))}
+                  {filteredPlaces.length === 0 ? (
+                    <NoNearPlaceMessage>
+                      선택한 카테고리의
+                      <br />
+                      인근 관광지가 없습니다.
+                    </NoNearPlaceMessage>
+                  ) : (
+                    filteredPlaces.map((place, idx) => (
+                      <NearCard
+                        key={idx}
+                        title={place.title}
+                        addr1={place.addr1}
+                        contentid={place.contentid}
+                        contenttypeid={place.contenttypeid}
+                        dist={place.dist}
+                        firstimage={place.firstimage}
+                        latitude={latitude}
+                        longitude={longitude}
+                        title2={placeDetail?.title}
+                        addr2={placeDetail?.address}
+                      />
+                    ))
+                  )}
                 </NearCardBox>
 
                 <ArrowButton
@@ -1054,6 +1062,23 @@ const NearCardBox = styled.div`
     background: #f5f5f5;
   }
 `;
+const NoNearPlaceMessage = styled.div`
+  flex: 1 0 100%; /* 부모 flex에 맞춤 */
+  width: 600px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  color: ${({ theme }) => theme.color.gray800};
+  ${({ theme }) => theme.font.xl.semibold};
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.md.semibold};
+  }
+`;
+
 const ReviewHeader = styled.div`
   display: flex;
 `;
