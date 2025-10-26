@@ -64,6 +64,7 @@ const TravelRouteDetailPage: React.FC = () => {
     title: string;
     color: string;
     places: any[];
+    isMine: boolean;
   } | null>(null);
 
   useEffect(() => {
@@ -77,6 +78,7 @@ const TravelRouteDetailPage: React.FC = () => {
           title: data.title,
           color: "#0288d1",
           places: data.places,
+          isMine: data.isMine,
         });
       } catch (err) {
         console.error("코스 상세 불러오기 실패:", err);
@@ -125,13 +127,15 @@ const TravelRouteDetailPage: React.FC = () => {
         <Title>{courseData.title}</Title>
         <TopRoute>
           <RouteLine $gradEnd={courseData.color} />
-          <Plane>✈️</Plane>
+          {/* <Plane>✈️</Plane> */}
           {courseData.places.map((item) => (
             <RouteNode key={item.id}>{item.title}</RouteNode>
           ))}
-          <DeleteButton onClick={handleDelete} disabled={loading}>
-            {loading ? "삭제중..." : "삭제"}
-          </DeleteButton>
+          {courseData.isMine && (
+            <DeleteButton onClick={handleDelete} disabled={loading}>
+              {loading ? "삭제중..." : "삭제"}
+            </DeleteButton>
+          )}
         </TopRoute>
       </Header>
 
@@ -142,8 +146,19 @@ const TravelRouteDetailPage: React.FC = () => {
             <PlaceCard key={item.id}>
               <PlaceCardInner onClick={() => goDetail(item)}>
                 <PlaceInfo>
-                  <PlaceTitle>{item.title}</PlaceTitle>
-                  <PlaceDesc>{item.description}</PlaceDesc>
+                  {/* <PlaceTitle>{item.title}</PlaceTitle> */}
+                    <TitleRow>
+                      <PlaceTitle>{item.title}</PlaceTitle>
+                      <Chip>{item.contentTypeKoreanName}</Chip>
+                    </TitleRow>
+                  {/* <PlaceDesc>{item.description}</PlaceDesc> */}
+                  <PlaceDesc>{item.addr1}</PlaceDesc>
+                  {/* {item?.countryRegionKoreanNames?.map(
+              (name: string, idx: number) => (
+                <Chip key={idx}>{name}</Chip>
+              )
+            )} */}
+            {/* <Chip>{item.contentTypeKoreanName}</Chip> */}
                 </PlaceInfo>
                 <PlaceImage>
                   {item.firstImage ? (
@@ -158,6 +173,7 @@ const TravelRouteDetailPage: React.FC = () => {
                     </FallbackIcon>
                   )}
                 </PlaceImage>
+
               </PlaceCardInner>
             </PlaceCard>
           ))}
@@ -198,11 +214,11 @@ const Title = styled.h1`
 
 const DeleteButton = styled.button`
   ${({ theme }) => theme.font.sm.medium};
-  background-color: ${({ theme }) => theme.color.gray100};
-  color: ${({ theme }) => theme.color.gray500};
+  background-color: ${({ theme }) => theme.color.white};
+  color: ${({ theme }) => theme.color.gray700};
   padding: 3px 10px;
   border-radius: 8px;
-  border: 2px solid ${({ theme }) => theme.color.gray500};
+  border: 1px solid ${({ theme }) => theme.color.gray200};
   cursor: pointer;
   position: absolute;
   right: 0;
@@ -433,4 +449,25 @@ const RightPanel = styled.section`
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+`;
+
+const Chip = styled.div`
+  display: inline-block;
+  ${({ theme }) => theme.font.sm.bold};
+  color: ${({ theme }) => theme.color.primary500};
+  background-color: #e3f2fd80;
+  padding: 4px 8px;
+  border-radius: 20px;
+  margin: 0 3px;
+  margin-bottom: 8px;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.sm.semibold};
+  }
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px; /* 제목과 칩 사이 간격 */
 `;

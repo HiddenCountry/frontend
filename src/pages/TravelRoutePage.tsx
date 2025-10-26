@@ -245,8 +245,8 @@ const TravelRoutePage: React.FC = () => {
       )}
       {/* 인기코스 제목*/}
       <Top3Header>
-        <SmallTitle>코스를 탐색하고, 나만의 루트를 공유하세요</SmallTitle>
-        <BigTitle>인기 코스 TOP 3</BigTitle>
+        <SmallTitle>숨은나라 추천 코스를 따라 전 세계를 경험해보세요.</SmallTitle>
+        <BigTitle>숨은나라 추천 코스 TOP 3</BigTitle>
       </Top3Header>
 
       {/* 메뉴 */}
@@ -349,14 +349,14 @@ const SmallTitle = styled.div`
   ${({ theme }) => theme.font.xxxl.bold};
   margin-top: 10px;
   text-align: center;
-  color: ${({ theme }) => theme.color.gray800};
+  color: ${({ theme }) => theme.color.gray600};
 
   @media (max-width: 768px) {
-    ${({ theme }) => theme.font.xl.bold}; /* 작은 화면에서는 폰트 축소 */
+    ${({ theme }) => theme.font.md.semibold}; /* 작은 화면에서는 폰트 축소 */
   }
 
   @media (max-width: 480px) {
-    ${({ theme }) => theme.font.md.bold};
+    ${({ theme }) => theme.font.sm.semibold};
   }
 `;
 
