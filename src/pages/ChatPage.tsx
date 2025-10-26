@@ -29,7 +29,7 @@ const ChatPage: React.FC = () => {
   const [conversations, setConversations] = useState<Conversation[]>([
     {
       id: "conv-1",
-      title: "AI 여행 가이드",
+      title: "AI 여행 도우미",
       messages: [
         {
           id: "m1",
