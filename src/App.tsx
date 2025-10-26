@@ -27,21 +27,14 @@ import TravelRouteDetailPage from "./pages/TravelRouteDetailPage";
 import { ReactComponent as ChatButton } from "./assets/layout/ChatButton.svg";
 import LoginModal from "./components/common/LoginModal";
 import Intro from "./pages/Intro";
+import PolicyPage from "./pages/PolicyPage";
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const hideFooter = location.pathname === "/chat"; // 채팅화면에서는 푸터X
   const hideChatButton = location.pathname === "/chat"; // 채팅화면에서는 버튼X
 
-  // 로그인 모달
-  const token = localStorage.getItem("accessToken");
-  const [showLoginModal, setShowLoginModal] = useState(false);
-
   const handleClick = () => {
-    if (!token) {
-      setShowLoginModal(true);
-      return;
-    }
     window.location.href = "/chat";
   };
 
@@ -55,24 +48,6 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <FloatingButton onClick={handleClick}>
           <ChatButton />
         </FloatingButton>
-      )}
-
-      {/* 로그인 모달 */}
-      {showLoginModal && (
-        <LoginModal
-          isOpen={showLoginModal}
-          onClose={() => setShowLoginModal(false)}
-          title="로그인이 필요해요!"
-          description={
-            <>
-              대한민국 속 숨겨진 나라를 찾고 싶다면
-              <br />
-              로그인을 해주세요!
-            </>
-          }
-          confirmText="로그인"
-          onConfirm={() => (window.location.href = "/login")}
-        />
       )}
     </>
   );
@@ -182,6 +157,7 @@ function App() {
             <Route path="/route/detail" element={<TravelRouteDetailPage />} />
             <Route path="/route/new" element={<TravelPlanPage />} />
             <Route path="/chat" element={<ChatPage />} />
+            <Route path="/policy" element={<PolicyPage />} />
           </Routes>
         </AppLayout>
       </BrowserRouter>

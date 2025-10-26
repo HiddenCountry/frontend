@@ -64,6 +64,7 @@ const TravelRouteDetailPage: React.FC = () => {
     title: string;
     color: string;
     places: any[];
+    isMine: boolean;
   } | null>(null);
 
   useEffect(() => {
@@ -77,6 +78,7 @@ const TravelRouteDetailPage: React.FC = () => {
           title: data.title,
           color: "#0288d1",
           places: data.places,
+          isMine: data.isMine,
         });
       } catch (err) {
         console.error("코스 상세 불러오기 실패:", err);
@@ -129,9 +131,11 @@ const TravelRouteDetailPage: React.FC = () => {
           {courseData.places.map((item) => (
             <RouteNode key={item.id}>{item.title}</RouteNode>
           ))}
-          <DeleteButton onClick={handleDelete} disabled={loading}>
-            {loading ? "삭제중..." : "삭제"}
-          </DeleteButton>
+          {courseData.isMine && (
+            <DeleteButton onClick={handleDelete} disabled={loading}>
+              {loading ? "삭제중..." : "삭제"}
+            </DeleteButton>
+          )}
         </TopRoute>
       </Header>
 
@@ -210,11 +214,11 @@ const Title = styled.h1`
 
 const DeleteButton = styled.button`
   ${({ theme }) => theme.font.sm.medium};
-  background-color: ${({ theme }) => theme.color.gray100};
-  color: ${({ theme }) => theme.color.gray500};
+  background-color: ${({ theme }) => theme.color.white};
+  color: ${({ theme }) => theme.color.gray700};
   padding: 3px 10px;
   border-radius: 8px;
-  border: 2px solid ${({ theme }) => theme.color.gray500};
+  border: 1px solid ${({ theme }) => theme.color.gray200};
   cursor: pointer;
   position: absolute;
   right: 0;

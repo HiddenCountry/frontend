@@ -23,9 +23,15 @@ const Footer: React.FC = () => {
           <Nav>
             <a href="/intro">숨은나라찾기 서비스 소개</a>
             <span>|</span>
-            <a href="https://pie-lyre-15d.notion.site/2985d0b5eabe80b9a63ce953ba1c3e3f">이용규칙</a>
+            <a href="/policy">이용약관</a>
             <span>|</span>
-            <a href="mailto:hiddencountrypilot@gmail.com">광고/제휴/사업 제안</a>
+            <a
+              href="https://mail.google.com/mail/?view=cm&to=hiddencountrypilot@gmail.com&su=광고·제휴·사업 제안 문의&body=안녕하세요.%0A숨은나라찾기 팀에게 제안드립니다."
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              광고/제휴/사업 제안
+            </a>
           </Nav>
           <Copy>
             Copyright © 2025 HIDDENCOUNTRY Inc. All Rights Reserved
@@ -34,12 +40,13 @@ const Footer: React.FC = () => {
           </Copy>
         </LeftSection>
 
-        {/* 오른쪽 SNS 아이콘 영역 */}
+        {/*//오른쪽 SNS 아이콘 영역}
         <RightSection>
           <IconLink href="https://github.com/HiddenCountry" target="_blank">
             <GithubIcon />
           </IconLink>
         </RightSection>
+        */}
       </FooterContent>
     </FooterWrapper>
   );

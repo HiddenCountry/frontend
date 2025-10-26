@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { ReactComponent as NavLogo } from "../../assets/layout/Logo.svg";
@@ -30,6 +30,8 @@ const Navbar: React.FC<NavbarProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
+  const modalShownRef = useRef(false);
+
   const menuItems = [
     { name: "홈", path: "/" },
     { name: "소개", path: "/intro" },
@@ -47,7 +49,9 @@ const Navbar: React.FC<NavbarProps> = ({
 
       try {
         const res = await getUserInfo();
-        if (res.code === "COMMON403") {
+        if (res.code === "COMMON403" && !modalShownRef.current) {
+          modalShownRef.current = true;
+          if (onLogout) onLogout();
           setShowLoginModal(true);
         }
       } catch (err) {
@@ -55,7 +59,7 @@ const Navbar: React.FC<NavbarProps> = ({
       }
     };
     checkSession();
-  }, [location.pathname, isLoggedIn]);
+  }, [location.pathname, isLoggedIn, onLogout]);
 
   const handleLogout = () => {
     if (onLogout) onLogout();
