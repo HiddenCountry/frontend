@@ -127,7 +127,7 @@ const TravelRouteDetailPage: React.FC = () => {
         <Title>{courseData.title}</Title>
         <TopRoute>
           <RouteLine $gradEnd={courseData.color} />
-          <Plane>✈️</Plane>
+          {/* <Plane>✈️</Plane> */}
           {courseData.places.map((item) => (
             <RouteNode key={item.id}>{item.title}</RouteNode>
           ))}
@@ -146,8 +146,19 @@ const TravelRouteDetailPage: React.FC = () => {
             <PlaceCard key={item.id}>
               <PlaceCardInner onClick={() => goDetail(item)}>
                 <PlaceInfo>
-                  <PlaceTitle>{item.title}</PlaceTitle>
-                  <PlaceDesc>{item.description}</PlaceDesc>
+                  {/* <PlaceTitle>{item.title}</PlaceTitle> */}
+                    <TitleRow>
+                      <PlaceTitle>{item.title}</PlaceTitle>
+                      <Chip>{item.contentTypeKoreanName}</Chip>
+                    </TitleRow>
+                  {/* <PlaceDesc>{item.description}</PlaceDesc> */}
+                  <PlaceDesc>{item.addr1}</PlaceDesc>
+                  {/* {item?.countryRegionKoreanNames?.map(
+              (name: string, idx: number) => (
+                <Chip key={idx}>{name}</Chip>
+              )
+            )} */}
+            {/* <Chip>{item.contentTypeKoreanName}</Chip> */}
                 </PlaceInfo>
                 <PlaceImage>
                   {item.firstImage ? (
@@ -162,6 +173,7 @@ const TravelRouteDetailPage: React.FC = () => {
                     </FallbackIcon>
                   )}
                 </PlaceImage>
+
               </PlaceCardInner>
             </PlaceCard>
           ))}
@@ -437,4 +449,25 @@ const RightPanel = styled.section`
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+`;
+
+const Chip = styled.div`
+  display: inline-block;
+  ${({ theme }) => theme.font.sm.bold};
+  color: ${({ theme }) => theme.color.primary500};
+  background-color: #e3f2fd80;
+  padding: 4px 8px;
+  border-radius: 20px;
+  margin: 0 3px;
+  margin-bottom: 8px;
+
+  @media (max-width: 780px) {
+    ${({ theme }) => theme.font.sm.semibold};
+  }
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px; /* 제목과 칩 사이 간격 */
 `;
