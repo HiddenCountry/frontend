@@ -905,71 +905,7 @@ const Intro: React.FC = () => {
     font-weight: 700;
   }
 
-  /* 반응형 시작 */
-  @media (max-width: 1024px) {
-    h2 {
-      font-size: 1.9rem;
-    }
-    p {
-      font-size: 1.1rem;
-    }
-    .feature-row {
-      gap: 20px;
-    }
-  }
-
-  @media (max-width: 768px) {
-    section {
-      max-width: 100%;
-      margin: 40px auto;
-      padding: 0 16px;
-    }
-
-    h2 {
-      font-size: 1.8rem;
-      line-height: 2.2rem;
-    }
-    p {
-      font-size: 1rem;
-      line-height: 1.6rem;
-    }
-
-    .image-container {
-      height: 220px;
-      border-radius: 12px;
-    }
-
-    .feature-row, .feature-row.reverse {
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .feature-image {
-      width: 100%;
-      border-radius: 12px;
-    }
-
-    .card {
-      padding: 1rem;
-      font-size: 0.9rem;
-    }
-
-    .community-cards {
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .community-card {
-      width: 100%;
-      max-width: 100%;
-      font-size: 1rem;
-    }
-
-    button {
-      width: 80%;
-      font-size: 1rem;
-      padding: 0.8rem 1.5rem;
-    }
+ 
   }
 
   @media (max-width: 480px) {
