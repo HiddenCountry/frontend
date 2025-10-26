@@ -146,11 +146,12 @@ const TravelRouteDetailPage: React.FC = () => {
             <PlaceCard key={item.id}>
               <PlaceCardInner onClick={() => goDetail(item)}>
                 <PlaceInfo>
+                  <Chip>{item.contentTypeKoreanName}</Chip>
                   {/* <PlaceTitle>{item.title}</PlaceTitle> */}
-                    <TitleRow>
-                      <PlaceTitle>{item.title}</PlaceTitle>
-                      <Chip>{item.contentTypeKoreanName}</Chip>
-                    </TitleRow>
+                  <TitleRow>
+                    <PlaceTitle>{item.title}</PlaceTitle>
+                    {/*<Chip>{item.contentTypeKoreanName}</Chip>*/}
+                  </TitleRow>
                   {/* <PlaceDesc>{item.description}</PlaceDesc> */}
                   <PlaceDesc>{item.addr1}</PlaceDesc>
                   {/* {item?.countryRegionKoreanNames?.map(
@@ -158,7 +159,6 @@ const TravelRouteDetailPage: React.FC = () => {
                 <Chip key={idx}>{name}</Chip>
               )
             )} */}
-            {/* <Chip>{item.contentTypeKoreanName}</Chip> */}
                 </PlaceInfo>
                 <PlaceImage>
                   {item.firstImage ? (
@@ -173,7 +173,6 @@ const TravelRouteDetailPage: React.FC = () => {
                     </FallbackIcon>
                   )}
                 </PlaceImage>
-
               </PlaceCardInner>
             </PlaceCard>
           ))}
@@ -453,16 +452,15 @@ const RightPanel = styled.section`
 
 const Chip = styled.div`
   display: inline-block;
-  ${({ theme }) => theme.font.sm.bold};
+  ${({ theme }) => theme.font.xs.bold};
   color: ${({ theme }) => theme.color.primary500};
   background-color: #e3f2fd80;
   padding: 4px 8px;
   border-radius: 20px;
-  margin: 0 3px;
   margin-bottom: 8px;
 
   @media (max-width: 780px) {
-    ${({ theme }) => theme.font.sm.semibold};
+    ${({ theme }) => theme.font.xs.semibold};
   }
 `;
 
