@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { ReactComponent as AILogo } from "../assets/layout/Logo.svg";
-import { postChatQuery } from "../api/Chat";
+import { getChatSession, postChatQuery } from "../api/Chat";
 
 type Role = "user" | "assistant" | "system";
 
@@ -52,6 +52,25 @@ const ChatPage: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
+  // 세션 초기화
+  useEffect(() => {
+    const initSession = async () => {
+      let sessionId = localStorage.getItem("chatSessionId");
+      if (!sessionId) {
+        try {
+          const res = await getChatSession();
+          sessionId = res.data; // string
+          localStorage.setItem("chatSessionId", sessionId!);
+        } catch (err) {
+          console.error("세션 발급 실패:", err);
+          setIsSending(false);
+          return; // 세션 없으면 더 이상 진행 X
+        }
+      }
+    };
+    initSession();
+  }, []);
+
   // active 대화 보정
   useEffect(() => {
     if (
@@ -83,6 +102,23 @@ const ChatPage: React.FC = () => {
     if (!text) return;
     setIsSending(true);
 
+    // 1️⃣ 세션 가져오기
+    let sessionId = localStorage.getItem("chatSessionId");
+
+    if (!sessionId) {
+      try {
+        const res = await getChatSession();
+        sessionId = res.data; // 세션 문자열
+        localStorage.setItem("chatSessionId", sessionId!);
+        console.log("새 세션 발급:", sessionId);
+      } catch (err) {
+        console.error("세션 발급 실패:", err);
+        setIsSending(false);
+        return; // 세션 없으면 더 이상 진행 X
+      }
+    }
+
+    // 2️⃣ 사용자 메시지 추가
     const userMsg: Message = {
       id: `u-${Date.now()}`,
       role: "user",
@@ -90,9 +126,9 @@ const ChatPage: React.FC = () => {
       time: new Date().toLocaleTimeString(),
     };
     addMessageToActive(userMsg);
+    setInput("");
 
-    setInput(""); // 입력창 비우기
-
+    // 3️⃣ AI placeholder 메시지 추가
     const placeholderId = `a-${Date.now() + 1}`;
     const assistantPlaceholder: Message = {
       id: placeholderId,
@@ -102,8 +138,9 @@ const ChatPage: React.FC = () => {
     };
     addMessageToActive(assistantPlaceholder);
 
+    // 4️⃣ AI API 호출
     try {
-      const res = await postChatQuery({ query: text });
+      const res = await postChatQuery({ query: text, sessionId: sessionId! });
       const data = res?.data;
 
       if (data?.answer) {
