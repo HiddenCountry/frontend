@@ -25,7 +25,6 @@ declare global {
 
 // 지역 옵션
 const AREA_OPTIONS = [
-  { label: "전체", value: "ALL" },
   { label: "서울", value: "SEOUL" },
   { label: "인천", value: "INCHEON" },
   { label: "대전", value: "DAJEON" },
@@ -121,7 +120,7 @@ const TravelPlanPage: React.FC = () => {
 
       const res = await getPlaces(
         0,
-        20,
+        100,
         area,
         [],
         [],
