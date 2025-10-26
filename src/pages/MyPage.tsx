@@ -7,6 +7,10 @@ import { getBookmarkPlaces } from "../api/Bookmark";
 import { useNavigate } from "react-router-dom";
 import { fetchMyReviews } from "../api/Mypage";
 import { getUserInfo } from "../api/Kakao";
+import {
+  deleteTravelCourseDetail,
+  getTravelCourseMine,
+} from "../api/TravelCourse";
 
 /** ====== 북마크 타입 ====== */
 type BookmarkPlace = {
@@ -54,11 +58,21 @@ type MyReviewItem = {
   placeImageUrl: string | null;
 };
 
+type TravelCourseItem = {
+  id: number;
+  courseId: number;
+  title: string;
+  firstImage?: string | null;
+};
+
 const PAGE_SIZE_BOOKMARK = 6;
 const PAGE_SIZE_REVIEW = 6;
+const PAGE_SIZE_COURSE = 6;
 
 const MyPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<"saved" | "reviews">("saved");
+  const [activeTab, setActiveTab] = useState<"saved" | "reviews" | "courses">(
+    "saved"
+  );
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +90,14 @@ const MyPage: React.FC = () => {
   const [rvTotalPages, setRvTotalPages] = useState(1);
   const [rvTotalElements, setRvTotalElements] = useState(0);
 
+  // ===== 여행 코스 상태 =====
+  const [courses, setCourses] = useState<TravelCourseItem[]>([]);
+  const [courseTotalPages, setCourseTotalPages] = useState(1);
+  const [courseTotalElements, setCourseTotalElements] = useState(0);
+
   const isSaved = activeTab === "saved";
+  const isReviews = activeTab === "reviews";
+  const isCourses = activeTab === "courses";
 
   // 탭 바꿀 때 페이지 1로 리셋
   useEffect(() => {
@@ -149,6 +170,38 @@ const MyPage: React.FC = () => {
     })();
   }, [isSaved, page]);
 
+  // ====== 여행 코스 불러오기 ======
+  useEffect(() => {
+    if (!isCourses) return;
+
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const res = await getTravelCourseMine(); // API 호출
+
+        if (res?.isSuccess && Array.isArray(res.data)) {
+          setCourses(res.data);
+          setCourseTotalElements(res.data.length);
+          setCourseTotalPages(Math.ceil(res.data.length / PAGE_SIZE_COURSE));
+        } else {
+          setCourses([]);
+          setCourseTotalElements(0);
+          setCourseTotalPages(1);
+          setError(res?.message ?? "여행 코스 조회 실패");
+        }
+      } catch (e: any) {
+        setCourses([]);
+        setCourseTotalElements(0);
+        setCourseTotalPages(1);
+        setError(e?.message ?? "여행 코스 조회 실패");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [isCourses, page]);
+
   const goDetail = (p: BookmarkPlace) => {
     navigate("/main/place", {
       state: {
@@ -181,6 +234,10 @@ const MyPage: React.FC = () => {
         contentTypeId: r.contentTypeId,
       },
     });
+  };
+
+  const goCourseDetail = (c: TravelCourseItem) => {
+    navigate("/route/detail", { state: { courseId: c.courseId } });
   };
 
   // 평점 → 메시지
@@ -245,6 +302,24 @@ const MyPage: React.FC = () => {
     })();
   }, []);
 
+  // 여행코스 삭제
+  const handleDeleteCourse = async (courseId: number) => {
+    if (!window.confirm("정말 이 여행 코스를 삭제하시겠습니까?")) return;
+
+    try {
+      await deleteTravelCourseDetail(courseId);
+      // 삭제 성공 시 상태에서 해당 코스 제거
+      setCourses((prev) => prev.filter((c) => c.courseId !== courseId));
+      setCourseTotalElements((prev) => prev - 1);
+      setCourseTotalPages((prev) =>
+        Math.ceil((courseTotalElements - 1) / PAGE_SIZE_COURSE)
+      );
+    } catch (err: any) {
+      alert("코스 삭제 중 오류가 발생했습니다.");
+      console.error(err);
+    }
+  };
+
   return (
     <Container>
       <Main>
@@ -261,28 +336,46 @@ const MyPage: React.FC = () => {
           <Menu>
             <MenuItem
               role="tab"
-              aria-selected={isSaved}
-              $active={isSaved}
+              aria-selected={activeTab === "saved"}
+              $active={activeTab === "saved"}
               onClick={() => setActiveTab("saved")}
             >
               저장한 장소 리스트
             </MenuItem>
             <MenuItem
               role="tab"
-              aria-selected={!isSaved}
-              $active={!isSaved}
+              aria-selected={activeTab === "reviews"}
+              $active={activeTab === "reviews"}
               onClick={() => setActiveTab("reviews")}
             >
               작성한 리뷰
+            </MenuItem>
+            <MenuItem
+              role="tab"
+              aria-selected={activeTab === "courses"}
+              $active={activeTab === "courses"}
+              onClick={() => setActiveTab("courses")}
+            >
+              내 여행 코스
             </MenuItem>
           </Menu>
         </LeftCard>
 
         <ListSection
-          title={isSaved ? "저장한 장소 리스트" : "작성한 리뷰"}
-          count={isSaved ? bmTotalElements : rvTotalElements}
+          title={
+            isSaved ? "저장한 장소" : isReviews ? "작성한 리뷰" : "내 여행 코스"
+          }
+          count={
+            isSaved
+              ? bmTotalElements
+              : isReviews
+              ? rvTotalElements
+              : courseTotalElements
+          }
           page={page}
-          totalPages={isSaved ? bmTotalPages : rvTotalPages}
+          totalPages={
+            isSaved ? bmTotalPages : isReviews ? rvTotalPages : courseTotalPages
+          }
           onPageChange={setPage}
           loading={loading}
         >
@@ -290,31 +383,44 @@ const MyPage: React.FC = () => {
             <ErrorBox>⚠ {error}</ErrorBox>
           ) : (
             <CardList>
-              {isSaved
-                ? savedPlaces.map((p) => (
-                    <ListItem
-                      key={p.id}
-                      variant="saved"
-                      name={p.title}
-                      rating={p.reviewScoreAverage}
-                      reviews={p.reviewCount}
-                      address={p.addr1}
-                      imageUrl={p.firstImage ?? undefined}
-                      onClick={() => goDetail(p)}
-                    />
-                  ))
-                : myReviews.map((r) => (
-                    <ListItem
-                      key={r.id}
-                      variant="review"
-                      placeName={r.placeTitle}
-                      rating={r.score}
-                      message={ratingMsg(r.score)}
-                      snippet={r.content}
-                      imageUrl={r.placeImageUrl ?? undefined}
-                      onClick={() => goDetailFromReview(r)}
-                    />
-                  ))}
+              {isSaved &&
+                savedPlaces.map((p) => (
+                  <ListItem
+                    key={p.id}
+                    variant="saved"
+                    name={p.title}
+                    rating={p.reviewScoreAverage}
+                    reviews={p.reviewCount}
+                    address={p.addr1}
+                    imageUrl={p.firstImage}
+                    onClick={() => goDetail(p)}
+                  />
+                ))}
+              {isReviews &&
+                myReviews.map((r) => (
+                  <ListItem
+                    key={r.id}
+                    variant="review"
+                    placeName={r.placeTitle}
+                    rating={r.score}
+                    message={ratingMsg(r.score)}
+                    snippet={r.content}
+                    imageUrl={r.placeImageUrl}
+                    onClick={() => goDetailFromReview(r)}
+                  />
+                ))}
+              {isCourses &&
+                courses.map((c) => (
+                  <ListItem
+                    key={c.id}
+                    variant="course"
+                    courseId={c.courseId}
+                    title={c.title}
+                    imageUrl={c.firstImage}
+                    onClick={() => goCourseDetail(c)}
+                    onDelete={() => handleDeleteCourse(c.courseId)}
+                  />
+                ))}
             </CardList>
           )}
         </ListSection>
