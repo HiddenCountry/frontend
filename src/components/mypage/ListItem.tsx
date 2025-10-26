@@ -18,7 +18,7 @@ type ReviewItemProps = {
   rating: number;
   message: string; // 예: “좋았어요!”
   snippet: string;
-  imageUrl?: string | null;   // ✅ 추가
+  imageUrl?: string | null; // ✅ 추가
   onClick?: () => void;
 };
 
@@ -45,7 +45,7 @@ const ListItem: React.FC<Props> = (props) => {
     );
   }
 
-  const { placeName, rating, message, snippet, imageUrl, onClick } = props; 
+  const { placeName, rating, message, snippet, imageUrl, onClick } = props;
   return (
     <Row role="button" onClick={onClick}>
       <Thumb $src={imageUrl} role="img" aria-label={placeName} />
@@ -137,6 +137,7 @@ const Secondary = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
 `;
 
 const StarIcon = styled(AirplaneSvg)`

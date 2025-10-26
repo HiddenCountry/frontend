@@ -363,7 +363,6 @@ const Bubble = styled.div<{ $role: Role }>`
   line-height: 1.6;
   box-shadow: 0 1px 3px ${({ theme }) => theme.color.primary500};
 
-  /* ===== 새 메시지 등장 애니메이션 ===== */
   animation: slideUpFade 0.3s ease forwards;
   transform: translateY(10px);
   opacity: 0;
@@ -373,6 +372,11 @@ const Bubble = styled.div<{ $role: Role }>`
       transform: translateY(0);
       opacity: 1;
     }
+  }
+
+  @media (max-width: 500px) {
+    font-size: 0.85rem;
+    padding: 10px 12px;
   }
 `;
 
