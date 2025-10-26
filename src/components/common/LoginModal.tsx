@@ -54,6 +54,7 @@ const Overlay = styled.div`
 
 const ModalContainer = styled.div`
   width: 400px;
+  max-width: 90vw;
   background: #fff;
   border-radius: 24px;
   padding: 30px 20px;
@@ -61,6 +62,10 @@ const ModalContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  @media (max-width: 480px) {
+    padding: 20px 15px;
+  }
 `;
 
 const CloseButton = styled.button`
@@ -92,6 +97,10 @@ const Title = styled.div`
   font-size: 22px;
   font-weight: bold;
   margin-bottom: 15px;
+
+  @media (max-width: 480px) {
+    font-size: 18px;
+  }
 `;
 
 const Description = styled.div`
@@ -99,6 +108,10 @@ const Description = styled.div`
   font-size: 16px;
   color: #555;
   margin-bottom: 15px;
+
+  @media (max-width: 480px) {
+    font-size: 14px;
+  }
 `;
 
 const Footer = styled.div`
