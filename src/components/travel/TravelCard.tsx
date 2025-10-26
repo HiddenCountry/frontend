@@ -123,7 +123,7 @@ const CardContent = styled.div`
 `;
 
 const CardTitle = styled.div`
-  ${({ theme }) => theme.font.xxl.bold};
+  ${({ theme }) => theme.font.xl.bold};
   color: ${({ theme }) => theme.color.gray800};
 
   @media (max-width: 780px) {
@@ -132,7 +132,7 @@ const CardTitle = styled.div`
 `;
 
 const CardSubTitle = styled.div`
-  ${({ theme }) => theme.font.md.medium};
+  ${({ theme }) => theme.font.sm.medium};
   color: ${({ theme }) => theme.color.gray500};
   @media (max-width: 780px) {
     ${({ theme }) => theme.font.xs.medium};
