@@ -168,6 +168,21 @@ const FLAG_SVG_BY_KR: Record<string, string> = {
   일본: flagJP,
 };
 
+function kakaoRouteUrl(
+  destTitle: string | undefined,
+  destLat: number,
+  destLng: number,
+  origin?: Coord | null
+) {
+  const name = encodeURIComponent(destTitle || "목적지");
+  if (origin) {
+    const fromName = encodeURIComponent("내 위치");
+    return `https://map.kakao.com/link/from/${fromName},${origin.lat},${origin.lng}/to/${name},${destLat},${destLng}`;
+  }
+  // 현재 위치를 못 얻었을 때는 목적지만
+  return `https://map.kakao.com/link/to/${name},${destLat},${destLng}`;
+}
+
 function flagUrlFromPlace(p: PlaceMapItem): {
   url: string | null;
   label: string | null;
@@ -177,6 +192,208 @@ function flagUrlFromPlace(p: PlaceMapItem): {
   const url = first ? FLAG_SVG_BY_KR[first] ?? null : null;
   return { url, label: first };
 }
+const SideDetailCard: React.FC<{
+  open: boolean;
+  place: PlaceMapItem;
+  onClose: () => void;
+  onBookmark: (id: number) => void;
+  onGoDetail?: (p: PlaceMapItem) => void;
+  userPos?: Coord | null;
+}> = ({ open, place, onClose, onBookmark, onGoDetail, userPos }) => {
+  const pid = (place as any).id as number;
+  const score = place.reviewScoreAverage?.toFixed?.(1) ?? "0.0";
+  const tags = tagsFromPlace(place);
+
+  const distText = React.useMemo(() => {
+    if (!userPos) return null;
+    const d = distanceMeters(userPos, {
+      lat: place.latitude,
+      lng: place.longitude,
+    });
+    return d < 1000
+      ? `현재 위치에서 ${Math.round(d)}m`
+      : `현재 위치에서 ${(d / 1000).toFixed(1)}km`;
+  }, [userPos, place.latitude, place.longitude]);
+  const DetailHero: React.FC<{ place: PlaceMapItem }> = ({ place }) => {
+    const [urls, setUrls] = React.useState<string[]>([]);
+    const [loading, setLoading] = React.useState(true);
+
+    const contentId: number | null = (place as any).contentId;
+    const vpRef = React.useRef<HTMLDivElement>(null);
+    const [index, setIndex] = React.useState(0);
+
+    // 이미지 로드
+    React.useEffect(() => {
+      let cancelled = false;
+      setLoading(true);
+      setUrls([]);
+      setIndex(0);
+
+      if (!contentId || !TOURAPI_KEY) {
+        setLoading(false);
+        return;
+      }
+
+      (async () => {
+        try {
+          const list = await fetchTourImages(contentId, TOURAPI_KEY);
+          if (!cancelled) setUrls(Array.isArray(list) ? list : []);
+        } catch {
+          if (!cancelled) setUrls([]);
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+      };
+    }, [contentId]);
+
+    // 스크롤에 맞춰 index 계산
+    const onScroll = () => {
+      const el = vpRef.current;
+      if (!el) return;
+      const i = Math.round(el.scrollLeft / el.clientWidth);
+      setIndex(Math.max(0, Math.min(i, (urls.length || 1) - 1)));
+    };
+
+    const goNext = () => {
+      const el = vpRef.current;
+      if (!el) return;
+      el.scrollBy({ left: el.clientWidth, behavior: "smooth" });
+    };
+
+    const goPrev = () => {
+      const el = vpRef.current;
+      if (!el) return;
+      el.scrollBy({ left: -el.clientWidth, behavior: "smooth" });
+    };
+
+    const showPlaceholder = loading || urls.length === 0;
+    const total = Math.max(1, urls.length);
+
+    return (
+      <HeroWrap>
+        <HeroViewport ref={vpRef} onScroll={onScroll}>
+          {(showPlaceholder ? [""] : urls).map((u, i) => (
+            <HeroItem
+              key={i}
+              style={
+                u
+                  ? {
+                      backgroundImage: `url(${u})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                    }
+                  : undefined
+              }
+              aria-label={u ? `image ${i + 1}` : "placeholder"}
+            >
+              {!u && (
+                <FallbackIcon>
+                  <Logo />
+                </FallbackIcon>
+              )}
+            </HeroItem>
+          ))}
+        </HeroViewport>
+
+        {/* 좌상단 카운트 뱃지 (1/24) */}
+        <CountPill>
+          {(index + 1).toString()} / {total}
+        </CountPill>
+        {/* 좌측 중앙 화살표 */}
+        {!showPlaceholder && index > 0 && (
+          <HeroPrevBtn
+            type="button"
+            aria-label="이전 이미지"
+            onClick={(e) => {
+              e.stopPropagation();
+              goPrev();
+            }}
+            title="이전 이미지"
+          >
+            ‹
+          </HeroPrevBtn>
+        )}
+
+        {/* 우측 중앙 화살표 */}
+        {!showPlaceholder && index < total - 1 && (
+          <HeroNextBtn
+            type="button"
+            aria-label="다음 이미지"
+            onClick={(e) => {
+              e.stopPropagation();
+              goNext();
+            }}
+            title="다음 이미지"
+          >
+            ›
+          </HeroNextBtn>
+        )}
+      </HeroWrap>
+    );
+  };
+  return (
+    <SideDetailWrap $open={open}>
+      <SDHeader>
+        <DetailHero place={place} />
+        <button className="close" onClick={onClose} aria-label="닫기">
+          ✕
+        </button>
+      </SDHeader>
+
+      <SDBody>
+        <TagRow style={{ marginTop: 8, marginBottom: 10 }}>
+          {tags.map((t) => (
+            <TagChip key={t}>{t}</TagChip>
+          ))}
+        </TagRow>
+
+        <Title style={{ marginBottom: 6 }}>{place.title || "title"}</Title>
+
+        <MetaRow style={{ marginBottom: 6 }}>
+          <MetaPrimary>
+            <StarIcon /> {score}
+          </MetaPrimary>
+          <MetaMuted>review {place.reviewCount ?? 0}</MetaMuted>
+        </MetaRow>
+
+        <MetaRow style={{ marginBottom: 6 }}>
+          <MetaMuted>{place.addr1}</MetaMuted>
+        </MetaRow>
+
+        {distText && (
+          <a className="distance" href="#" onClick={(e) => e.preventDefault()}>
+            {distText}
+          </a>
+        )}
+          <ButtonRow>
+          <PrimaryBtn onClick={() => onBookmark(pid)}>
+            {place.isBookmarked ? "북마크 취소하기" : "북마크 저장하기"}
+          </PrimaryBtn>
+          <OutlineBtn
+            as="a"
+            href={kakaoRouteUrl(
+              place.title,
+              place.latitude,
+              place.longitude,
+              userPos
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+            title="카카오맵에서 길찾기"
+          >
+            길찾기
+          </OutlineBtn>
+          <GhostBtn onClick={() => onGoDetail?.(place)}>상세 페이지로</GhostBtn>
+          </ButtonRow>
+      </SDBody>
+    </SideDetailWrap>
+  );
+};
 
 /* ============ 다중 선택 드롭다운(버튼으로만 열고/닫음) ============ */
 const MultiDropdown: React.FC<{
@@ -523,6 +740,7 @@ function tagsFromPlace(p: PlaceMapItem): string[] {
 
 /* ============ 페이지 ============ */
 const MapPage: React.FC = () => {
+  const listRef = React.useRef<HTMLDivElement>(null);
   // 다중 선택 상태
   const [catSel, setCatSel] = React.useState<CategoryUI[]>([]);
   const [regSel, setRegSel] = React.useState<RegionUI[]>([]);
@@ -545,6 +763,50 @@ const MapPage: React.FC = () => {
   const itemRefs = React.useRef<Record<number, HTMLDivElement | null>>({});
   // 북마크 처리중인 카드들(중복 클릭 방지)
   const [bmPending, setBmPending] = React.useState<Set<number>>(new Set());
+  // 상태
+  const [detailId, setDetailId] = React.useState<number | null>(null);
+
+  // 유틸: 리스트 내부 스크롤 중앙 정렬
+  function scrollItemIntoListView(id: number) {
+    const item = itemRefs.current[id];
+    const list = listRef.current;
+    if (!item || !list) return;
+
+    // 아이템을 리스트 뷰포트 중앙 근처로
+    const itemTop = item.offsetTop - list.offsetTop;
+    const targetTop = Math.max(
+      0,
+      itemTop - (list.clientHeight - item.clientHeight) / 2
+    );
+    list.scrollTo({ top: targetTop, behavior: "smooth" });
+  }
+
+  // 열기/닫기
+  const openDetailById = React.useCallback((id: number) => {
+    setActiveId(id);
+    setDetailId(id);
+    // DOM 바인딩 이후 리스트만 스크롤
+    setTimeout(() => scrollItemIntoListView(id), 0);
+  }, []);
+
+  const closeDetail = React.useCallback(() => setDetailId(null), []);
+
+  // 현재 상세 place
+  const currentPlace = React.useMemo(
+    () => results.find((r) => (r as any).id === detailId) ?? null,
+    [results, detailId]
+  );
+
+  // 결과 변경 시, 현재 상세가 목록에 없으면 닫기
+  React.useEffect(() => {
+    if (detailId == null) return;
+    const exists = results.some((r) => (r as any).id === detailId);
+    if (!exists) {
+      setDetailId(null);
+      setActiveId(null);
+    }
+  }, [results, detailId]);
+
   const navigate = useNavigate();
 
   const goDetail = (p: PlaceMapItem) => {
@@ -633,16 +895,15 @@ const MapPage: React.FC = () => {
   );
 
   // 핀 클릭 시: 강조 + 스크롤
-  const handlePinClick = React.useCallback((id: number) => {
-    setActiveId(id);
-    // DOM 업데이트 이후 스크롤을 보장하기 위해 microtask 지연
-    setTimeout(() => {
-      const node = itemRefs.current[id];
-      if (node) {
-        node.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    }, 0);
-  }, []);
+  const handlePinClick = React.useCallback(
+    (id: number) => {
+      setActiveId(id);
+      // DOM 업데이트 이후 스크롤을 보장하기 위해 microtask 지연
+      setTimeout(() => scrollItemIntoListView(id), 0);
+      openDetailById(id);
+    },
+    [openDetailById]
+  );
 
   React.useEffect(() => {
     if (activeId == null) return;
@@ -655,17 +916,31 @@ const MapPage: React.FC = () => {
       const next = prev.includes(v as CategoryUI)
         ? prev.filter((x) => x !== v)
         : [...prev, v as CategoryUI];
-      // 지도 준비/선택값 유효하면 즉시 검색
+
+      if (next.length === 0) {
+        setResults([]);
+        setDetailId(null);
+        setActiveId(null);
+        setDirty(false);
+        return next;
+      }
       if (bounds && center) runSearch({ cats: next, regs: regSel });
       return next;
     });
   };
-
   const toggleReg = (v: string) => {
     setRegSel((prev) => {
       const next = prev.includes(v as RegionUI)
         ? prev.filter((x) => x !== v)
         : [...prev, v as RegionUI];
+
+      if (next.length === 0) {
+        setResults([]);
+        setDetailId(null);
+        setActiveId(null);
+        setDirty(false);
+        return next;
+      }
       if (bounds && center) runSearch({ cats: catSel, regs: next });
       return next;
     });
@@ -782,7 +1057,7 @@ const MapPage: React.FC = () => {
               {loading && <Badge>검색중…</Badge>}
             </ChipRow>
 
-            <CardList>
+            <CardList ref={listRef}>
               {results.map((p) => {
                 const score = p.reviewScoreAverage?.toFixed?.(1) ?? "0.0";
                 const tags = tagsFromPlace(p);
@@ -793,7 +1068,7 @@ const MapPage: React.FC = () => {
                     ref={bindItemRef(pid)}
                     $active={activeId === pid}
                     aria-current={activeId === pid ? "true" : undefined}
-                    onClick={() => goDetail(p)}
+                    onClick={() => openDetailById(pid)}
                   >
                     <CardTop>
                       <Title>{p.title || "title"}</Title>
@@ -898,6 +1173,16 @@ const MapPage: React.FC = () => {
             📍 현재 위치로
           </RecenterBtn>
         )}
+        {detailId != null && currentPlace && (
+          <SideDetailCard
+            open
+            place={currentPlace}
+            onClose={closeDetail}
+            onBookmark={(id) => toggleBookmark(id)}
+            onGoDetail={(p) => goDetail(p)}
+            userPos={userPos}
+          />
+        )}
       </Stage>
     </Page>
   );
@@ -912,7 +1197,7 @@ const BP = {
 
 /* ============ 스타일 ============ */
 const Page = styled.div`
-  min-height: 100vh;
+  min-height: 0vh;
   ${({ theme }) => theme.font.md.regular};
   background: ${({ theme }) => theme.color.gray50};
 `;
@@ -920,7 +1205,7 @@ const Page = styled.div`
 /* 스테이지/지도 */
 const Stage = styled.div`
   position: relative;
-  margin: 12px auto;
+  margin: 5px auto;
   height: clamp(560px, 82vh, 860px);
   border-radius: 16px;
   overflow: hidden;
@@ -994,7 +1279,8 @@ const DropdownBtn = styled.button<{ $active?: boolean; $open?: boolean }>`
   }
 `;
 const Caret = styled.span<{ $open?: boolean }>`
-  width: 0; height: 0;
+  width: 0;
+  height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
   border-top: 6px solid ${({ theme }) => theme.color.gray800};
@@ -1070,12 +1356,14 @@ const LeftPanel = styled.aside`
   left: 24px;
   z-index: 20;
   width: 350px;
+  --lpw: 350px;
   background: ${({ theme }) => theme.color.white};
   border-radius: 24px;
   --panelH: 560px;
 
   @media (max-width: 1024px) {
     width: 320px;
+    --lpw: 320px;
   }
 
   @media (max-width: ${BP.md}) {
@@ -1086,6 +1374,7 @@ const LeftPanel = styled.aside`
     top: auto;
     width: auto;
     --panelH: 46vh;
+    --lpw: 0px;
     border-radius: 16px 16px 0 0;
     margin: 0;
     box-shadow: 0 -10px 28px rgba(0, 0, 0, 0.12);
@@ -1164,7 +1453,8 @@ const ListCard = styled.div<{ $active?: boolean }>`
     $active ? theme.color.primary50 : "transparent"};
   box-shadow: ${({ $active }) =>
     $active ? "0 4px 16px rgba(0,0,0,0.08)" : "none"};
-  transition: background 120ms ease, outline-color 120ms ease, box-shadow 120ms ease;
+  transition: background 120ms ease, outline-color 120ms ease,
+    box-shadow 120ms ease;
 
   @media (max-width: ${BP.md}) {
     padding: 8px 8px 14px;
@@ -1220,7 +1510,10 @@ const MetaPrimary = styled.span`
   }
 
   @media (max-width: ${BP.md}) {
-    svg { width: 14px; height: 14px; }
+    svg {
+      width: 14px;
+      height: 14px;
+    }
   }
 `;
 const MetaMuted = styled.span`
@@ -1286,7 +1579,10 @@ const BookmarkBtn = styled.button`
   @media (max-width: ${BP.md}) {
     right: 8px;
     top: 8px;
-    svg { width: 20px; height: 20px; } /* 터치 타깃 살짝 키움 */
+    svg {
+      width: 20px;
+      height: 20px;
+    } /* 터치 타깃 살짝 키움 */
   }
 `;
 
@@ -1305,6 +1601,7 @@ const MoreBtn = styled.button`
   font-weight: 700;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   cursor: pointer;
+  z-index: 2;
 
   @media (max-width: ${BP.md}) {
     right: 6px;
@@ -1371,7 +1668,9 @@ const RecenterBtn = styled.button`
   font-weight: 800;
   cursor: pointer;
 
-  &:hover { filter: brightness(0.95); }
+  &:hover {
+    filter: brightness(0.95);
+  }
 
   @media (max-width: ${BP.md}) {
     right: 12px;
@@ -1398,7 +1697,10 @@ const SearchBtn = styled.button`
   color: ${({ theme }) => theme.color.primary800};
   cursor: pointer;
 
-  &:disabled { opacity: 0.6; cursor: not-allowed; }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 
   @media (max-width: ${BP.md}) {
     top: 56px;
@@ -1415,7 +1717,8 @@ const StarIcon = styled(AirplaneSvg)`
   color: ${({ theme }) => theme.color.primary500};
 
   @media (max-width: ${BP.md}) {
-    width: 13px; height: 13px;
+    width: 13px;
+    height: 13px;
   }
 `;
 
@@ -1431,7 +1734,9 @@ const CarouselViewport = styled.div`
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const CarouselItem = styled.div`
@@ -1471,7 +1776,218 @@ const FallbackIcon = styled.div`
     opacity: 0.8;
 
     @media (max-width: ${BP.md}) {
-      width: 36px; height: 36px;
+      width: 36px;
+      height: 36px;
     }
   }
+`;
+const SideDetailWrap = styled.aside<{ $open: boolean }>`
+  position: absolute;
+  left: calc(24px + var(--lpw, 350px) + 16px); /* 리스트 오른쪽 + 16px */
+  top: 110px;
+  z-index: 25; /* 검색버튼(z32)보다 낮게 */
+  width: 390px;
+  max-width: calc(100% - (24px + var(--lpw, 350px) + 16px) - 24px);
+  background: ${({ theme }) => theme.color.white};
+  border-radius: 16px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+
+  opacity: ${(p) => (p.$open ? 1 : 0)};
+  transform: translateY(${(p) => (p.$open ? "0" : "8px")});
+  pointer-events: ${(p) => (p.$open ? "auto" : "none")};
+  transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  @media (max-width: ${BP.md}) {
+    position: fixed; /* Stage/overflow의 영향 X */
+    left: 50%; /* 가운데 정렬 */
+    bottom: calc(12px + env(safe-area-inset-bottom, 0));
+    top: auto;
+    transform: translate(-50%, ${(p) => (p.$open ? "0" : "12px")});
+    width: calc(100vw - 24px); /* 화면 양쪽 12px 여백 */
+    max-width: 640px;
+    max-height: min(78dvh, 640px);
+    border-radius: 16px;
+    z-index: 1000; /* 지도/툴바 위로 */
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+    display: grid;
+    grid-template-rows: auto auto 1fr; /* 헤더 / 히어로 / 본문 */
+  }
+`;
+
+const SDHeader = styled.div`
+  position: relative;
+  .close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: ${({ theme }) => theme.color.white};
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    font-size: 16px;
+  }
+`;
+const SDBody = styled.div`
+  padding: 12px 16px 18px;
+  .distance {
+    color: ${({ theme }) => theme.color.primary600};
+    font-size: 14px;
+    text-decoration: none;
+  }
+`;
+const ButtonRow = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: nowrap;            /* 줄바꿈 금지 */
+  overflow-x: auto;             /* 공간 부족 시 가로 스크롤 */
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;          /* 스크롤바 자리 */
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+`;
+const PrimaryBtn = styled.button`
+  ${({ theme }) => theme.font.md.bold};
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: ${({ theme }) => theme.color.primary500};
+  color: white;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;              /* 내용 크기에 맞게 */
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;                    /* 줄바꿈 없이 스크롤 */
+  white-space: nowrap;               /* 공백 기준 줄바꿈 금지 */
+  word-break: keep-all;              /* 한글 글자 단위 줄바꿈 금지 */
+  min-width: max-content;            /* 내용 폭만큼 */
+  line-height: 1;                    /* 세로 가운데 정확 */
+  @media (max-width: ${BP.md}) {
+    padding: 10px 12px;
+    font-size: 14px;                 /* 모바일에서 살짝 줄임 */
+  }
+`;
+const GhostBtn = styled.button`
+  ${({ theme }) => theme.font.md.bold};
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: ${({ theme }) => theme.color.gray100};
+  color: ${({ theme }) => theme.color.gray800};
+  border: 0;
+  cursor: pointer;
+    display: inline-flex;              /* 내용 크기에 맞게 */
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;                    /* 줄바꿈 없이 스크롤 */
+  white-space: nowrap;               /* 공백 기준 줄바꿈 금지 */
+  word-break: keep-all;              /* 한글 글자 단위 줄바꿈 금지 */
+  min-width: max-content;            /* 내용 폭만큼 */
+  line-height: 1;                    /* 세로 가운데 정확 */
+  @media (max-width: ${BP.md}) {
+    padding: 10px 12px;
+    font-size: 14px;                 /* 모바일에서 살짝 줄임 */
+  }
+`;
+const HeroWrap = styled.div`
+  position: relative;
+  margin-top: 0;
+  background: ${({ theme }) => theme.color.gray100};
+`;
+
+const HeroViewport = styled.div`
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const HeroItem = styled.div`
+  /* 한 장씩 화면 가득 */
+  flex: 0 0 100%;
+  height: 160px;
+  scroll-snap-align: start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media (max-width: ${BP.md}) {
+    height: 180px;
+  }
+`;
+
+const CountPill = styled.span`
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.85);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+`;
+
+const HeroNextBtn = styled.button`
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid ${({ theme }) => theme.color.gray200};
+  background: ${({ theme }) => theme.color.white};
+  color: ${({ theme }) => theme.color.gray700};
+  font-size: 18px;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  z-index: 2; /* 다른 요소에 가리지 않게 */
+`;
+const HeroPrevBtn = styled.button`
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid ${({ theme }) => theme.color.gray200};
+  background: ${({ theme }) => theme.color.white};
+  color: ${({ theme }) => theme.color.gray700};
+  font-size: 18px;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  z-index: 2; /* 다른 요소에 가리지 않게 */
+`;
+const OutlineBtn = styled.button`
+  ${({ theme }) => theme.font.md.bold};
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: ${({ theme }) => theme.color.white};
+  color: ${({ theme }) => theme.color.primary700};
+  border: 1px solid ${({ theme }) => theme.color.primary200};
+  cursor: pointer;
+  display: inline-flex;              /* 내용 크기에 맞게 */
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;                    /* 줄바꿈 없이 스크롤 */
+  white-space: nowrap;               /* 공백 기준 줄바꿈 금지 */
+  word-break: keep-all;              /* 한글 글자 단위 줄바꿈 금지 */
+  min-width: max-content;            /* 내용 폭만큼 */
+  line-height: 1;                    /* 세로 가운데 정확 */
+  @media (max-width: ${BP.md}) {
+    padding: 10px 12px;
+    font-size: 14px;                 /* 모바일에서 살짝 줄임 */
+  }
+  text-decoration: none;
 `;
