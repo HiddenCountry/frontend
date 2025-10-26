@@ -8,7 +8,7 @@ const PolicyPage: React.FC = () => {
         <Header>
           <div>
             <Title>서비스 이용약관</Title>
-            <Meta>최종 수정일: 2025-10-26</Meta>
+            <Meta>최종 수정일: 2025-10-10</Meta>
           </div>
         </Header>
 
@@ -214,6 +214,7 @@ const Title = styled.h1`
 const Meta = styled.div`
   color: #666;
   font-size: 0.9rem;
+  margin: 5px 0 0 5px;
 `;
 const TwoCol = styled.div`
   display: grid;
