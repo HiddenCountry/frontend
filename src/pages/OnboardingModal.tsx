@@ -72,7 +72,6 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
 export default OnboardingModal;
 
-// Styled Components
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
@@ -85,6 +84,7 @@ const Overlay = styled.div`
 
 const ModalContainer = styled.div`
   width: 500px;
+  max-width: 90vw;
   background: #fff;
   border-radius: 24px;
   padding: 40px 30px 20px;
@@ -92,6 +92,10 @@ const ModalContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  @media (max-width: 480px) {
+    padding: 30px 20px 15px;
+  }
 `;
 
 const CloseButton = styled.button`
@@ -114,6 +118,11 @@ const IconWrapper = styled.div`
   svg {
     width: 120px;
     height: 120px;
+
+    @media (max-width: 480px) {
+      width: 90px;
+      height: 90px;
+    }
   }
 `;
 
@@ -121,16 +130,24 @@ const Title = styled.h2`
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 16px;
+
+  @media (max-width: 480px) {
+    font-size: 20px;
+  }
 `;
 
 const Description = styled.p`
   font-size: 16px;
   color: #555;
-  white-space: pre-line; /* \n 줄바꿈 적용 */
+  white-space: pre-line;
+
+  @media (max-width: 480px) {
+    font-size: 14px;
+  }
 `;
 const Footer = styled.div`
   display: flex;
-  justify-content: space-between; /* 왼쪽/오른쪽 배치 */
+  justify-content: space-between;
   width: 100%;
   margin-top: 30px;
   gap: 10px;
@@ -144,9 +161,16 @@ const Button = styled.button<{ primary?: boolean }>`
   padding: 10px 20px;
   cursor: pointer;
   font-size: 14px;
+  width: 150px;
 
   &:hover {
     opacity: 0.85;
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
+    padding: 10px 0;
+    font-size: 13px;
   }
 `;
 
@@ -154,6 +178,10 @@ const StepIndicator = styled.div`
   display: flex;
   gap: 8px;
   margin-top: 20px;
+
+  @media (max-width: 480px) {
+    margin-top: 15px;
+  }
 `;
 
 const Dot = styled.div<{ active?: boolean }>`
@@ -161,4 +189,9 @@ const Dot = styled.div<{ active?: boolean }>`
   height: 10px;
   border-radius: 50%;
   background: ${({ active }) => (active ? "#1e90ff" : "#ccc")};
+
+  @media (max-width: 480px) {
+    width: 8px;
+    height: 8px;
+  }
 `;

@@ -18,11 +18,20 @@ type ReviewItemProps = {
   rating: number;
   message: string; // 예: “좋았어요!”
   snippet: string;
-  imageUrl?: string | null;   // ✅ 추가
+  imageUrl?: string | null; // ✅ 추가
   onClick?: () => void;
 };
 
-type Props = SavedItemProps | ReviewItemProps;
+type CourseItemProps = {
+  variant: "course";
+  courseId: number;
+  title: string;
+  imageUrl?: string | null;
+  onClick?: () => void;
+  onDelete?: () => void;
+};
+
+type Props = SavedItemProps | ReviewItemProps | CourseItemProps;
 
 const ListItem: React.FC<Props> = (props) => {
   if (props.variant === "saved") {
@@ -45,32 +54,62 @@ const ListItem: React.FC<Props> = (props) => {
     );
   }
 
-  const { placeName, rating, message, snippet, imageUrl, onClick } = props; 
-  return (
-    <Row role="button" onClick={onClick}>
-      <Thumb $src={imageUrl} role="img" aria-label={placeName} />
-      <Texts>
-        <Title title={placeName}>{placeName}</Title>
-        <Meta>
-          <StarIcon />
-          <span>{rating}</span>
-          <Dot>·</Dot>
-          <span>{message}</span>
-        </Meta>
-        <Secondary title={snippet}>{snippet}</Secondary>
-      </Texts>
-      <ChevronRight aria-hidden />
-    </Row>
-  );
+  if (props.variant === "review") {
+    const { placeName, rating, message, snippet, imageUrl, onClick } = props;
+    return (
+      <Row role="button" onClick={onClick}>
+        <Thumb $src={imageUrl} role="img" aria-label={placeName} />
+        <Texts>
+          <Title title={placeName}>{placeName}</Title>
+          <Meta>
+            <StarIcon />
+            <span>{rating}</span>
+            <Dot>·</Dot>
+            <span>{message}</span>
+          </Meta>
+          <Secondary title={snippet}>{snippet}</Secondary>
+        </Texts>
+        <ChevronRight aria-hidden />
+      </Row>
+    );
+  }
+
+  // 여행 코스
+  if (props.variant === "course") {
+    const { title, imageUrl, onClick, onDelete } = props;
+    return (
+      <Row role="button" onClick={onClick} $centerVertically>
+        <Thumb $src={imageUrl} role="img" aria-label={title} />
+        <Texts>
+          <Title title={title}>{title}</Title>
+        </Texts>
+        <Actions>
+          {onDelete && (
+            <DeleteBtn
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+            >
+              삭제
+            </DeleteBtn>
+          )}
+          <ChevronRight aria-hidden />
+        </Actions>
+      </Row>
+    );
+  }
+
+  return null;
 };
 
 export default ListItem;
 
-/* ----- styles ----- */
-export const Row = styled.li`
+const Row = styled.li<{ $centerVertically?: boolean }>`
   display: grid;
   grid-template-columns: 80px 1fr 20px;
-  align-items: start;
+  align-items: ${({ $centerVertically }) =>
+    $centerVertically ? "center" : "start"};
   gap: 16px;
   padding: 14px 0;
   border-bottom: 1px solid ${({ theme }) => theme.color.gray200};
@@ -137,6 +176,7 @@ const Secondary = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
 `;
 
 const StarIcon = styled(AirplaneSvg)`
@@ -155,4 +195,31 @@ const ChevronRight = styled.i`
   background: ${({ theme }) => theme.color.gray300};
   justify-self: end;
   align-self: center;
+`;
+const Actions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: end;
+`;
+
+const DeleteBtn = styled.button`
+  width: 50px;
+  ${({ theme }) => theme.font.xs.medium};
+  background-color: ${({ theme }) => theme.color.white};
+  color: ${({ theme }) => theme.color.gray700};
+  padding: 7px 7px;
+  border: 1px solid ${({ theme }) => theme.color.gray200};
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s ease, transform 0.15s ease;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.color.gray300};
+  }
 `;

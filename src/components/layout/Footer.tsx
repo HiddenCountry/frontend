@@ -13,12 +13,25 @@ const Footer: React.FC = () => {
             <LogoIcon />
             <span>숨은나라찾기</span>
           </Logo>
+          {/* <LogoWrapper>
+            <Logo>
+              <LogoIcon />
+              <span>숨은나라찾기</span>
+            </Logo>
+            <IntroButton href="/intro">서비스 소개 바로가기</IntroButton>
+          </LogoWrapper> */}
           <Nav>
-            <a href="/">숨은나라찾기 서비스 소개</a>
+            <a href="/intro">숨은나라찾기 서비스 소개</a>
             <span>|</span>
-            <a href="/">이용규칙</a>
+            <a href="/policy">이용약관</a>
             <span>|</span>
-            <a href="/">광고/제휴/사업 제안</a>
+            <a
+              href="https://mail.google.com/mail/?view=cm&to=hiddencountrypilot@gmail.com&su=광고·제휴·사업 제안 문의&body=안녕하세요.%0A숨은나라찾기 팀에게 제안드립니다."
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              광고/제휴/사업 제안
+            </a>
           </Nav>
           <Copy>
             Copyright © 2025 HIDDENCOUNTRY Inc. All Rights Reserved
@@ -27,18 +40,57 @@ const Footer: React.FC = () => {
           </Copy>
         </LeftSection>
 
-        {/* 오른쪽 SNS 아이콘 영역 */}
+        {/*//오른쪽 SNS 아이콘 영역}
         <RightSection>
           <IconLink href="https://github.com/HiddenCountry" target="_blank">
             <GithubIcon />
           </IconLink>
         </RightSection>
+        */}
       </FooterContent>
     </FooterWrapper>
   );
 };
 
 export default Footer;
+
+const LogoWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* 로고와 버튼 사이 간격 */
+`;
+
+const IntroButton = styled.a`
+  background-color: #a8a8a8ff;;
+  color: white;
+  padding: 0.2rem 0.6rem;
+  border-radius: 8px;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+
+  &:hover {
+    background-color: #00395aff;
+    transform: translateY(-2px);
+  }
+`;
+
+
+const ButtonLink = styled.a`
+  background-color: #0288d1;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.3s;
+  
+  &:hover {
+    background-color: #0277bd;
+    transform: translateY(-2px);
+  }
+`;
 
 const FooterWrapper = styled.footer`
   width: 100%;
