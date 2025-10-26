@@ -26,6 +26,7 @@ import TravelPlanPage from "./pages/TravelPlanPage";
 import TravelRouteDetailPage from "./pages/TravelRouteDetailPage";
 import { ReactComponent as ChatButton } from "./assets/layout/ChatButton.svg";
 import LoginModal from "./components/common/LoginModal";
+import Intro from "./pages/Intro";
 import PolicyPage from "./pages/PolicyPage";
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -151,6 +152,7 @@ function App() {
             <Route path="/register" element={<PlaceRegistrationPage />} />
             <Route path="/mypage" element={<MyPage />} />
             <Route path="/map" element={<MapPage />} />
+            <Route path="/intro" element={<Intro />} />
             <Route path="/route" element={<TravelRoutePage />} />
             <Route path="/route/detail" element={<TravelRouteDetailPage />} />
             <Route path="/route/new" element={<TravelPlanPage />} />
