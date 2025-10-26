@@ -1197,7 +1197,7 @@ const BP = {
 
 /* ============ 스타일 ============ */
 const Page = styled.div`
-  min-height: 100vh;
+  min-height: 0vh;
   ${({ theme }) => theme.font.md.regular};
   background: ${({ theme }) => theme.color.gray50};
 `;
@@ -1205,7 +1205,7 @@ const Page = styled.div`
 /* 스테이지/지도 */
 const Stage = styled.div`
   position: relative;
-  margin: 12px auto;
+  margin: 5px auto;
   height: clamp(560px, 82vh, 860px);
   border-radius: 16px;
   overflow: hidden;
