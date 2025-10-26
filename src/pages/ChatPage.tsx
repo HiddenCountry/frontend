@@ -29,7 +29,7 @@ const ChatPage: React.FC = () => {
   const [conversations, setConversations] = useState<Conversation[]>([
     {
       id: "conv-1",
-      title: "AI 여행 가이드",
+      title: "AI 여행 도우미",
       messages: [
         {
           id: "m1",
@@ -40,6 +40,12 @@ const ChatPage: React.FC = () => {
       ],
     },
   ]);
+
+  const recommendedPrompts = [
+    "일본 컨셉 여행지 추천해줘",
+    "부산 여행 코스 알려줘",
+    "유럽 느낌 여행지 추천해줘",
+  ];
 
   const [activeConvId, setActiveConvId] = useState(conversations[0].id);
   const [input, setInput] = useState("");
@@ -72,9 +78,8 @@ const ChatPage: React.FC = () => {
   }
 
   // 메시지 전송 + AI 응답 API 연동
-  // handleSend 수정
-  async function handleSend() {
-    const text = input.trim();
+  async function handleSend(textToSend?: string) {
+    const text = textToSend ?? input.trim();
     if (!text) return;
     setIsSending(true);
 
@@ -86,9 +91,8 @@ const ChatPage: React.FC = () => {
     };
     addMessageToActive(userMsg);
 
-    setInput("");
+    setInput(""); // 입력창 비우기
 
-    // 빈 assistant 메시지 추가
     const placeholderId = `a-${Date.now() + 1}`;
     const assistantPlaceholder: Message = {
       id: placeholderId,
@@ -109,7 +113,6 @@ const ChatPage: React.FC = () => {
           relevantDocuments: data.relevantDocuments ?? [],
         };
 
-        // 빈 메시지를 실제 답변으로 업데이트
         setConversations((prev) =>
           prev.map((c) =>
             c.id === activeConvId
@@ -127,12 +130,10 @@ const ChatPage: React.FC = () => {
       }
     } catch (err) {
       console.error("응답 오류:", err);
-
       const errorMsg: Message = {
         ...assistantPlaceholder,
         content: "응답을 가져오는 중 오류가 발생했습니다.",
       };
-
       setConversations((prev) =>
         prev.map((c) =>
           c.id === activeConvId
@@ -188,26 +189,27 @@ const ChatPage: React.FC = () => {
                 m.role === "assistant" && m.content === "" && isSending;
 
               return (
-                <MessageRow key={m.id} $role={m.role}>
-                  <Avatar $role={m.role}>
-                    {m.role === "user" ? null : <AILogo />}
-                  </Avatar>
-                  <Bubble $role={m.role}>
-                    {showLoading ? (
-                      <LoadingDots>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                      </LoadingDots>
-                    ) : (
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: escapeHtmlToMarkdown(m.content),
-                        }}
-                      />
-                    )}
+                <>
+                  <MessageRow key={m.id} $role={m.role}>
+                    <Avatar $role={m.role}>
+                      {m.role === "user" ? null : <AILogo />}
+                    </Avatar>
+                    <Bubble $role={m.role}>
+                      {showLoading ? (
+                        <LoadingDots>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                        </LoadingDots>
+                      ) : (
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: escapeHtmlToMarkdown(m.content),
+                          }}
+                        />
+                      )}
 
-                    {/*
+                      {/*
                   {관련 여행지 표시}
                   {m.relevantDocuments && m.relevantDocuments.length > 0 && (
                     <DocumentGrid>
@@ -225,14 +227,27 @@ const ChatPage: React.FC = () => {
                   )}
             */}
 
-                    <Time>{m.time}</Time>
-                  </Bubble>
-                </MessageRow>
+                      <Time>{m.time}</Time>
+                    </Bubble>
+                  </MessageRow>
+                  {/* 첫 assistant 메시지 아래에 추천 멘트 표시 */}
+                  {idx === 0 && m.role === "assistant" && (
+                    <Recommended>
+                      {recommendedPrompts.map((prompt, i) => (
+                        <PromptBubble
+                          key={i}
+                          onClick={() => handleSend(prompt)} // input 설정 없이 바로 전송
+                        >
+                          {prompt}
+                        </PromptBubble>
+                      ))}
+                    </Recommended>
+                  )}
+                </>
               );
             })}
             <div ref={chatEndRef} />
           </Messages>
-
           <ComposerRow>
             <InputMessage
               placeholder="메시지를 입력하세요."
@@ -241,7 +256,7 @@ const ChatPage: React.FC = () => {
               onKeyDown={handleKeyDown}
             />
             <SendButton
-              onClick={handleSend}
+              onClick={() => handleSend()}
               disabled={isSending || input.trim() === ""}
             >
               {isSending ? "전송중…" : "전송"}
@@ -366,6 +381,43 @@ const Time = styled.div`
   font-size: 11px;
   opacity: 0.6;
   text-align: right;
+`;
+const Recommended = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: 46px; /* assistant 말풍선과 맞춤 */
+  margin-top: 8px;
+`;
+
+const PromptBubble = styled.button`
+  background: ${({ theme }) => theme.color.primary50};
+  color: ${({ theme }) => theme.color.primary600};
+  border-radius: 20px;
+  border: 1px solid ${({ theme }) => theme.color.primary200};
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: ${({ theme }) => theme.color.primary500};
+    color: white;
+  }
+`;
+
+const PromptButton = styled.button`
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid ${({ theme }) => theme.color.primary500};
+  background: ${({ theme }) => theme.color.primary50};
+  color: ${({ theme }) => theme.color.primary600};
+  font-size: 13px;
+  cursor: pointer;
+  &:hover {
+    background: ${({ theme }) => theme.color.primary500};
+    color: white;
+  }
 `;
 
 const ComposerRow = styled.div`
