@@ -221,7 +221,7 @@ const ChatPage: React.FC = () => {
         <ChatArea>
           <Messages>
             {activeConversation?.messages.map((m, idx) => {
-              const isLast = idx === activeConversation.messages.length - 1;
+              // const isLast = idx === activeConversation.messages.length - 1;
               const showLoading =
                 m.role === "assistant" && m.content === "" && isSending;
 
@@ -447,19 +447,19 @@ const PromptBubble = styled.button`
   }
 `;
 
-const PromptButton = styled.button`
-  padding: 6px 12px;
-  border-radius: 20px;
-  border: 1px solid ${({ theme }) => theme.color.primary500};
-  background: ${({ theme }) => theme.color.primary50};
-  color: ${({ theme }) => theme.color.primary600};
-  font-size: 13px;
-  cursor: pointer;
-  &:hover {
-    background: ${({ theme }) => theme.color.primary500};
-    color: white;
-  }
-`;
+// const PromptButton = styled.button`
+//   padding: 6px 12px;
+//   border-radius: 20px;
+//   border: 1px solid ${({ theme }) => theme.color.primary500};
+//   background: ${({ theme }) => theme.color.primary50};
+//   color: ${({ theme }) => theme.color.primary600};
+//   font-size: 13px;
+//   cursor: pointer;
+//   &:hover {
+//     background: ${({ theme }) => theme.color.primary500};
+//     color: white;
+//   }
+// `;
 
 const ComposerRow = styled.div`
   display: flex;
@@ -530,33 +530,33 @@ const LoadingDots = styled.div`
 `;
 
 /* 관련 여행지 카드 스타일 */
-const DocumentGrid = styled.div`
-  margin-top: 12px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 10px;
-`;
+// const DocumentGrid = styled.div`
+//   margin-top: 12px;
+//   display: grid;
+//   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+//   gap: 10px;
+// `;
 
-const DocCard = styled.div`
-  background: ${({ theme }) => theme.color.gray100};
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-`;
+// const DocCard = styled.div`
+//   background: ${({ theme }) => theme.color.gray100};
+//   border-radius: 10px;
+//   overflow: hidden;
+//   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+// `;
 
-const DocImage = styled.img`
-  width: 100%;
-  height: 90px;
-  object-fit: cover;
-`;
+// const DocImage = styled.img`
+//   width: 100%;
+//   height: 90px;
+//   object-fit: cover;
+// `;
 
-const DocTitle = styled.div`
-  ${({ theme }) => theme.font.sm.bold};
-  padding: 8px 10px 2px;
-`;
+// const DocTitle = styled.div`
+//   ${({ theme }) => theme.font.sm.bold};
+//   padding: 8px 10px 2px;
+// `;
 
-const DocAddr = styled.div`
-  ${({ theme }) => theme.font.xs.regular};
-  padding: 0 10px 8px;
-  color: ${({ theme }) => theme.color.gray600};
-`;
+// const DocAddr = styled.div`
+//   ${({ theme }) => theme.font.xs.regular};
+//   padding: 0 10px 8px;
+//   color: ${({ theme }) => theme.color.gray600};
+// `;

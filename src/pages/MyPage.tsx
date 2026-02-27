@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import ListSection, { CardList } from "../components/mypage/ListSection";
 import ListItem from "../components/mypage/ListItem";
