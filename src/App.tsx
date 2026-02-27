@@ -32,9 +32,10 @@ import { postLogout } from "./api/Auth";
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
-  const hideFooter = location.pathname === "/chat"; // 채팅화면에서는 푸터X
-  const hideChatButton = location.pathname === "/chat"; // 채팅화면에서는 버튼X
-
+  const hideFooter =
+    location.pathname === "/chat" || location.pathname === "/map";
+  const hideChatButton =
+    location.pathname === "/chat" || location.pathname === "/map";
   const handleClick = () => {
     window.location.href = "/chat";
   };

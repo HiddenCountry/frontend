@@ -245,8 +245,8 @@ const TravelRoutePage: React.FC = () => {
       )}
       {/* 인기코스 제목*/}
       <Top3Header>
-        <SmallTitle>숨은나라 추천 코스를 따라 전 세계를 경험해보세요.</SmallTitle>
-        <BigTitle>숨은나라 추천 코스 TOP 3</BigTitle>
+        <SmallTitle>숨은나라 추천 코스를 따라 전 세계를 경험해보세요</SmallTitle>
+        <BigTitle>이번달 추천 코스</BigTitle>
       </Top3Header>
 
       {/* 메뉴 */}

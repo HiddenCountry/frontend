@@ -34,7 +34,7 @@ const Navbar: React.FC<NavbarProps> = ({
 
   const menuItems = [
     { name: "홈", path: "/" },
-    { name: "소개", path: "/intro" },
+    { name: "서비스 소개", path: "/intro" },
     { name: "지도로 보기", path: "/map" },
     { name: "장소 등록 문의", path: "/register" },
     { name: "여행 코스", path: "/route" },
