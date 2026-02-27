@@ -28,6 +28,7 @@ import { ReactComponent as ChatButton } from "./assets/layout/ChatButton.svg";
 import LoginModal from "./components/common/LoginModal";
 import Intro from "./pages/Intro";
 import PolicyPage from "./pages/PolicyPage";
+import { postLogout } from "./api/Auth";
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
@@ -115,11 +116,17 @@ function App() {
     setProfileImg(img || "");
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    setIsLoggedIn(false);
+  const handleLogout = async () => {
+    try {
+      await postLogout();
+    } catch (error) {
+      console.error("logout API request failed:", error);
+    } finally {
+      localStorage.removeItem("accessToken");
+      setIsLoggedIn(false);
     setNickname("사용자");
-    setProfileImg("");
+      setProfileImg("");
+    }
   };
 
   return (
@@ -166,3 +173,5 @@ function App() {
 }
 
 export default App;
+
+
