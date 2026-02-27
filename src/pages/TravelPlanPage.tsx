@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-import NearCard from "../components/place/NearCard";
 import { getPlaces } from "../api/Place";
 import TravelCard from "../components/travel/TravelCard";
 import { useNavigate } from "react-router-dom";

@@ -94,6 +94,7 @@ const MainPage: React.FC = () => {
   const { nameKR, Icon } = currentCountryInfo;
 
   // 이색 관광지 api 연동
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const fetchPlaces = (lat: number, lng: number) => {
     return getPlaces(
       currentPage,
@@ -132,7 +133,8 @@ const MainPage: React.FC = () => {
         fetchPlaces(37.5665, 126.978).finally(() => setLoading(false)); // API 완료 후 로딩 종료
       }
     );
-  }, [currentPage, filters, searchTrigger]);
+  }, [currentPage, fetchPlaces, filters, searchTrigger]);
+
 
   const sortOptions = [
     { label: "조회순", value: "VIEW_COUNT_DESC" },

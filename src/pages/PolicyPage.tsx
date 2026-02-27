@@ -283,24 +283,24 @@ const Content = styled.div`
   }
 `;
 
-const FooterActions = styled.div`
-  display: flex;
-  gap: 12px;
-  margin-top: 18px;
-`;
+// const FooterActions = styled.div`
+//   display: flex;
+//   gap: 12px;
+//   margin-top: 18px;
+// `;
 
-const Button = styled.button<{ kind?: "primary" | "ghost" }>`
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  background: ${({ kind }) => (kind === "primary" ? "#2b6cb0" : "transparent")};
-  color: ${({ kind }) => (kind === "primary" ? "#fff" : "#2b6cb0")};
-  box-shadow: ${({ kind }) =>
-    kind === "primary" ? "0 6px 12px rgba(43,108,176,0.12)" : "none"};
+// const Button = styled.button<{ kind?: "primary" | "ghost" }>`
+//   padding: 10px 14px;
+//   border-radius: 8px;
+//   border: none;
+//   cursor: pointer;
+//   font-weight: 600;
+//   background: ${({ kind }) => (kind === "primary" ? "#2b6cb0" : "transparent")};
+//   color: ${({ kind }) => (kind === "primary" ? "#fff" : "#2b6cb0")};
+//   box-shadow: ${({ kind }) =>
+//     kind === "primary" ? "0 6px 12px rgba(43,108,176,0.12)" : "none"};
 
-  &:hover {
-    opacity: 0.92;
-  }
-`;
+//   &:hover {
+//     opacity: 0.92;
+//   }
+// `;

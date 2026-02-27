@@ -1,7 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 import { ReactComponent as LogoIcon } from "../../assets/layout/LogoWhite.svg";
-import { ReactComponent as GithubIcon } from "../../assets/layout/Github.svg";
 
 const Footer: React.FC = () => {
   return (
@@ -54,43 +53,37 @@ const Footer: React.FC = () => {
 
 export default Footer;
 
-const LogoWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1rem; /* 로고와 버튼 사이 간격 */
-`;
+// const IntroButton = styled.a`
+//   background-color: #a8a8a8ff;;
+//   color: white;
+//   padding: 0.2rem 0.6rem;
+//   border-radius: 8px;
+//   font-weight: 700;
+//   text-decoration: none;
+//   font-size: 0.9rem;
+//   transition: all 0.3s;
 
-const IntroButton = styled.a`
-  background-color: #a8a8a8ff;;
-  color: white;
-  padding: 0.2rem 0.6rem;
-  border-radius: 8px;
-  font-weight: 700;
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: all 0.3s;
-
-  &:hover {
-    background-color: #00395aff;
-    transform: translateY(-2px);
-  }
-`;
+//   &:hover {
+//     background-color: #00395aff;
+//     transform: translateY(-2px);
+//   }
+// `;
 
 
-const ButtonLink = styled.a`
-  background-color: #0288d1;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 12px;
-  font-weight: 700;
-  text-decoration: none;
-  transition: all 0.3s;
+// const ButtonLink = styled.a`
+//   background-color: #0288d1;
+//   color: white;
+//   padding: 0.5rem 1rem;
+//   border-radius: 12px;
+//   font-weight: 700;
+//   text-decoration: none;
+//   transition: all 0.3s;
   
-  &:hover {
-    background-color: #0277bd;
-    transform: translateY(-2px);
-  }
-`;
+//   &:hover {
+//     background-color: #0277bd;
+//     transform: translateY(-2px);
+//   }
+// `;
 
 const FooterWrapper = styled.footer`
   width: 100%;
@@ -161,24 +154,24 @@ const Copy = styled.div`
   line-height: 1.4;
 `;
 
-const RightSection = styled.div`
-  display: flex;
-  gap: 16px;
+// const RightSection = styled.div`
+//   display: flex;
+//   gap: 16px;
 
-  svg {
-    width: 28px;
-    height: 28px;
-    fill: #aaa;
-    transition: fill 0.2s;
+//   svg {
+//     width: 28px;
+//     height: 28px;
+//     fill: #aaa;
+//     transition: fill 0.2s;
 
-    &:hover {
-      fill: #aaa;
-    }
-  }
-`;
+//     &:hover {
+//       fill: #aaa;
+//     }
+//   }
+// `;
 
-const IconLink = styled.a`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
+// const IconLink = styled.a`
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+// `;

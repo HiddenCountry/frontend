@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { ReactComponent as Logo } from "../../assets/layout/Logo.svg";
 
 interface TravelCardProps {
@@ -31,7 +31,7 @@ const TravelCard: React.FC<TravelCardProps> = ({
   onClick,
   selected,
 }) => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   return (
     <CardWrapper
       selected={selected}
@@ -139,12 +139,12 @@ const CardSubTitle = styled.div`
   }
 `;
 
-const CardDist = styled.div`
-  ${({ theme }) => theme.font.md.medium};
-  color: ${({ theme }) => theme.color.primary500};
-  margin-top: 5px;
+// const CardDist = styled.div`
+//   ${({ theme }) => theme.font.md.medium};
+//   color: ${({ theme }) => theme.color.primary500};
+//   margin-top: 5px;
 
-  @media (max-width: 780px) {
-    ${({ theme }) => theme.font.sm.medium};
-  }
-`;
+//   @media (max-width: 780px) {
+//     ${({ theme }) => theme.font.sm.medium};
+//   }
+// `;
