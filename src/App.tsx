@@ -25,7 +25,6 @@ import ChatPage from "./pages/ChatPage";
 import TravelPlanPage from "./pages/TravelPlanPage";
 import TravelRouteDetailPage from "./pages/TravelRouteDetailPage";
 import { ReactComponent as ChatButton } from "./assets/layout/ChatButton.svg";
-import LoginModal from "./components/common/LoginModal";
 import Intro from "./pages/Intro";
 import PolicyPage from "./pages/PolicyPage";
 import { postLogout } from "./api/Auth";
