@@ -296,29 +296,29 @@ const RouteNode = styled.div`
   }
 `;
 
-const Plane = styled.div`
-  position: absolute;
-  top: calc(50% - 12px);
-  left: 5%;
-  font-size: 1.5rem;
-  animation: fly 10s linear infinite;
-  z-index: 3;
+// const Plane = styled.div`
+//   position: absolute;
+//   top: calc(50% - 12px);
+//   left: 5%;
+//   font-size: 1.5rem;
+//   animation: fly 10s linear infinite;
+//   z-index: 3;
 
-  @keyframes fly {
-    0% {
-      left: 5%;
-      transform: rotate(10deg);
-    }
-    50% {
-      left: 50%;
-      transform: rotate(0deg);
-    }
-    100% {
-      left: 95%;
-      transform: rotate(-10deg);
-    }
-  }
-`;
+//   @keyframes fly {
+//     0% {
+//       left: 5%;
+//       transform: rotate(10deg);
+//     }
+//     50% {
+//       left: 50%;
+//       transform: rotate(0deg);
+//     }
+//     100% {
+//       left: 95%;
+//       transform: rotate(-10deg);
+//     }
+//   }
+// `;
 
 const Content = styled.div`
   display: flex;

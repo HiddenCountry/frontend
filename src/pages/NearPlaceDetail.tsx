@@ -8,8 +8,7 @@ import { ReactComponent as ImageRight } from "../assets/place/ImageRight.svg";
 import {
   getPlaceNear,
   getPlaceNearUserNull,
-  getPlaceUserNull,
-} from "../api/Place";
+  } from "../api/Place";
 import { ReactComponent as Logo } from "../assets/layout/Logo.svg";
 
 interface InfoItem {
@@ -336,8 +335,7 @@ const ImageIndex = styled.div`
 const ArrowButton = styled.button<{ left?: boolean; right?: boolean }>`
   position: absolute;
   top: 50%;
-  ${({ left }) => left && `left: 12px;`} ${({ right }) =>
-    right && `right: 12px;`} transform: translateY(-50%);
+  transform: translateY(-50%);
   background: rgba(255, 255, 255, 0.9);
   border: none;
   border-radius: 50%;
@@ -347,6 +345,8 @@ const ArrowButton = styled.button<{ left?: boolean; right?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
+  ${({ left }) => left && `left: 12px;`} ${({ right }) => right && `right: 12px;`} 
+  
   &:hover {
     background: rgba(255, 255, 255);
   }

@@ -34,8 +34,8 @@ const KakaoRedirectPage: React.FC<KakaoRedirectPageProps> = ({ onLogin }) => {
               res.data;
 
             // 닉네임 기본값 처리
-            const safeNickname =
-              nickname && nickname !== "undefined" ? nickname : "사용자";
+            // const safeNickname =
+            //   nickname && nickname !== "undefined" ? nickname : "사용자";
 
             localStorage.setItem("accessToken", accessToken);
             if (profileImg) localStorage.setItem("profileImage", profileImg);

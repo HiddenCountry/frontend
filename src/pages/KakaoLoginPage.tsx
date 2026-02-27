@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { ReactComponent as Callout } from "../assets/login/Callout.svg";
 import { ReactComponent as KakaoLogo } from "../assets/login/KakaoLogo.svg";
 import { ReactComponent as LoginIcon } from "../assets/login/LoginIcon.svg";
 
 const KakaoLoginPage: React.FC = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   // 스크롤 막기
   useEffect(() => {

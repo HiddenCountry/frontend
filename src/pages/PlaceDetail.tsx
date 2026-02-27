@@ -240,6 +240,7 @@ const PlaceDetail: React.FC = () => {
     if (!loading) {
       fetchPlaceDetail();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentId, contentTypeId, userLat, userLng, place?.id, loading]);
 
   // 북마크 api 연동
@@ -295,12 +296,14 @@ const PlaceDetail: React.FC = () => {
   // 총 페이지 수
   const totalPages = Math.ceil(reviews.length / reviewsPerPage);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
   };
 
   // 리뷰 정렬
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const reviewSortOptions = [
     { label: "최신순", value: "LATEST" },
     { label: "평점순", value: "RATING_DESC" },
@@ -319,6 +322,7 @@ const PlaceDetail: React.FC = () => {
   };
 
   // 리뷰 불러오기
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const fetchReviews = async () => {
     if (!placeDetail?.id) return;
 
@@ -337,7 +341,7 @@ const PlaceDetail: React.FC = () => {
   // placeDetail이 바뀔 때 리뷰 호출
   useEffect(() => {
     if (!loading && placeDetail) fetchReviews();
-  }, [placeDetail, loading, reviewSortType]);
+  }, [placeDetail, loading, reviewSortType, fetchReviews]);
 
   // 비행기 평균별점 계산
   const renderStars = (score: number) => {

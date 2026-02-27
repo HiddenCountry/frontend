@@ -365,6 +365,7 @@ const SideDetailCard: React.FC<{
         </MetaRow>
 
         {distText && (
+          // eslint-disable-next-line jsx-a11y/anchor-is-valid
           <a className="distance" href="#" onClick={(e) => e.preventDefault()}>
             {distText}
           </a>
@@ -439,7 +440,7 @@ const MultiDropdown: React.FC<{
 
 const MediaStrip: React.FC<{ place: PlaceMapItem }> = ({ place }) => {
   const [urls, setUrls] = React.useState<string[]>([]);
-  const [loading, setLoading] = React.useState(true);
+  const [, setLoading] = React.useState(true);
 
   const contentId: number | null = (place as any).contentId;
   const vpRef = React.useRef<HTMLDivElement>(null);
@@ -709,7 +710,7 @@ const KakaoMap: React.FC<{
       overlay.setMap(map);
       overlaysRef.current.push(overlay);
     });
-  }, [results, loaded, showList]);
+  }, [results, loaded, showList, onPinClick]);
 
   return <MapLayer ref={containerRef} />;
 };
@@ -762,7 +763,7 @@ const MapPage: React.FC = () => {
   // 리스트 아이템 DOM 참조 저장소
   const itemRefs = React.useRef<Record<number, HTMLDivElement | null>>({});
   // 북마크 처리중인 카드들(중복 클릭 방지)
-  const [bmPending, setBmPending] = React.useState<Set<number>>(new Set());
+  const [, setBmPending] = React.useState<Set<number>>(new Set());
   // 상태
   const [detailId, setDetailId] = React.useState<number | null>(null);
 

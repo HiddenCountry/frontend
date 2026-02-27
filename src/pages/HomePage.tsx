@@ -16,7 +16,7 @@ import { ReactComponent as AsiaM } from "../assets/home/mobile/AsiaM.svg";
 import { ReactComponent as OceaniaM } from "../assets/home/mobile/OceaniaM.svg";
 import { ReactComponent as Caution } from "../assets/home/Caution.svg";
 import OnboardingModal from "./OnboardingModal";
-import LoginModal from "../components/common/LoginModal";
+// import LoginModal from "../components/common/LoginModal";
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
