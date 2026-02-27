@@ -13,7 +13,7 @@ interface NavbarProps {
   isLoggedIn?: boolean;
   nickname?: string;
   profileImg?: string;
-  onLogout?: () => void;
+  onLogout?: () => void | Promise<void>;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
@@ -61,8 +61,8 @@ const Navbar: React.FC<NavbarProps> = ({
     checkSession();
   }, [location.pathname, isLoggedIn, onLogout]);
 
-  const handleLogout = () => {
-    if (onLogout) onLogout();
+  const handleLogout = async () => {
+    if (onLogout) await onLogout();
     setShowDropdown(false);
     navigate("/");
     setActiveMenu("홈");
@@ -127,7 +127,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 )}
                 <DropdownProfileName>{nickname} 님</DropdownProfileName>
                 <DropdownItem to="/mypage">마이페이지</DropdownItem>
-                <DropdownButton onClick={handleLogout}>로그아웃</DropdownButton>
+                <DropdownButton onClick={() => void handleLogout()}>로그아웃</DropdownButton>
               </Dropdown>
             )}
           </ProfileWrapper>

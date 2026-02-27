@@ -17,6 +17,7 @@ interface RequestConfig {
   method: "get" | "post" | "delete" | "patch" | "put";
   params?: object;
   data?: object;
+  credentials?: RequestCredentials;
 }
 
 const sendAuthorizedRequest = async ({
@@ -24,10 +25,12 @@ const sendAuthorizedRequest = async ({
   headers,
   method,
   data,
+  credentials,
 }: RequestConfig) => {
   const requestOptions: RequestInit = {
     method,
     headers: { ...getHeadersWithToken(), ...headers },
+    credentials,
   };
 
   if (data) {
