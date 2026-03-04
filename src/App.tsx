@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "./App.css";
 import styled from "styled-components";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
@@ -107,14 +107,17 @@ function App() {
       };
       fetchUserInfo();
     }
-  }, [isLoggedIn]);
+  }, []);
 
-  const updateUserState = (token?: string, nick?: string, img?: string) => {
-    if (token) localStorage.setItem("accessToken", token);
-    setIsLoggedIn(true);
-    setNickname(nick || "사용자");
-    setProfileImg(img || "");
-  };
+  const updateUserState = useCallback(
+    (token?: string, nick?: string, img?: string) => {
+      if (token) localStorage.setItem("accessToken", token);
+      setIsLoggedIn(true);
+      setNickname(nick || "사용자");
+      setProfileImg(img || "");
+    },
+    []
+  );
 
   const handleLogout = async () => {
     try {
@@ -124,7 +127,7 @@ function App() {
     } finally {
       localStorage.removeItem("accessToken");
       setIsLoggedIn(false);
-    setNickname("사용자");
+      setNickname("사용자");
       setProfileImg("");
     }
   };
@@ -173,5 +176,4 @@ function App() {
 }
 
 export default App;
-
 
