@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import { useLocation } from "react-router-dom";
 import { ReactComponent as AirPlane } from "../assets/main/Airplane.svg";
@@ -322,8 +322,7 @@ const PlaceDetail: React.FC = () => {
   };
 
   // 리뷰 불러오기
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     if (!placeDetail?.id) return;
 
     setReviewsLoading(true);
@@ -336,12 +335,14 @@ const PlaceDetail: React.FC = () => {
     } finally {
       setReviewsLoading(false);
     }
-  };
+  }, [placeDetail?.id, reviewSortType]);
 
   // placeDetail이 바뀔 때 리뷰 호출
   useEffect(() => {
-    if (!loading && placeDetail) fetchReviews();
-  }, [placeDetail, loading, reviewSortType, fetchReviews]);
+    if (!loading && placeDetail) {
+      fetchReviews();
+    }
+  }, [loading, placeDetail, fetchReviews]);
 
   // 비행기 평균별점 계산
   const renderStars = (score: number) => {

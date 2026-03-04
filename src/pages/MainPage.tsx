@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import FilterSidebar from "../components/main/FilterSidebar";
@@ -94,9 +94,31 @@ const MainPage: React.FC = () => {
   const { nameKR, Icon } = currentCountryInfo;
 
   // 이색 관광지 api 연동
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const fetchPlaces = (lat: number, lng: number) => {
-    return getPlaces(
+  const fetchPlaces = useCallback(
+    (lat: number, lng: number) => {
+      return getPlaces(
+        currentPage,
+        cardsPerPage,
+        filters.areaCode,
+        filters.contentType,
+        filters.season,
+        filters.countryRegion,
+        filters.sortType,
+        lat,
+        lng,
+        searchKeyword
+      )
+        .then((res) => {
+          if (res?.data?.content) {
+            setPlaces(res.data.content);
+            setTotalPages(res.data.totalPage);
+          }
+        })
+        .catch((error) => {
+          console.error("장소 가져오기 실패", error);
+        });
+    },
+    [
       currentPage,
       cardsPerPage,
       filters.areaCode,
@@ -104,20 +126,9 @@ const MainPage: React.FC = () => {
       filters.season,
       filters.countryRegion,
       filters.sortType,
-      lat,
-      lng,
-      searchKeyword
-    )
-      .then((res) => {
-        if (res?.data?.content) {
-          setPlaces(res.data.content);
-          setTotalPages(res.data.totalPage);
-        }
-      })
-      .catch((error) => {
-        console.error("장소 가져오기 실패", error);
-      });
-  };
+      searchKeyword,
+    ]
+  );
 
   // 위치 기반으로 호출
   useEffect(() => {
@@ -133,7 +144,7 @@ const MainPage: React.FC = () => {
         fetchPlaces(37.5665, 126.978).finally(() => setLoading(false)); // API 완료 후 로딩 종료
       }
     );
-  }, [currentPage, fetchPlaces, filters, searchTrigger]);
+  }, [fetchPlaces, searchTrigger]);
 
 
   const sortOptions = [
